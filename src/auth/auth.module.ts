@@ -4,10 +4,10 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthDomainService } from './auth.service';
 import { AuthRoleService } from '../core/application/auth/role.service';
-import { Auth0Module } from '../infrastructure/auth0/auth0.module';
-import { AuthRepository } from '../infrastructure/auth/auth.repository.impl';
+import { Auth0Module } from '../infrastructure/persistence/auth0/auth0.module';
+import { AuthRepository } from '../infrastructure/persistence/auth/auth.repository.impl';
 import { ROLE_PROVIDER } from './role.provider';
-import { Auth0RoleProvider } from '../infrastructure/auth0/auth0-role.provider';
+import { Auth0RoleProvider } from '../infrastructure/persistence/auth0/auth0-role.provider';
 
 @Module({
   imports: [
@@ -23,4 +23,4 @@ import { Auth0RoleProvider } from '../infrastructure/auth0/auth0-role.provider';
   ],
   exports: [AuthDomainService, AuthRoleService],
 })
-export class AuthModule {}
+export class AuthModule { }

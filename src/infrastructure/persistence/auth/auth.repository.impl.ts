@@ -1,6 +1,6 @@
-import { IAuthRepository } from '../../auth/auth.repository';
-import { Auth } from '../../auth/auth.entity';
-import { PrismaService } from '../../prisma/prisma.service'; // your Prisma service
+import { IAuthRepository } from '../../../auth/auth.repository';
+import { Auth } from '../../../auth/auth.entity';
+import { PrismaService } from '../../../prisma/prisma.service'; // your Prisma service
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
