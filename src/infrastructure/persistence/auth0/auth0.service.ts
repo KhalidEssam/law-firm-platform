@@ -3,7 +3,7 @@ export class Auth0Service {
     private domain = process.env.AUTH0_DOMAIN!;
     private clientId = process.env.AUTH0_CLIENT_ID!;
     private clientSecret = process.env.AUTH0_CLIENT_SECRET!;
-    private audience = `${process.env.AUTH0_AUDIENCE}`;
+    private audience = `${process.env.AUTH0_MANAGEMENT_AUDIENCE}`;
 
     private cachedToken: string | null = null;
     private tokenExpiry: number = 0;

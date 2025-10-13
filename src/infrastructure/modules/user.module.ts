@@ -5,6 +5,7 @@ import { Auth0Service } from '../persistence/auth0/auth0.service';
 import { CreateUserUseCase } from '../../core/application/use-cases/create-user.use-case';
 import { SyncAuth0UserUseCase } from '../../core/application/use-cases/sync-auth0-user.use-case'; // ✅ ADD THIS
 import { UsersController } from '../../interface/http/users.controller';
+import { UpdateUserProfileUseCase } from 'src/core/application/use-cases/update-user-profile.usecase';
 
 @Module({
     controllers: [UsersController],
@@ -13,6 +14,7 @@ import { UsersController } from '../../interface/http/users.controller';
         Auth0Service,
         CreateUserUseCase,
         SyncAuth0UserUseCase,
+        UpdateUserProfileUseCase,
         { provide: 'IUserRepository', useClass: PrismaUserRepository },
     ],
     exports: [SyncAuth0UserUseCase], // optional — only if other modules need it

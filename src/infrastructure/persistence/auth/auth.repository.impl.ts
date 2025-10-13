@@ -41,7 +41,7 @@ export class AuthRepository implements IAuthRepository {
                 id: auth.userId,
                 email: auth.email,
                 auth0Id: auth.externalId,
-                username: auth.email.split('@')[0], // temporary username
+                username: auth.email, // temporary username
                 roles: {
                     create: auth.roles.map((roleName) => ({
                         role: { connect: { name: roleName } },

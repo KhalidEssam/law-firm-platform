@@ -10,6 +10,8 @@ import { UserModule } from './infrastructure/modules/user.module';
 import { AuthModule } from './auth/auth.module';
 import { Auth0Module } from './infrastructure/persistence/auth0/auth0.module';
 import { RolesModule } from './interface/auth/roles.module';
+import { MembershipModule } from './infrastructure/modules/membership.controller';
+
 
 @Module({
   imports: [
@@ -22,7 +24,8 @@ import { RolesModule } from './interface/auth/roles.module';
     AuthModule,
     Auth0Module,
     RolesModule,
-    UserModule
+    UserModule,
+    MembershipModule
   ],
   controllers: [AppController],
   providers: [
