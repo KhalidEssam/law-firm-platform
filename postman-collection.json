@@ -1,0 +1,751 @@
+{
+    "info": {
+        "name": "Legal Platform API",
+        "description": "Complete API collection for the Legal Platform with account management, profiles, plans, payments, consultations, and requests",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "version": "1.0.0"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{auth_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "https://api.legalplatform.com",
+            "type": "string"
+        },
+        {
+            "key": "auth_token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Account",
+            "item": [
+                {
+                    "name": "Register User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"name\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/account/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "account",
+                                "register"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Login User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/account/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "account",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/account/reset-password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "account",
+                                "reset-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Verify Email",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"verification_token_here\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/account/verify-email",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "account",
+                                "verify-email"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Verify Phone",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"code\": \"123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/account/verify-phone",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "account",
+                                "verify-phone"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/account/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "account",
+                                "logout"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "item": [
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/profile/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Email",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"newemail@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/email",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "email"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Phone",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phone\": \"+9876543210\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/phone",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "phone"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Address",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"street\": \"123 Main St\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"zipCode\": \"10001\",\n  \"country\": \"USA\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/address",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "address"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"currentPassword\": \"OldPass123!\",\n  \"newPassword\": \"NewPass456!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profile/password",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profile",
+                                "password"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Plans",
+            "item": [
+                {
+                    "name": "Browse Plans",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/plans",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "plans"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Choose Plan",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"planId\": \"plan_basic_monthly\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/plans/choose",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "plans",
+                                "choose"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Upgrade Plan",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"planId\": \"plan_premium_monthly\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/plans/upgrade",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "plans",
+                                "upgrade"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Downgrade Plan",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"planId\": \"plan_basic_monthly\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/plans/downgrade",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "plans",
+                                "downgrade"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Payments",
+            "item": [
+                {
+                    "name": "Pay Subscription",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"paymentMethod\": \"card\",\n  \"cardToken\": \"tok_visa_12345\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/payments/pay",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "pay"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Apply Coupon",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"couponCode\": \"SAVE20\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/payments/coupon",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "coupon"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Top Up Wallet",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"amount\": 100.00,\n  \"paymentMethod\": \"card\",\n  \"cardToken\": \"tok_visa_12345\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/payments/topup",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "topup"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "View Invoices",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/payments/invoices?page=1&limit=10",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "invoices"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Request Refund",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"invoiceId\": \"inv_12345\",\n  \"reason\": \"Service not as expected\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/payments/refund",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "payments",
+                                "refund"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Consultation",
+            "item": [
+                {
+                    "name": "Request Consultation",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"subject\": \"Contract Review\",\n  \"description\": \"Need legal advice on employment contract\",\n  \"category\": \"employment\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/consultation",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "consultation"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Choose Type",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"consultationType\": \"video\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/consultation/type",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "consultation",
+                                "type"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Submit Request",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"consultationId\": \"cons_12345\",\n  \"preferredDate\": \"2025-10-20\",\n  \"preferredTime\": \"14:00\",\n  \"additionalNotes\": \"Available afternoons only\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/consultation/submit",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "consultation",
+                                "submit"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Requests",
+            "item": [
+                {
+                    "name": "View Requests",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/requests?status=pending&page=1&limit=20",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "requests"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "pending"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Reply Request",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"requestId\": \"req_12345\",\n  \"message\": \"Thank you for your response. I have additional questions.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/requests/reply",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "requests",
+                                "reply"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Rate Consultation",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"requestId\": \"req_12345\",\n  \"rating\": 5,\n  \"feedback\": \"Excellent service and very helpful advice\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/requests/rate",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "requests",
+                                "rate"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "System",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/health",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Version",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/version",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "version"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
