@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { IUserRepository } from '../../../core/application/ports/user.repository';
+import { IUserRepository, IUserFilters, IPaginationOptions, IPaginatedResult } from '../../../core/application/ports/user.repository';
 import { User } from '../../../core/domain/user/user.entity';
 
 @Injectable()
@@ -26,9 +26,9 @@ export class PrismaUserRepository implements IUserRepository {
             data: {
                 id: user.id,
                 auth0Id: user.auth0Id,
-                email: user.email.getValue(),         // ✅ Extract primitive
+                email: user.email.getValue(),
                 username: user.username.getValue(),
-                fullName: user.fullName,  // ✅ Handle optional value object
+                fullName: user.fullName,
                 gender: user.gender,
                 city: user.city?.getValue(),
                 emailVerified: user.emailVerified,
@@ -39,7 +39,6 @@ export class PrismaUserRepository implements IUserRepository {
         return this.mapToDomain(created);
     }
 
-
     async findByEmail(email: string): Promise<User | null> {
         const user = await this.prisma.user.findUnique({ where: { email } });
         return user ? this.mapToDomain(user) : null;
@@ -47,6 +46,11 @@ export class PrismaUserRepository implements IUserRepository {
 
     async findByAuth0Id(auth0Id: string): Promise<User | null> {
         const user = await this.prisma.user.findUnique({ where: { auth0Id } });
+        return user ? this.mapToDomain(user) : null;
+    }
+
+    async findById(id: string): Promise<User | null> {
+        const user = await this.prisma.user.findUnique({ where: { id } });
         return user ? this.mapToDomain(user) : null;
     }
 
@@ -63,5 +67,42 @@ export class PrismaUserRepository implements IUserRepository {
             },
         });
         return this.mapToDomain(updated);
+    }
+
+    async delete(id: string): Promise<void> {
+        await this.prisma.user.delete({ where: { id } });
+    }
+
+    // ✅ Updated version with filters + pagination
+    async findAll(
+        filters: IUserFilters = {},
+        pagination: IPaginationOptions = { page: 1, limit: 10 },
+    ): Promise<IPaginatedResult<User>> {
+        const { page = 1, limit = 10 } = pagination;
+
+        const where: any = {};
+
+        if (filters.ageGroup) where.ageGroup = filters.ageGroup;
+        if (filters.employmentSector) where.employmentSector = filters.employmentSector;
+        if (filters.nationality) where.nationality = filters.nationality;
+        if (filters.profession) where.profession = filters.profession;
+
+        const [total, users] = await this.prisma.$transaction([
+            this.prisma.user.count({ where }),
+            this.prisma.user.findMany({
+                where,
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+        ]);
+
+        return {
+            items: users.map((u) => this.mapToDomain(u)),
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 }
