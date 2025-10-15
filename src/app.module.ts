@@ -11,7 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { Auth0Module } from './infrastructure/persistence/auth0/auth0.module';
 import { RolesModule } from './interface/auth/roles.module';
 import { MembershipModule } from './infrastructure/modules/membership.controller';
-
+import { ProviderModule } from './infrastructure/modules/provider.module';
 
 @Module({
   imports: [
@@ -25,7 +25,8 @@ import { MembershipModule } from './infrastructure/modules/membership.controller
     Auth0Module,
     RolesModule,
     UserModule,
-    MembershipModule
+    MembershipModule,
+    ProviderModule
   ],
   controllers: [AppController],
   providers: [

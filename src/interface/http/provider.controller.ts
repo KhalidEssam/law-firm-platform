@@ -27,7 +27,7 @@ import { ListProviderProfilesUseCase } from 'src/core/application/provider/use-c
 
 import { VerificationStatus } from 'src/core/domain/provider/value-objects/verfication-status.vo';
 
-// import { CreateProviderProfileDTO } from '../../../application/dtos';
+import { CreateProviderProfileDtos } from '../../../application/dtos';
 
 
 @Controller('provider-profiles')
@@ -42,22 +42,26 @@ export class ProviderProfileController {
         private readonly listProviderProfiles: ListProviderProfilesUseCase,
     ) { }
 
-    // @Post()
-    // @HttpCode(HttpStatus.CREATED)
-    // async create(@Body() dto: CreateProviderProfileDTO) {
-    //     const profile = await this.createProviderProfile.execute(dto);
-    //     return {
-    //         id: profile.id,
-    //         userId: profile.userId,
-    //         organizationName: profile.organizationName.name,
-    //         organizationNameAr: profile.organizationName.nameAr,
-    //         licenseNumber: profile.licenseNumber.value,
-    //         verificationStatus: profile.verificationStatus.status,
-    //         isActive: profile.isActive,
-    //         createdAt: profile.createdAt,
-    //     };
-    // }
 
+
+    @Post()
+    @HttpCode(HttpStatus.CREATED)
+    async create(@Body() dto: CreateProviderProfileDtos) {
+        const profile = await this.createProviderProfile.execute(dto);
+        return {
+            id: profile.id,
+            userId: profile.userId,
+            organizationName: profile.organizationName.name,
+            organizationNameAr: profile.organizationName.nameAr,
+            licenseNumber: profile.licenseNumber.value,
+            verificationStatus: profile.verificationStatus.status,
+            isActive: profile.isActive,
+            createdAt: profile.createdAt,
+        };
+    }
+
+
+    
     @Get(':id')
     async findOne(@Param('id') id: string) {
         const profile = await this.getProviderProfile.execute(id);
@@ -170,15 +174,24 @@ export class ProviderProfileController {
 // presentation/http/controllers/ProviderUserController.ts
 // ============================================
 
+import {
+    CreateProviderUserUseCase,
+    GetProviderUserUseCase,
+    UpdateProviderUserUseCase,
+    DeleteProviderUserUseCase,
+    ListProviderUsersByProviderUseCase,
+} from 'src/core/application/provider/use-cases/provider-usecase';
+
 @Controller('provider-users')
 export class ProviderUserController {
     constructor(
-        private readonly createProviderUser: any,
-        private readonly getProviderUser: any,
-        private readonly updateProviderUser: any,
-        private readonly deleteProviderUser: any,
-        private readonly listProviderUsers: any,
+        private readonly createProviderUser: CreateProviderUserUseCase,
+        private readonly getProviderUser: GetProviderUserUseCase,
+        private readonly updateProviderUser: UpdateProviderUserUseCase,
+        private readonly deleteProviderUser: DeleteProviderUserUseCase,
+        private readonly listProviderUsers: ListProviderUsersByProviderUseCase,
     ) { }
+
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
@@ -187,7 +200,7 @@ export class ProviderUserController {
         dto: {
             providerId: string;
             userId: string;
-            role: string;
+            role: ProviderUserRole;
             specializations?: string[];
         },
     ) {
@@ -219,7 +232,7 @@ export class ProviderUserController {
             isActive: providerUser.isActive,
             canAcceptRequests: providerUser.canAcceptRequests,
             createdAt: providerUser.createdAt,
-            updatedAt: providerUser.props.updatedAt,
+            updatedAt: providerUser.updatedAt,
         };
     }
 
@@ -263,7 +276,7 @@ export class ProviderUserController {
             id: providerUser.id,
             specializations: providerUser.specializations,
             canAcceptRequests: providerUser.canAcceptRequests,
-            updatedAt: providerUser.props.updatedAt,
+            updatedAt: providerUser.updatedAt,
         };
     }
 
@@ -278,28 +291,34 @@ export class ProviderUserController {
 // PROVIDER SERVICE CONTROLLER
 // presentation/http/controllers/ProviderServiceController.ts
 // ============================================
+import { ServiceType } from 'src/core/domain/provider/value-objects/service-type.vo';
+
+import {
+    CreateProviderServiceUseCase,
+    GetProviderServiceUseCase,
+    UpdateProviderServiceUseCase,
+    DeleteProviderServiceUseCase,
+    ListProviderServicesByProviderUseCase,
+} from 'src/core/application/provider/use-cases/provider-usecase';
 
 @Controller('provider-services')
 export class ProviderServiceController {
     constructor(
-        private readonly createProviderService: any,
-        private readonly getProviderService: any,
-        private readonly updateProviderService: any,
-        private readonly deleteProviderService: any,
-        private readonly listProviderServices: any,
+        private readonly createProviderService: CreateProviderServiceUseCase,
+        private readonly getProviderService: GetProviderServiceUseCase,
+        private readonly updateProviderService: UpdateProviderServiceUseCase,
+        private readonly deleteProviderService: DeleteProviderServiceUseCase,
+        private readonly listProviderServices: ListProviderServicesByProviderUseCase,
     ) { }
-
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    async create(
-        @Body()
-        dto: {
-            providerId: string;
-            serviceType: string;
-            category?: string;
-            pricing?: any;
-        },
-    ) {
+    async create(@Body()
+    dto: {
+        providerId: string;
+        serviceType: ServiceType;
+        category?: string;
+        pricing?: any;
+    },) {
         const service = await this.createProviderService.execute(dto);
         return {
             id: service.id,
@@ -326,10 +345,9 @@ export class ProviderServiceController {
             isActive: service.isActive,
             pricing: service.pricing?.toJSON(),
             createdAt: service.createdAt,
-            updatedAt: service.props.updatedAt,
+            updatedAt: service.updatedAt,
         };
     }
-
     @Get('provider/:providerId')
     async findByProvider(
         @Param('providerId') providerId: string,
@@ -338,8 +356,17 @@ export class ProviderServiceController {
         @Query('limit') limit?: string,
         @Query('offset') offset?: string,
     ) {
+        const validTypes: ServiceType[] = [
+            'consultation',
+            'legal_opinion',
+            'litigation',
+            'specific_service',
+        ];
+        const parsedServiceType = validTypes.includes(serviceType as ServiceType)
+            ? (serviceType as ServiceType)
+            : undefined;
         const result = await this.listProviderServices.execute(providerId, {
-            serviceType,
+            serviceType: parsedServiceType,
             isActive: isActive ? isActive === 'true' : undefined,
             limit: limit ? parseInt(limit) : undefined,
             offset: offset ? parseInt(offset) : undefined,
@@ -371,7 +398,7 @@ export class ProviderServiceController {
             id: service.id,
             pricing: service.pricing?.toJSON(),
             isActive: service.isActive,
-            updatedAt: service.props.updatedAt,
+            updatedAt: service.updatedAt,
         };
     }
 
@@ -387,14 +414,23 @@ export class ProviderServiceController {
 // presentation/http/controllers/ProviderScheduleController.ts
 // ============================================
 
+import {
+    CreateProviderScheduleUseCase,
+    GetProviderScheduleUseCase,
+    UpdateProviderScheduleUseCase,
+    DeleteProviderScheduleUseCase,
+    ListProviderSchedulesByProviderUseCase,
+} from 'src/core/application/provider/use-cases/provider-usecase';
+import { ProviderUserRole } from 'src/core/domain/provider/value-objects/provider-user-role.vo';
+
 @Controller('provider-schedules')
 export class ProviderScheduleController {
     constructor(
-        private readonly createProviderSchedule: any,
-        private readonly getProviderSchedule: any,
-        private readonly updateProviderSchedule: any,
-        private readonly deleteProviderSchedule: any,
-        private readonly listProviderSchedules: any,
+        private readonly createProviderSchedule: CreateProviderScheduleUseCase,
+        private readonly getProviderSchedule: GetProviderScheduleUseCase,
+        private readonly updateProviderSchedule: UpdateProviderScheduleUseCase,
+        private readonly deleteProviderSchedule: DeleteProviderScheduleUseCase,
+        private readonly listProviderSchedules: ListProviderSchedulesByProviderUseCase,
     ) { }
 
     @Post()
@@ -434,7 +470,7 @@ export class ProviderScheduleController {
             endTime: schedule.timeSlot.endTime,
             isAvailable: schedule.isAvailable,
             createdAt: schedule.createdAt,
-            updatedAt: schedule.props.updatedAt,
+            updatedAt: schedule.updatedAt,
         };
     }
 
@@ -474,7 +510,7 @@ export class ProviderScheduleController {
             startTime: schedule.timeSlot.startTime,
             endTime: schedule.timeSlot.endTime,
             isAvailable: schedule.isAvailable,
-            updatedAt: schedule.props.updatedAt,
+            updatedAt: schedule.updatedAt,
         };
     }
 

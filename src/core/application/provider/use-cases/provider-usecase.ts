@@ -218,6 +218,7 @@ export class CreateProviderUserUseCase {
 
 export class GetProviderUserUseCase {
     constructor(private readonly repository: IProviderUserRepository) { }
+    
 
     async execute(id: string): Promise<ProviderUser | null> {
         return await this.repository.findById(id);
