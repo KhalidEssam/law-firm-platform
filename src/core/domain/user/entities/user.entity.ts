@@ -1,13 +1,13 @@
 import crypto from 'crypto';
-import { Email } from './value-objects/email.vo';
-import { Username } from './value-objects/username.vo';
-import { City } from './value-objects/city.vo';
-import { Biography } from './value-objects/biography.vo';
-import { Profession } from './value-objects/profession.vo';
-import { UserPhoto } from './value-objects/user-photo.vo';
-import { UserAgeGroup } from './value-objects/age-group.vo';
-import { Nationality } from './value-objects/nationality.vo';
-import { UserEmploymentSector } from './value-objects/employment-sector.vo';
+import { Email } from '../value-objects/email.vo';
+import { Username } from '../value-objects/username.vo';
+import { City } from '../value-objects/city.vo';
+import { Biography } from '../value-objects/biography.vo';
+import { Profession } from '../value-objects/profession.vo';
+import { UserPhoto } from '../value-objects/user-photo.vo';
+import { UserAgeGroup } from '../value-objects/age-group.vo';
+import { Nationality } from '../value-objects/nationality.vo';
+import { UserEmploymentSector } from '../value-objects/employment-sector.vo';
 
 export class User {
     constructor(

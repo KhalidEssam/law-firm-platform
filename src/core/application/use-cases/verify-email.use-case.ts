@@ -1,9 +1,10 @@
+
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import type { IUserRepository } from '../../domain/user/ports/user.repository';
 import { User } from '../../domain/user/entities/user.entity';
+import type { IUserRepository } from '../../domain/user/ports/user.repository';
 
 @Injectable()
-export class DeleteUserUseCase {
+export class VerifyEmailUseCase {
     constructor(
         @Inject('IUserRepository')
         private readonly userRepository: IUserRepository,
@@ -15,6 +16,6 @@ export class DeleteUserUseCase {
             throw new NotFoundException(`User with ID ${userId} not found`);
         }
 
-        return await this.userRepository.softDelete(userId);
+        return await this.userRepository.verifyEmail(userId);
     }
 }

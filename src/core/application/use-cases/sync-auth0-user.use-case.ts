@@ -1,7 +1,17 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { type IUserRepository } from '../ports/user.repository';
-import { User } from '../../domain/user/user.entity';
+import { type IUserRepository } from '../../domain/user/ports/user.repository';
+import { User } from '../../domain/user/entities/user.entity';
+import { Email } from 'src/core/domain/user/value-objects/email.vo';
+import { Username } from 'src/core/domain/user/value-objects/username.vo';
 
+
+export interface SyncAuth0UserCommand {
+    auth0Id: string;
+    email: string;
+    username: string;
+    fullName?: string;
+    emailVerified?: boolean;
+}
 
 @Injectable()
 export class SyncAuth0UserUseCase {
@@ -10,25 +20,23 @@ export class SyncAuth0UserUseCase {
         private readonly userRepository: IUserRepository,
     ) { }
 
-    async execute(decodedToken: any): Promise<User> {
-        const auth0Id = decodedToken.sub;
-        const email = decodedToken.email;
-        const username = decodedToken.nickname || decodedToken.name || decodedToken.email;
+    async execute(command: SyncAuth0UserCommand): Promise<User> {
+        // Check if user already exists
+        const existing = await this.userRepository.findByAuth0Id(command.auth0Id);
+        if (existing) {
+            return existing;
+        }
 
-        // Check if user already exists locally
-        const existing = await this.userRepository.findByAuth0Id(auth0Id);
-        if (existing) return existing;
-
-        // Create new local user
+        // Create new user
         const user = User.create({
-            auth0Id,
-            email,
-            username,
-            fullName: decodedToken.name || undefined,
-            emailVerified: decodedToken.email_verified || false,
+            auth0Id: command.auth0Id,
+            email: Email.create(command.email),
+            username: Username.create(command.username),
+            fullName: command.fullName,
+            emailVerified: command.emailVerified || false,
             mobileVerified: false,
         });
 
-        return this.userRepository.create(user);
+        return await this.userRepository.create(user);
     }
 }

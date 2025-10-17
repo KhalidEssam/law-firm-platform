@@ -1,118 +1,337 @@
-import {
-    Body,
-    Controller,
-    Post,
-    Get,
-    Patch,
-    Delete,
-    Param,
-    Query,
-    UseGuards,
-    Req,
-} from '@nestjs/common';
+import { Body, Controller, Post, Get, Patch, Delete, Param, Query, UseGuards, Req, HttpCode, HttpStatus, } from '@nestjs/common';
 import { CreateUserUseCase } from '../../core/application/use-cases/create-user.use-case';
 import { SyncAuth0UserUseCase } from '../../core/application/use-cases/sync-auth0-user.use-case';
 import { UpdateUserProfileUseCase } from '../../core/application/use-cases/update-user-profile.usecase';
 import { GetUserByIdUseCase } from '../../core/application/use-cases/get-user-by-id.use-case';
-import { GetAllUsersUseCase } from '../../core/application/use-cases/get-all-users.use-case';
+import { ListUsersUseCase } from '../../core/application/use-cases/get-all-users.use-case';
 import { DeleteUserUseCase } from '../../core/application/use-cases/delete-user.use-case';
+import { GetUserByEmailUseCase } from 'src/core/application/use-cases/get-user-by-email.use-case';
+import { GetUserByUsernameUseCase } from '../../core/application/use-cases/get-user-by-username.use-case';
+import { GetUserByAuth0IdUseCase } from '../../core/application/use-cases/get-user-by-auth0.use-case';
+import { VerifyEmailUseCase } from '../../core/application/use-cases/verify-email.use-case';
+import { VerifyMobileUseCase } from '../../core/application/use-cases/verify-mobile.use-case';
+import { UpdateProfileStatusUseCase } from '../../core/application/use-cases/update-profile-status.use-case';
+import { RestoreUserUseCase } from 'src/core/application/use-cases/restore-user.use-case';
+import { SearchUsersUseCase } from 'src/core/application/use-cases/search-user.use-case';
+import { CheckEmailAvailabilityUseCase } from 'src/core/application/use-cases/check-email-availability.use-case';
+import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases/check-username-availability.use-case';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
 import { PermissionsGuard } from '../../auth/permissions.guard';
 import { Permissions } from '../../auth/permissions.decorator';
+import {
+    AvailabilityResponseDto, CheckEmailDto, CheckUsernameDto,
+    CreateUserDto, UpdateUserProfileDto, UserResponseDto, ListUsersResponseDto,
+    UpdateProfileStatusDto, ListUsersQueryDto, SearchUsersQueryDto,
+} from 'application/dtos';
 
-@UseGuards(AuthGuard('jwt'), RolesGuard, PermissionsGuard)
+
+// ============================================
+// USER CONTROLLER
+// presentation/http/controllers/UserController.ts
+// ============================================
+
 @Controller('users')
-export class UsersController {
+@UseGuards(AuthGuard('jwt'), RolesGuard, PermissionsGuard)
+export class UserController {
     constructor(
-        private readonly createUserUseCase: CreateUserUseCase,
-        private readonly syncUserUseCase: SyncAuth0UserUseCase,
-        private readonly updateUserProfileUseCase: UpdateUserProfileUseCase,
-        private readonly getUserByIdUseCase: GetUserByIdUseCase,
-        private readonly getAllUsersUseCase: GetAllUsersUseCase,
-        private readonly deleteUserUseCase: DeleteUserUseCase,
+        private readonly createUser: CreateUserUseCase,
+        private readonly getUserById: GetUserByIdUseCase,
+        private readonly getUserByEmail: GetUserByEmailUseCase,
+        private readonly getUserByUsername: GetUserByUsernameUseCase,
+        private readonly getUserByAuth0Id: GetUserByAuth0IdUseCase,
+        private readonly listUsers: ListUsersUseCase,
+        private readonly updateUserProfile: UpdateUserProfileUseCase,
+        private readonly verifyEmail: VerifyEmailUseCase,
+        private readonly verifyMobile: VerifyMobileUseCase,
+        private readonly updateProfileStatus: UpdateProfileStatusUseCase,
+        private readonly deleteUser: DeleteUserUseCase,
+        // private readonly hardDeleteUser: HardDeleteUserUseCase,
+        private readonly restoreUser: RestoreUserUseCase,
+        private readonly searchUsers: SearchUsersUseCase,
+        private readonly syncAuth0User: SyncAuth0UserUseCase,
+        private readonly checkEmailAvailability: CheckEmailAvailabilityUseCase,
+        private readonly checkUsernameAvailability: CheckUsernameAvailabilityUseCase,
     ) { }
 
-    // 📦 Create a new user
+    // ============================================
+    // PUBLIC / REGISTRATION ENDPOINTS
+    // ============================================
+
+    /**
+     * Create a new user (Registration)
+     * Accessible by: Anyone (public endpoint - remove guards if needed)
+     */
     @Post()
-    async create(@Body() body: any) {
-        const user = await this.createUserUseCase.execute(body);
-        return { message: 'User created successfully', user };
+    @HttpCode(HttpStatus.CREATED)
+    async create(@Body() dto: CreateUserDto): Promise<{ user: UserResponseDto }> {
+        const user = await this.createUser.execute(dto);
+        return {
+            user: this.mapToResponse(user),
+        };
     }
 
-    // 👤 Sync current Auth0 user profile (usually used on login)
+    /**
+     * Check if email is available
+     * Accessible by: Anyone (public)
+     */
+    @Post('check-email')
+    @HttpCode(HttpStatus.OK)
+    async checkEmail(@Body() dto: CheckEmailDto): Promise<AvailabilityResponseDto> {
+        const available = await this.checkEmailAvailability.execute(dto.email);
+        return { available };
+    }
+
+    /**
+     * Check if username is available
+     * Accessible by: Anyone (public)
+     */
+    @Post('check-username')
+    @HttpCode(HttpStatus.OK)
+    async checkUsername(@Body() dto: CheckUsernameDto): Promise<AvailabilityResponseDto> {
+        const available = await this.checkUsernameAvailability.execute(dto.username);
+        return { available };
+    }
+
+    // ============================================
+    // CURRENT USER ENDPOINTS (All authenticated users)
+    // ============================================
+
+    /**
+     * Get current user profile
+     * Accessible by: user, partner, platform, system admin
+     */
+    @Get('me')
+    @Roles('user', 'partner', 'platform', 'system admin')
+    async getMyProfile(@Req() req: any): Promise<{ user: UserResponseDto }> {
+        const auth0User = req.user;
+        const user = await this.syncAuth0User.execute({
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            username: auth0User.nickname || auth0User.name || auth0User.email,
+            fullName: auth0User.name,
+            emailVerified: auth0User.email_verified,
+        });
+        return {
+            user: this.mapToResponse(user),
+        };
+    }
+
+    /**
+     * Update current user profile
+     * Accessible by: user, partner, platform, system admin
+     */
+    @Patch('me')
+    @Roles('user', 'partner', 'platform', 'system admin')
+    async updateMyProfile(
+        @Req() req: any,
+        @Body() dto: UpdateUserProfileDto,
+    ): Promise<{ user: UserResponseDto }> {
+        const user = await this.getUserByAuth0Id.execute(req.user.sub);
+        const updated = await this.updateUserProfile.execute({
+            userId: user.id,
+            ...dto,
+        });
+        return {
+            user: this.mapToResponse(updated),
+        };
+    }
+
+    // ============================================
+    // ADMIN ENDPOINTS (system admin only)
+    // ============================================
+
+    /**
+     * List all users with filters
+     * Accessible by: system admin
+     */
+    @Get()
     @Roles('system admin')
     @Permissions('read:users')
-    @Get('me')
-    async getProfile(@Req() req: any) {
-        const auth0User = req.user; // comes from JwtStrategy.validate()
-        const user = await this.syncUserUseCase.execute(auth0User);
-        return { message: 'User profile synced successfully', user };
+    async list(@Query() query: ListUsersQueryDto): Promise<ListUsersResponseDto> {
+        const result = await this.listUsers.execute(query);
+        return {
+            users: result.users.map((u) => this.mapToResponse(u)),
+            total: result.total,
+            limit: result.limit,
+            offset: result.offset,
+        };
     }
 
-    // ✏️ Update profile info (for the currently authenticated user)
-    @Patch('me')
-    async updateProfile(@Req() req: any, @Body() body: any) {
-        const auth0Id = req.user.sub; // comes from JWT token payload (Auth0)
-        const updatedUser = await this.updateUserProfileUseCase.execute({
-            auth0Id,
-            ...body,
-        });
-        return { message: 'Profile updated successfully', user: updatedUser };
+    /**
+     * Search users
+     * Accessible by: system admin, platform
+     */
+    @Get('search')
+    @Roles('system admin', 'platform')
+    @Permissions('read:users')
+    async search(@Query() query: SearchUsersQueryDto): Promise<{ users: UserResponseDto[] }> {
+        const users = await this.searchUsers.execute(query);
+        return {
+            users: users.map((u) => this.mapToResponse(u)),
+        };
     }
 
-    // 🧑‍💼 Admins can update any user by their Auth0 ID (optional endpoint)
+    /**
+     * Get user by ID
+     * Accessible by: system admin, platform
+     */
+    @Get(':id')
+    @Roles('system admin', 'platform')
+    @Permissions('read:users')
+    async getById(@Param('id') id: string): Promise<{ user: UserResponseDto }> {
+        const user = await this.getUserById.execute(id);
+        return {
+            user: this.mapToResponse(user),
+        };
+    }
+
+    /**
+     * Get user by email
+     * Accessible by: system admin
+     */
+    @Get('email/:email')
+    @Roles('system admin')
+    @Permissions('read:users')
+    async getByEmail(@Param('email') email: string): Promise<{ user: UserResponseDto }> {
+        const user = await this.getUserByEmail.execute(email);
+        return {
+            user: this.mapToResponse(user),
+        };
+    }
+
+    /**
+     * Get user by username
+     * Accessible by: system admin
+     */
+    @Get('username/:username')
+    @Roles('system admin')
+    @Permissions('read:users')
+    async getByUsername(@Param('username') username: string): Promise<{ user: UserResponseDto }> {
+        const user = await this.getUserByUsername.execute(username);
+        return {
+            user: this.mapToResponse(user),
+        };
+    }
+
+    /**
+     * Update user profile (Admin)
+     * Accessible by: system admin
+     */
+    @Patch(':id')
     @Roles('system admin')
     @Permissions('update:users')
-    @Patch(':auth0Id')
-    async adminUpdateUser(@Body() body: any, @Req() req: any) {
-        const updatedUser = await this.updateUserProfileUseCase.execute(body);
-        return { message: 'User updated successfully by admin', user: updatedUser };
+    async updateById(
+        @Param('id') id: string,
+        @Body() dto: UpdateUserProfileDto,
+    ): Promise<{ user: UserResponseDto }> {
+        const updated = await this.updateUserProfile.execute({
+            userId: id,
+            ...dto,
+        });
+        return {
+            user: this.mapToResponse(updated),
+        };
     }
 
-    // 📋 Get a list of all users with optional filtering and pagination
+    /**
+     * Verify user email
+     * Accessible by: system admin
+     */
+    @Post(':id/verify-email')
     @Roles('system admin')
-    @Permissions('read:users')
-    @Get()
-    async getAllUsers(
-        @Query('page') page?: number,
-        @Query('limit') limit?: number,
-        @Query('ageGroup') ageGroup?: string,
-        @Query('employmentSector') employmentSector?: string,
-        @Query('nationality') nationality?: string,
-        @Query('profession') profession?: string,
-    ) {
-        const result = await this.getAllUsersUseCase.execute(
-            {
-                ageGroup,
-                employmentSector,
-                nationality,
-                profession,
-            },
-            {
-                page: page ? parseInt(page.toString(), 10) : undefined,
-                limit: limit ? parseInt(limit.toString(), 10) : undefined,
-            },
-        );
-        return { message: 'Users retrieved successfully', ...result };
+    @Permissions('update:users')
+    @HttpCode(HttpStatus.OK)
+    async verifyUserEmail(@Param('id') id: string): Promise<{ user: UserResponseDto }> {
+        const user = await this.verifyEmail.execute(id);
+        return {
+            user: this.mapToResponse(user),
+        };
     }
 
-    // 🔍 Get a specific user by ID
+    /**
+     * Verify user mobile
+     * Accessible by: system admin
+     */
+    @Post(':id/verify-mobile')
     @Roles('system admin')
-    @Permissions('read:users')
-    @Get(':id')
-    async getUserById(@Param('id') id: string) {
-        const user = await this.getUserByIdUseCase.execute(id);
-        return { message: 'User retrieved successfully', user };
+    @Permissions('update:users')
+    @HttpCode(HttpStatus.OK)
+    async verifyUserMobile(@Param('id') id: string): Promise<{ user: UserResponseDto }> {
+        const user = await this.verifyMobile.execute(id);
+        return {
+            user: this.mapToResponse(user),
+        };
     }
 
-    // 🗑️ Delete a user
+    /**
+     * Update user profile status
+     * Accessible by: system admin
+     */
+    @Patch(':id/status')
+    @Roles('system admin')
+    @Permissions('update:users')
+    async updateStatus(
+        @Param('id') id: string,
+        @Body() dto: UpdateProfileStatusDto,
+    ): Promise<{ user: UserResponseDto }> {
+        const user = await this.updateProfileStatus.execute({
+            userId: id,
+            status: dto.status,
+        });
+        return {
+            user: this.mapToResponse(user),
+        };
+    }
+
+    /**
+     * Soft delete user
+     * Accessible by: system admin
+     */
+    @Delete(':id')
     @Roles('system admin')
     @Permissions('delete:users')
-    @Delete(':id')
-    async deleteUser(@Param('id') id: string) {
-        await this.deleteUserUseCase.execute(id);
-        return { message: 'User deleted successfully' };
+    @HttpCode(HttpStatus.OK)
+    async softDelete(@Param('id') id: string): Promise<{ user: UserResponseDto }> {
+        const user = await this.deleteUser.execute(id);
+        return {
+            user: this.mapToResponse(user),
+        };
+    }
+
+    @Post(':id/restore')
+    @Roles('system admin')
+    @Permissions('update:users')
+    @HttpCode(HttpStatus.OK)
+    async restore(@Param('id') id: string): Promise<{ user: UserResponseDto }> {
+        const user = await this.restoreUser.execute(id);
+        return {
+            user: this.mapToResponse(user),
+        };
+    }
+
+    // ============================================
+    // HELPER METHOD
+    // ============================================
+
+    private mapToResponse(user: any): UserResponseDto {
+        return {
+            id: user.id,
+            email: user.email.getValue(),
+            username: user.username.getValue(),
+            auth0Id: user.auth0Id,
+            fullName: user.fullName,
+            gender: user.gender,
+            city: user.city?.getValue(),
+            biography: user.biography?.getValue(),
+            profession: user.profession?.getValue(),
+            photo: user.photo?.getUrl(),
+            ageGroup: user.ageGroup?.getValue(),
+            nationality: user.nationality?.getValue(),
+            employmentSector: user.employmentSector?.getValue(),
+            emailVerified: user.emailVerified,
+            mobileVerified: user.mobileVerified,
+        };
     }
 }

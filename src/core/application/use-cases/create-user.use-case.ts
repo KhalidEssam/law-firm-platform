@@ -1,18 +1,20 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { User } from '../../domain/user/user.entity';
-import { type IUserRepository } from '../ports/user.repository';
+import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
+import { User } from '../../domain/user/entities/user.entity';
+import { type IUserRepository } from '../../domain/user/ports/user.repository';
 import { Auth0Service } from '../../../infrastructure/persistence/auth0/auth0.service';
 import { Email } from 'src/core/domain/user/value-objects/email.vo';
 import { City } from 'src/core/domain/user/value-objects/city.vo';
 import { Username } from 'src/core/domain/user/value-objects/username.vo';
 
-interface CreateUserCommand {
-    email: Email;
-    password: string;
-    username: Username;
+
+export interface CreateUserCommand {
+    email: string;
+    username: string;
+    password?: string; // Optional if using Auth0
+    auth0Id?: string;
     fullName?: string;
     gender?: string;
-    city?: City;
+    city?: string;
 }
 
 @Injectable()
@@ -20,33 +22,33 @@ export class CreateUserUseCase {
     constructor(
         @Inject('IUserRepository')
         private readonly userRepository: IUserRepository,
-        private readonly auth0Service: Auth0Service,
     ) { }
 
     async execute(command: CreateUserCommand): Promise<User> {
-        // 🔍 Check if user exists
-        const existing = await this.userRepository.findByEmail(command.email.getValue());
-        if (existing) throw new Error('User already exists');
+        // Check if email already exists
+        const emailExists = await this.userRepository.emailExists(command.email);
+        if (emailExists) {
+            throw new ConflictException('Email already exists');
+        }
 
-        // 🧩 Create user in Auth0
-        const auth0User = await this.auth0Service.createUser(
-            command.email.getValue(),
-            command.password,
-            command.username.getValue(),
-        );
+        // Check if username already exists
+        const usernameExists = await this.userRepository.usernameExists(command.username);
+        if (usernameExists) {
+            throw new ConflictException('Username already exists');
+        }
 
-        // 🏗️ Create domain user (primitives)
+        // Create user entity
         const user = User.create({
-            auth0Id: auth0User.user_id,
-            email: command.email,
-            username: command.username,
+            email: Email.create(command.email),
+            username: Username.create(command.username),
+            auth0Id: command.auth0Id,
             fullName: command.fullName,
             gender: command.gender,
-            city: command.city,
+            city: command.city ? City.create(command.city) : undefined,
             emailVerified: false,
             mobileVerified: false,
         });
 
-        return this.userRepository.create(user);
+        return await this.userRepository.create(user);
     }
 }
