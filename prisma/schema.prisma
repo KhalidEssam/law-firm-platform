@@ -23,6 +23,8 @@ model User {
   employmentSector String?
   profession       String?
   city             String?
+  biography        String?  @db.VarChar(500)  // Add this field
+  photo            String?                     // Add this field
   personalEmail    String?
   loyaltyTier      String?
   subscriptionTier String?
@@ -73,7 +75,6 @@ model User {
   @@index([email])
   @@index([auth0Id])
 }
-
 model UserPhoneNumber {
   id         String   @id @default(uuid())
   userId     String
