@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Patch, Delete, Param, Query, UseGuards, Req, HttpCode, HttpStatus, } from '@nestjs/common';
+import { Body, Controller, Post, Get, Patch, Delete, Param, Query, BadRequestException, UseGuards, Req, HttpCode, HttpStatus, } from '@nestjs/common';
 import { CreateUserUseCase } from '../../core/application/use-cases/create-user.use-case';
 import { SyncAuth0UserUseCase } from '../../core/application/use-cases/sync-auth0-user.use-case';
 import { UpdateUserProfileUseCase } from '../../core/application/use-cases/update-user-profile.usecase';
@@ -106,6 +106,7 @@ export class UserController {
     @Roles('user', 'partner', 'platform', 'system admin')
     async getMyProfile(@Req() req: any): Promise<{ user: UserResponseDto }> {
         const auth0User = req.user;
+        console.log(auth0User);
         const user = await this.syncAuth0User.execute({
             auth0Id: auth0User.sub,
             email: auth0User.email,
@@ -117,27 +118,101 @@ export class UserController {
             user: this.mapToResponse(user),
         };
     }
-
     /**
      * Update current user profile
      * Accessible by: user, partner, platform, system admin
      */
+    /** */
     @Patch('me')
-    @Roles('user', 'partner', 'platform', 'system admin')
+    @Roles('user')
     async updateMyProfile(
         @Req() req: any,
-        @Body() dto: UpdateUserProfileDto,
+        @Body() dto: UpdateUserProfileDto & { sub?: string; email?: string; name?: string },
     ): Promise<{ user: UserResponseDto }> {
-        const user = await this.getUserByAuth0Id.execute(req.user.sub);
-        const updated = await this.updateUserProfile.execute({
-            userId: user.id,
-            ...dto,
-        });
+        console.log('Received body:', dto);
+
+        // Extract Auth0 ID from JWT payload (req.user) or body
+        const auth0Id = req.user?.sub || dto.sub;
+
+        if (!auth0Id) {
+            throw new BadRequestException('Auth0 ID is required to update user profile');
+        }
+
+        console.log('🔍 Looking up user with Auth0 ID:', auth0Id);
+
+        let user;
+        try {
+            user = await this.getUserByAuth0Id.execute(auth0Id);
+            console.log('✅ User found:', user?.id);
+        } catch (error) {
+            console.log('⚠️ User lookup failed:', error.message);
+            user = null;
+        }
+
+        // If user doesn't exist, create it
+        if (!user) {
+            console.log('⚠️ User not found — creating a new one...');
+
+            // Extract user info from JWT or body
+            const email = req.user?.email || dto.email;
+            const username = req.user?.nickname ||
+                req.user?.preferred_username ||
+                dto.name?.split('@')[0] ||
+                email?.split('@')[0];
+
+            if (!email) {
+                throw new BadRequestException('Email is required to create user');
+            }
+
+            if (!username) {
+                throw new BadRequestException('Username is required to create user');
+            }
+
+            const createUserDto: CreateUserDto = {
+                auth0Id: auth0Id,
+                username: username,
+                email: email,
+            };
+
+            console.log('📝 Creating user with:', createUserDto);
+
+            try {
+                user = await this.createUser.execute(createUserDto);
+                console.log('✅ User created successfully:', user.id);
+            } catch (error) {
+                console.error('❌ Failed to create user:', error);
+                throw new BadRequestException(`Failed to create user: ${error.message}`);
+            }
+        }
+
+        // Extract only the profile update fields (exclude auth fields)
+        const { sub, email, name, ...profileUpdateDto } = dto;
+
+        // Now safely update profile (only if there are fields to update)
+        if (Object.keys(profileUpdateDto).length > 0) {
+            console.log('📝 Updating profile with:', profileUpdateDto);
+
+            try {
+                const updated = await this.updateUserProfile.execute({
+                    userId: user.id,
+                    ...profileUpdateDto,
+                });
+
+                return {
+                    user: this.mapToResponse(updated),
+                };
+            } catch (error) {
+                console.error('❌ Failed to update profile:', error);
+                throw new BadRequestException(`Failed to update profile: ${error.message}`);
+            }
+        }
+
+        // If no profile fields to update, just return the user
+        console.log('ℹ️ No profile fields to update, returning existing user');
         return {
-            user: this.mapToResponse(updated),
+            user: this.mapToResponse(user),
         };
     }
-
     // ============================================
     // ADMIN ENDPOINTS (system admin only)
     // ============================================

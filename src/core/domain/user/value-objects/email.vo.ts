@@ -2,6 +2,7 @@ export class Email {
     private constructor(private readonly value: string) { }
 
     public static create(email: string): Email {
+        console.log(email);
         if (!email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
             throw new Error('Invalid email format');
         }

@@ -1,8 +1,14 @@
 import { Body, Controller, Get, Inject, Param, Post, Put } from '@nestjs/common';
-import { CreateMembershipUseCase } from '../../core/application/membership/use-cases/create-membership.use-case';
-import { ApplyCouponUseCase } from '../../core/application/membership/use-cases/apply-coupon.use-case';
-import { CheckQuotaUseCase } from '../../core/application/membership/use-cases/check-quota.use-case';
-import { ConsumeQuotaUseCase } from '../../core/application/membership/use-cases/consume-quota.use-case';
+// import { CreateMembershipUseCase } from '../../core/application/membership/use-cases/create-membership.use-case';
+// import { ApplyCouponUseCase } from '../../core/application/membership/use-cases/apply-coupon.use-case';
+// import { CheckQuotaUseCase } from '../../core/application/membership/use-cases/check-quota.use-case';
+// import { ConsumeQuotaUseCase } from '../../core/application/membership/use-cases/consume-quota.use-case';
+import { CreatePaymentCommand, 
+    ApplyCouponUseCase,
+    CheckQuotaUseCase,
+    ConsumeQuotaUseCase,
+    CreateMembershipUseCase
+ } from 'src/core/application/membership/use-cases/membership.use-cases';
 import { type CreateMembershipDTO } from '../../core/application/membership/dto/create-membership.dto';
 import { QuotaResource } from '../../core/domain/membership/value-objects/quota-resource.vo';
 import type { IMembershipRepository } from '../../core/domain/membership/repositories/membership.repository';
