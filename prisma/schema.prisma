@@ -11,9 +11,9 @@ datasource db {
 // USER & AUTH
 // ============================================
 model User {
-  id               String   @id @default(uuid())
-  auth0Id          String?  @unique
-  email            String   @unique
+  id               String    @id @default(uuid())
+  auth0Id          String?   @unique
+  email            String    @unique
   username         String
   nickname         String?
   fullName         String?
@@ -23,8 +23,8 @@ model User {
   employmentSector String?
   profession       String?
   city             String?
-  biography        String?  @db.VarChar(500)  // Add this field
-  photo            String?                     // Add this field
+  biography        String?   @db.VarChar(500) // Add this field
+  photo            String? // Add this field
   personalEmail    String?
   loyaltyTier      String?
   subscriptionTier String?
@@ -35,56 +35,57 @@ model User {
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime?
 
-  roles                    UserRole[]
-  pointsBalance            Int      @default(0)
-  walletBalance            Float    @default(0)
+  roles         UserRole[]
+  pointsBalance Int        @default(0)
+  walletBalance Float      @default(0)
 
   // Relations
-  phoneNumbers             UserPhoneNumber[]
-  addresses                UserAddress[]
-  membership               Membership?
-  sessions                 Session[]
-  auditLogs                AuditLog[]
-  paymentMethods           PaymentMethod[]
-  transactionLogs          TransactionLog[]
-  notifications            Notification[]
-  notificationPreferences  NotificationPreference[]
-  userActivities           UserActivity[]
-  
+  phoneNumbers            UserPhoneNumber[]
+  addresses               UserAddress[]
+  membership              Membership?
+  sessions                Session[]
+  auditLogs               AuditLog[]
+  paymentMethods          PaymentMethod[]
+  transactionLogs         TransactionLog[]
+  notifications           Notification[]
+  notificationPreferences NotificationPreference[]
+  userActivities          UserActivity[]
+
   // Legal Platform specific
-  consultationRequests     ConsultationRequest[]
-  legalOpinionRequests     LegalOpinionRequest[]
-  serviceRequests          ServiceRequest[]
-  litigationCases          LitigationCase[]
-  callRequests             CallRequest[]
-  supportTickets           SupportTicket[]
-  requestRatings           RequestRating[]
-  documentUploads          Document[]
-  
+  consultationRequests ConsultationRequest[]
+  legalOpinionRequests LegalOpinionRequest[]
+  serviceRequests      ServiceRequest[]
+  litigationCases      LitigationCase[]
+  callRequests         CallRequest[]
+  supportTickets       SupportTicket[]
+  requestRatings       RequestRating[]
+  documentUploads      Document[]
+
   // Provider relations
-  providerProfile          ProviderProfile?
-  providerUsers            ProviderUser[]
-  assignedRequests         ConsultationRequest[] @relation("AssignedProvider")
-  assignedOpinions         LegalOpinionRequest[] @relation("AssignedProvider")
-  assignedServices         ServiceRequest[] @relation("AssignedProvider")
-  assignedCases            LitigationCase[] @relation("AssignedProvider")
-  assignedCalls            CallRequest[] @relation("AssignedProvider")
-  providerComments         RequestComment[]
-  sentQuotes               ServiceQuote[]
+  providerProfile  ProviderProfile?
+  providerUsers    ProviderUser[]
+  assignedRequests ConsultationRequest[] @relation("AssignedProvider")
+  assignedOpinions LegalOpinionRequest[] @relation("AssignedProvider")
+  assignedServices ServiceRequest[]      @relation("AssignedProvider")
+  assignedCases    LitigationCase[]      @relation("AssignedProvider")
+  assignedCalls    CallRequest[]         @relation("AssignedProvider")
+  providerComments RequestComment[]
+  sentQuotes       ServiceQuote[]
 
   @@index([email])
   @@index([auth0Id])
 }
+
 model UserPhoneNumber {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   phone      String
-  isPrimary  Boolean  @default(false)
-  isVerified Boolean  @default(false)
+  isPrimary  Boolean   @default(false)
+  isVerified Boolean   @default(false)
   otpCode    String?
   otpExpiry  DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
   deletedAt  DateTime?
 
   @@unique([phone])
@@ -92,18 +93,18 @@ model UserPhoneNumber {
 }
 
 model UserAddress {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type       String   @default("home") // home, work, billing
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String    @default("home") // home, work, billing
   street     String
   city       String
   state      String?
   country    String
   postalCode String?
-  isPrimary  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  isPrimary  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
 
   @@index([userId, isPrimary])
@@ -124,7 +125,7 @@ model Permission {
 model RolePermission {
   permissionId Int
   roleId       Int
-  assignedAt   DateTime @default(now())
+  assignedAt   DateTime   @default(now())
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   deletedAt    DateTime?
@@ -144,9 +145,9 @@ model Role {
 model UserRole {
   userId     String
   roleId     Int
-  assignedAt DateTime @default(now())
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role       Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedAt DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
   deletedAt  DateTime?
 
   @@id([userId, roleId])
@@ -156,77 +157,81 @@ model UserRole {
 // MEMBERSHIP & PLANS
 // ============================================
 model Membership {
-  id               String     @id @default(uuid())
-  userId           String     @unique
-  tierId           Int
-  startDate        DateTime   @default(now())
-  endDate          DateTime?
-  isActive         Boolean    @default(true)
-  autoRenew        Boolean    @default(true)
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  tierId    Int
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  isActive  Boolean   @default(true)
+  autoRenew Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tier             MembershipTier @relation(fields: [tierId], references: [id])
-  invoices         MembershipInvoice[]
+  user              User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier              MembershipTier               @relation(fields: [tierId], references: [id])
+  invoices          MembershipInvoice[]
   couponRedemptions MembershipCouponRedemption[]
-  changeLogs       MembershipChangeLog[]
-  quotaUsage       MembershipQuotaUsage[]
+  changeLogs        MembershipChangeLog[]
+  quotaUsage        MembershipQuotaUsage[]
+  serviceUsage      ServiceUsage[] // 👈 ADD THIS
 }
 
 model MembershipTier {
-  id                    Int        @id @default(autoincrement())
-  name                  String     @unique
-  nameAr                String?
-  description           String?
-  descriptionAr         String?
-  price                 Float
-  currency              String     @default("SAR")
-  billingCycle          String     @default("monthly") // monthly, yearly
-  
-  // Quota limits
-  consultationsPerMonth Int?
-  opinionsPerMonth      Int?
-  servicesPerMonth      Int?
-  casesPerMonth         Int?
-  callMinutesPerMonth   Int?
-  
-  benefits              Json?
-  isActive              Boolean    @default(true)
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
-  
-  memberships           Membership[]
-  oldTierChangeLogs     MembershipChangeLog[] @relation("OldTier")
-  newTierChangeLogs     MembershipChangeLog[] @relation("NewTier")
+  id            Int     @id @default(autoincrement())
+  name          String  @unique
+  nameAr        String?
+  description   String?
+  descriptionAr String?
+  price         Float
+  currency      String  @default("SAR")
+  billingCycle  String  @default("monthly")
+
+  // Remove these hardcoded fields:
+  // consultationsPerMonth Int?
+  // opinionsPerMonth      Int?
+  // etc.
+
+  benefits   Json?
+  features   Json? // Array of feature descriptions
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+  sortOrder  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships       Membership[]
+  tierServices      TierService[] // 👈 Dynamic service quotas
+  oldTierChangeLogs MembershipChangeLog[] @relation("OldTier")
+  newTierChangeLogs MembershipChangeLog[] @relation("NewTier")
 }
 
 model MembershipChangeLog {
-  id            String   @id @default(uuid())
-  membershipId  String
-  oldTierId     Int?
-  newTierId     Int?
-  reason        String?
-  changedAt     DateTime @default(now())
-  membership    Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  oldTier       MembershipTier? @relation("OldTier", fields: [oldTierId], references: [id])
-  newTier       MembershipTier? @relation("NewTier", fields: [newTierId], references: [id])
+  id           String          @id @default(uuid())
+  membershipId String
+  oldTierId    Int?
+  newTierId    Int?
+  reason       String?
+  changedAt    DateTime        @default(now())
+  membership   Membership      @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  oldTier      MembershipTier? @relation("OldTier", fields: [oldTierId], references: [id])
+  newTier      MembershipTier? @relation("NewTier", fields: [newTierId], references: [id])
 }
 
 model MembershipQuotaUsage {
-  id                 String   @id @default(uuid())
-  membershipId       String
-  periodStart        DateTime
-  periodEnd          DateTime
-  consultationsUsed  Int      @default(0)
-  opinionsUsed       Int      @default(0)
-  servicesUsed       Int      @default(0)
-  casesUsed          Int      @default(0)
-  callMinutesUsed    Int      @default(0)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  
-  membership         Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  id                String   @id @default(uuid())
+  membershipId      String
+  periodStart       DateTime
+  periodEnd         DateTime
+  consultationsUsed Int      @default(0)
+  opinionsUsed      Int      @default(0)
+  servicesUsed      Int      @default(0)
+  casesUsed         Int      @default(0)
+  callMinutesUsed   Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@unique([membershipId, periodStart])
   @@index([membershipId, periodStart])
@@ -236,34 +241,34 @@ model MembershipQuotaUsage {
 // BILLING & PAYMENTS
 // ============================================
 model MembershipInvoice {
-  id            String      @id @default(uuid())
+  id            String   @id @default(uuid())
   membershipId  String
-  invoiceNumber String      @unique
+  invoiceNumber String   @unique
   amount        Float
-  currency      String      @default("SAR")
+  currency      String   @default("SAR")
   dueDate       DateTime
-  status        String       @default("unpaid") // unpaid, paid, overdue, cancelled
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  status        String   @default("unpaid") // unpaid, paid, overdue, cancelled
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  membership    Membership   @relation(fields: [membershipId], references: [id], onDelete: Cascade)
-  payments      MembershipPayment[]
+  membership Membership          @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  payments   MembershipPayment[]
 
   @@index([membershipId])
   @@index([status, dueDate])
 }
 
 model MembershipPayment {
-  id            String      @id @default(uuid())
+  id            String            @id @default(uuid())
   invoiceId     String
-  provider      String      // moyasar, hyperpay, etc.
+  provider      String // moyasar, hyperpay, etc.
   providerTxnId String?
   amount        Float
-  currency      String      @default("SAR")
-  status        String       @default("pending") // pending, completed, failed, refunded
+  currency      String            @default("SAR")
+  status        String            @default("pending") // pending, completed, failed, refunded
   metadata      Json?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   invoice       MembershipInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
@@ -271,58 +276,118 @@ model MembershipPayment {
 }
 
 model MembershipCoupon {
-  id             String   @id @default(uuid())
-  code           String   @unique
-  description    String?
-  descriptionAr  String?
-  discountType   String   // percentage, fixed
-  discountValue  Float
-  validFrom      DateTime
-  validUntil     DateTime?
-  maxRedemptions Int?
-  currentRedemptions Int @default(0)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now())
-  redemptions    MembershipCouponRedemption[]
+  id                 String                       @id @default(uuid())
+  code               String                       @unique
+  description        String?
+  descriptionAr      String?
+  discountType       String // percentage, fixed
+  discountValue      Float
+  validFrom          DateTime
+  validUntil         DateTime?
+  maxRedemptions     Int?
+  currentRedemptions Int                          @default(0)
+  isActive           Boolean                      @default(true)
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @default(now())
+  redemptions        MembershipCouponRedemption[]
 }
 
 model MembershipCouponRedemption {
-  id            String   @id @default(uuid())
-  couponId      String
-  membershipId  String
+  id             String           @id @default(uuid())
+  couponId       String
+  membershipId   String
   discountAmount Float
-  redeemedAt    DateTime @default(now())
-  coupon        MembershipCoupon @relation(fields: [couponId], references: [id])
-  membership    Membership       @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  redeemedAt     DateTime         @default(now())
+  coupon         MembershipCoupon @relation(fields: [couponId], references: [id])
+  membership     Membership       @relation(fields: [membershipId], references: [id], onDelete: Cascade)
 
   @@index([couponId])
   @@index([membershipId])
 }
 
 model PaymentMethod {
-  id          String   @id @default(uuid())
-  userId      String
-  type        String   // credit_card, debit_card, wallet
-  details     Json?
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  userId    String
+  type      String // credit_card, debit_card, wallet
+  details   Json?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isDefault])
 }
 
+model Refund {
+  id     String @id @default(uuid())
+  userId String
+
+  // Reference to original payment
+  transactionLogId String?
+  paymentId        String? // MembershipPayment or other payment
+
+  amount   Float
+  currency String @default("SAR")
+  reason   String
+  status   String @default("pending") // pending, approved, rejected, processed
+
+  // Admin review
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  reviewNotes String?
+
+  processedAt     DateTime?
+  refundReference String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+}
+
+model Dispute {
+  id     String @id @default(uuid())
+  userId String
+
+  // Polymorphic to any request type
+  consultationId   String?
+  legalOpinionId   String?
+  serviceRequestId String?
+  litigationCaseId String?
+
+  reason      String
+  description String
+  evidence    Json? // Array of document URLs
+  status      String @default("open") // open, under_review, resolved, escalated, closed
+  priority    String @default("normal")
+
+  // Resolution
+  resolution String?
+  resolvedBy String?
+  resolvedAt DateTime?
+
+  // Escalation
+  escalatedAt DateTime?
+  escalatedTo String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([status, priority])
+}
+
 model TransactionLog {
-  id          String   @id @default(uuid())
-  userId      String
-  type        String   // subscription, wallet_topup, service_payment, refund
-  amount      Float
-  currency    String   @default("SAR")
-  reference   String?
-  status      String
-  metadata    Json?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  userId    String
+  type      String // subscription, wallet_topup, service_payment, refund
+  amount    Float
+  currency  String   @default("SAR")
+  reference String?
+  status    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([type, status])
@@ -332,91 +397,178 @@ model TransactionLog {
 // LEGAL PROVIDERS
 // ============================================
 model ProviderProfile {
-  id                 String   @id @default(uuid())
-  userId             String   @unique
+  id                 String  @id @default(uuid())
+  userId             String  @unique
   organizationName   String
   organizationNameAr String?
-  licenseNumber      String   @unique
+  licenseNumber      String  @unique
   taxNumber          String?
   description        String?
   descriptionAr      String?
-  
+
   // Status
-  verificationStatus String   @default("pending") // pending, approved, rejected, suspended
-  isActive           Boolean  @default(false)
-  
+  verificationStatus String  @default("pending") // pending, approved, rejected, suspended
+  isActive           Boolean @default(false)
+
   // Working hours
-  workingDays        Json?    // {monday: true, tuesday: true, ...}
-  workingHours       Json?    // {start: "09:00", end: "17:00"}
-  
+  workingDays  Json? // {monday: true, tuesday: true, ...}
+  workingHours Json? // {start: "09:00", end: "17:00"}
+
   // Contact
-  businessEmail      String?
-  businessPhone      String?
-  website            String?
-  
+  businessEmail String?
+  businessPhone String?
+  website       String?
+
   // Documents
-  documents          Json?
-  
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  deletedAt          DateTime?
-  
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  users              ProviderUser[]
-  services           ProviderService[]
-  schedules          ProviderSchedule[]
-  
+  documents Json?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specializations   ProviderSpecialization[] // 👈 ADD THIS
+  availabilitySlots AvailabilitySlot[] // 👈 ADD THIS
+  users             ProviderUser[]
+  services          ProviderService[]
+  schedules         ProviderSchedule[]
+
   @@index([verificationStatus])
 }
 
+model AvailabilitySlot {
+  id         String   @id @default(uuid())
+  providerId String
+  date       DateTime @db.Date
+  startTime  String // HH:mm
+  endTime    String
+  isBooked   Boolean  @default(false)
+  bookedBy   String? // CallRequest ID
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, date, startTime])
+  @@index([providerId, date, isBooked])
+}
+
 model ProviderUser {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   providerId        String
   userId            String
-  role              String   // account_manager, lawyer, assistant
+  role              String // account_manager, lawyer, assistant
   specializations   Json?
-  isActive          Boolean  @default(true)
-  canAcceptRequests Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  isActive          Boolean   @default(true)
+  canAcceptRequests Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
-  
-  provider          ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  collaborations    RequestCollaborator[]
-  
+
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  collaborations RequestCollaborator[]
+
   @@unique([providerId, userId])
   @@index([providerId, isActive])
 }
 
+model ProviderReview {
+  id         String @id @default(uuid())
+  providerId String
+  userId     String
+  rating     Int // 1-5
+
+  // Detailed ratings
+  professionalism Int?
+  communication   Int?
+  expertise       Int?
+  timeliness      Int?
+
+  review      String?
+  response    String? // Provider response to review
+  respondedAt DateTime?
+
+  isVerified Boolean @default(false) // Only from actual service users
+  isPublic   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([providerId, isPublic])
+  @@index([providerId, rating])
+}
+
+model Specialization {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  nameAr        String
+  description   String?
+  descriptionAr String?
+  category      String // civil, criminal, commercial, family, labor, etc.
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  providers ProviderSpecialization[]
+
+  @@index([category, isActive])
+}
+
+model ProviderSpecialization {
+  id               String   @id @default(uuid())
+  providerId       String
+  specializationId String
+  experienceYears  Int?
+  isCertified      Boolean  @default(false)
+  certifications   Json? // Array of certification details
+  caseCount        Int      @default(0)
+  successRate      Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  provider       ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  specialization Specialization  @relation(fields: [specializationId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, specializationId])
+  @@index([providerId])
+  @@index([specializationId])
+}
+
 model ProviderService {
-  id          String   @id @default(uuid())
-  providerId  String
-  serviceType String   // consultation, legal_opinion, litigation, specific_service
-  category    String?
-  isActive    Boolean  @default(true)
-  pricing     Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  provider    ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  
-  @@index([providerId, serviceType])
+  id         String @id @default(uuid())
+  providerId String
+  serviceId  String // 👈 Link to Service catalog
+
+  isActive      Boolean @default(true)
+  customPricing Json? // Override base pricing
+
+  minPrice Float?
+  maxPrice Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  service  Service         @relation(fields: [serviceId], references: [id])
+
+  @@unique([providerId, serviceId])
+  @@index([providerId, serviceId, isActive])
 }
 
 model ProviderSchedule {
   id          String   @id @default(uuid())
   providerId  String
-  dayOfWeek   Int      // 0-6 (Sunday-Saturday)
-  startTime   String   // HH:mm format
+  dayOfWeek   Int // 0-6 (Sunday-Saturday)
+  startTime   String // HH:mm format
   endTime     String
   isAvailable Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  provider    ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  
+
+  provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
   @@unique([providerId, dayOfWeek])
 }
 
@@ -424,55 +576,72 @@ model ProviderSchedule {
 // CONSULTATION REQUESTS
 // ============================================
 
+model DocumentTemplate {
+  id            String   @id @default(uuid())
+  name          String
+  nameAr        String
+  category      String // legal_opinion, contract, agreement, etc.
+  templateType  String // docx, pdf, html
+  fileUrl       String
+  variables     Json? // Placeholders like {{clientName}}, {{date}}
+  description   String?
+  descriptionAr String?
+  version       String   @default("1.0")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category, isActive])
+}
 
 // ============================================
 // LEGAL OPINION REQUESTS
 // ============================================
 model LegalOpinionRequest {
-  id                String   @id @default(uuid())
-  requestNumber     String   @unique
-  subscriberId      String
+  id                 String  @id @default(uuid())
+  requestNumber      String  @unique
+  subscriberId       String
   assignedProviderId String?
-  
-  subject           String
-  description       String
-  caseDetails       Json?
-  
-  status            String   @default("pending") // pending, quote_sent, quote_accepted, in_progress, completed, disputed, cancelled
-  
+
+  subject     String
+  description String
+  caseDetails Json?
+
+  status String @default("pending") // pending, quote_sent, quote_accepted, in_progress, completed, disputed, cancelled
+
   // Quote
-  quoteAmount       Float?
-  quoteCurrency     String?  @default("SAR")
-  quoteValidUntil   DateTime?
-  quoteAcceptedAt   DateTime?
-  
+  quoteAmount     Float?
+  quoteCurrency   String?   @default("SAR")
+  quoteValidUntil DateTime?
+  quoteAcceptedAt DateTime?
+
   // Opinion delivery
-  opinionDocument   String?
-  deliveredAt       DateTime?
-  
+  opinionDocument String?
+  deliveredAt     DateTime?
+
   // Dispute (48h window)
   disputedAt        DateTime?
   disputeReason     String?
   disputeResolution String?
-  
+
   // Payment
-  paymentStatus     String?  @default("pending") // pending, paid, refunded
-  paymentReference  String?
-  
-  submittedAt       DateTime @default(now())
-  completedAt       DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
-  
-  subscriber        User     @relation(fields: [subscriberId], references: [id])
-  assignedProvider  User?    @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
-  
-  documents         Document[]
-  messages          RequestMessage[]
-  statusHistory     RequestStatusHistory[]
-  rating            RequestRating?
-  
+  paymentStatus    String? @default("pending") // pending, paid, refunded
+  paymentReference String?
+
+  submittedAt DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  subscriber       User  @relation(fields: [subscriberId], references: [id])
+  assignedProvider User? @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
+
+  documents     Document[]
+  messages      RequestMessage[]
+  statusHistory RequestStatusHistory[]
+  rating        RequestRating?
+
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
 }
@@ -480,59 +649,133 @@ model LegalOpinionRequest {
 // ============================================
 // SERVICE REQUESTS
 // ============================================
-model ServiceRequest {
+model Service {
   id                String   @id @default(uuid())
-  requestNumber     String   @unique
-  subscriberId      String
-  assignedProviderId String?
-  
-  serviceType       String
-  category          String?
-  description       String
-  requirements      Json?
-  
-  status            String   @default("pending") // pending, quote_sent, quote_accepted, in_progress, completed, cancelled
-  
-  submittedAt       DateTime @default(now())
-  completedAt       DateTime?
+  code              String   @unique // CONSULTATION, LEGAL_OPINION, etc.
+  name              String
+  nameAr            String
+  description       String?
+  descriptionAr     String?
+  category          String // consultation, document_review, litigation, etc.
+  basePrice         Float?
+  currency          String   @default("SAR")
+  estimatedDuration Int? // in minutes
+  icon              String?
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
-  
-  subscriber        User     @relation(fields: [subscriberId], references: [id])
-  assignedProvider  User?    @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
-  
-  quote             ServiceQuote?
-  documents         Document[]
-  messages          RequestMessage[]
-  statusHistory     RequestStatusHistory[]
-  rating            RequestRating?
-  
+
+  serviceUsage     ServiceUsage[] // 👈 ADD THIS
+  tierServices     TierService[]
+  providerServices ProviderService[]
+
+  @@index([category, isActive])
+}
+
+// Link services to membership tiers with quotas
+model TierService {
+  id        String @id @default(uuid())
+  tierId    Int
+  serviceId String
+
+  quotaPerMonth   Int? // null = unlimited
+  quotaPerYear    Int?
+  rolloverUnused  Boolean @default(false)
+  discountPercent Float?  @default(0)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tier    MembershipTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  service Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([tierId, serviceId])
+  @@index([tierId, isActive])
+}
+
+model ServiceUsage {
+  id           String @id @default(uuid())
+  membershipId String
+  serviceId    String
+
+  // Request references
+  consultationId   String?
+  legalOpinionId   String?
+  serviceRequestId String?
+  litigationCaseId String?
+  callRequestId    String?
+
+  usedAt      DateTime @default(now())
+  periodStart DateTime
+  periodEnd   DateTime
+
+  // Billing
+  chargedAmount Float?
+  currency      String  @default("SAR")
+  isBilled      Boolean @default(false)
+
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  service    Service    @relation(fields: [serviceId], references: [id])
+
+  @@index([membershipId, serviceId, periodStart])
+  @@index([membershipId, usedAt])
+}
+
+model ServiceRequest {
+  id                 String  @id @default(uuid())
+  requestNumber      String  @unique
+  subscriberId       String
+  assignedProviderId String?
+
+  serviceType  String
+  category     String?
+  description  String
+  requirements Json?
+
+  status String @default("pending") // pending, quote_sent, quote_accepted, in_progress, completed, cancelled
+
+  submittedAt DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  subscriber       User  @relation(fields: [subscriberId], references: [id])
+  assignedProvider User? @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
+
+  quote         ServiceQuote?
+  documents     Document[]
+  messages      RequestMessage[]
+  statusHistory RequestStatusHistory[]
+  rating        RequestRating?
+
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
 }
 
 model ServiceQuote {
-  id                String   @id @default(uuid())
-  serviceRequestId  String   @unique
-  providerId        String
-  
-  amount            Float
-  currency          String   @default("SAR")
-  breakdown         Json?
-  description       String?
-  validUntil        DateTime
-  
-  status            String   @default("pending") // pending, accepted, rejected, expired
-  acceptedAt        DateTime?
-  rejectedAt        DateTime?
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  serviceRequest    ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  provider          User           @relation(fields: [providerId], references: [id])
-  
+  id               String @id @default(uuid())
+  serviceRequestId String @unique
+  providerId       String
+
+  amount      Float
+  currency    String   @default("SAR")
+  breakdown   Json?
+  description String?
+  validUntil  DateTime
+
+  status     String    @default("pending") // pending, accepted, rejected, expired
+  acceptedAt DateTime?
+  rejectedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  provider       User           @relation(fields: [providerId], references: [id])
+
   @@index([serviceRequestId])
 }
 
@@ -540,64 +783,64 @@ model ServiceQuote {
 // LITIGATION CASES
 // ============================================
 model LitigationCase {
-  id                String   @id @default(uuid())
-  caseNumber        String   @unique
-  subscriberId      String
+  id                 String  @id @default(uuid())
+  caseNumber         String  @unique
+  subscriberId       String
   assignedProviderId String?
-  
-  caseType          String
-  caseSubtype       String?
-  title             String
-  description       String
-  courtName         String?
-  caseDetails       Json?
-  
-  status            String   @default("pending") // pending, quote_sent, quote_accepted, active, closed, cancelled
-  
+
+  caseType    String
+  caseSubtype String?
+  title       String
+  description String
+  courtName   String?
+  caseDetails Json?
+
+  status String @default("pending") // pending, quote_sent, quote_accepted, active, closed, cancelled
+
   // Quote
-  quoteAmount       Float?
-  quoteCurrency     String?  @default("SAR")
-  quoteDetails      Json?
-  quoteValidUntil   DateTime?
-  quoteAcceptedAt   DateTime?
-  
+  quoteAmount     Float?
+  quoteCurrency   String?   @default("SAR")
+  quoteDetails    Json?
+  quoteValidUntil DateTime?
+  quoteAcceptedAt DateTime?
+
   // Payment
-  paymentStatus     String?  @default("pending")
-  paymentReference  String?
-  
-  submittedAt       DateTime @default(now())
-  closedAt          DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
-  
-  subscriber        User     @relation(fields: [subscriberId], references: [id])
-  assignedProvider  User?    @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
-  
-  documents         Document[]
-  messages          RequestMessage[]
-  hearings          CaseHearing[]
-  statusHistory     RequestStatusHistory[]
-  rating            RequestRating?
-  
+  paymentStatus    String? @default("pending")
+  paymentReference String?
+
+  submittedAt DateTime  @default(now())
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  subscriber       User  @relation(fields: [subscriberId], references: [id])
+  assignedProvider User? @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
+
+  documents     Document[]
+  messages      RequestMessage[]
+  hearings      CaseHearing[]
+  statusHistory RequestStatusHistory[]
+  rating        RequestRating?
+
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
 }
 
 model CaseHearing {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   caseId          String
   hearingDate     DateTime
-  hearingType     String?  // initial, follow_up, verdict
+  hearingType     String? // initial, follow_up, verdict
   location        String?
   notes           String?
   outcome         String?
   nextHearingDate DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  case            LitigationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  case LitigationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
   @@index([caseId, hearingDate])
 }
 
@@ -605,43 +848,43 @@ model CaseHearing {
 // CALL REQUESTS
 // ============================================
 model CallRequest {
-  id                String   @id @default(uuid())
-  requestNumber     String   @unique
-  subscriberId      String
+  id                 String  @id @default(uuid())
+  requestNumber      String  @unique
+  subscriberId       String
   assignedProviderId String?
-  
-  consultationType  String?
-  purpose           String
-  preferredDate     DateTime?
-  preferredTime     String?
-  
-  status            String   @default("pending") // pending, scheduled, in_progress, completed, cancelled
-  
+
+  consultationType String?
+  purpose          String
+  preferredDate    DateTime?
+  preferredTime    String?
+
+  status String @default("pending") // pending, scheduled, in_progress, completed, cancelled
+
   // Scheduled call details
   scheduledAt       DateTime?
-  scheduledDuration Int?     // minutes
+  scheduledDuration Int? // minutes
   actualDuration    Int?
-  
+
   // Call session
-  callStartedAt     DateTime?
-  callEndedAt       DateTime?
-  recordingUrl      String?
-  callPlatform      String?  // zoom, google_meet, custom
-  callLink          String?
-  
-  submittedAt       DateTime @default(now())
-  completedAt       DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
-  
-  subscriber        User     @relation(fields: [subscriberId], references: [id])
-  assignedProvider  User?    @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
-  
-  messages          RequestMessage[]
-  statusHistory     RequestStatusHistory[]
-  rating            RequestRating?
-  
+  callStartedAt DateTime?
+  callEndedAt   DateTime?
+  recordingUrl  String?
+  callPlatform  String? // zoom, google_meet, custom
+  callLink      String?
+
+  submittedAt DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  subscriber       User  @relation(fields: [subscriberId], references: [id])
+  assignedProvider User? @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
+
+  messages      RequestMessage[]
+  statusHistory RequestStatusHistory[]
+  rating        RequestRating?
+
   @@index([subscriberId, status])
   @@index([assignedProviderId, scheduledAt])
 }
@@ -650,32 +893,32 @@ model CallRequest {
 // SHARED REQUEST MODELS
 // ============================================
 model Document {
-  id                  String   @id @default(uuid())
-  uploadedBy          String
-  fileName            String
-  fileUrl             String
-  fileType            String
-  fileSize            Int
-  
+  id         String @id @default(uuid())
+  uploadedBy String
+  fileName   String
+  fileUrl    String
+  fileType   String
+  fileSize   Int
+
   // Polymorphic relations
-  consultationId      String?
-  legalOpinionId      String?
-  serviceRequestId    String?
-  litigationCaseId    String?
-  supportTicketId     String?
-  
-  description         String?
-  isVerified          Boolean  @default(false)
-  uploadedAt          DateTime @default(now())
-  deletedAt           DateTime?
-  
-  uploader            User     @relation(fields: [uploadedBy], references: [id])
-  consultation        ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  legalOpinion        LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
-  serviceRequest      ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  litigationCase      LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
-  supportTicket       SupportTicket?       @relation(fields: [supportTicketId], references: [id], onDelete: Cascade)
-  
+  consultationId   String?
+  legalOpinionId   String?
+  serviceRequestId String?
+  litigationCaseId String?
+  supportTicketId  String?
+
+  description String?
+  isVerified  Boolean   @default(false)
+  uploadedAt  DateTime  @default(now())
+  deletedAt   DateTime?
+
+  uploader       User                 @relation(fields: [uploadedBy], references: [id])
+  consultation   ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  legalOpinion   LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  litigationCase LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
+  supportTicket  SupportTicket?       @relation(fields: [supportTicketId], references: [id], onDelete: Cascade)
+
   @@index([uploadedBy])
   @@index([consultationId])
   @@index([legalOpinionId])
@@ -684,30 +927,30 @@ model Document {
 }
 
 model RequestMessage {
-  id                  String   @id @default(uuid())
-  senderId            String
-  message             String
-  messageType         String   @default("text") // text, info_request, document_request, system
-  
+  id          String @id @default(uuid())
+  senderId    String
+  message     String
+  messageType String @default("text") // text, info_request, document_request, system
+
   // Polymorphic relations
-  consultationId      String?
-  legalOpinionId      String?
-  serviceRequestId    String?
-  litigationCaseId    String?
-  callRequestId       String?
-  supportTicketId     String?
-  
-  isRead              Boolean  @default(false)
-  sentAt              DateTime @default(now())
-  deletedAt           DateTime?
-  
-  consultation        ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  legalOpinion        LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
-  serviceRequest      ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  litigationCase      LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
-  callRequest         CallRequest?         @relation(fields: [callRequestId], references: [id], onDelete: Cascade)
-  supportTicket       SupportTicket?       @relation(fields: [supportTicketId], references: [id], onDelete: Cascade)
-  
+  consultationId   String?
+  legalOpinionId   String?
+  serviceRequestId String?
+  litigationCaseId String?
+  callRequestId    String?
+  supportTicketId  String?
+
+  isRead    Boolean   @default(false)
+  sentAt    DateTime  @default(now())
+  deletedAt DateTime?
+
+  consultation   ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  legalOpinion   LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  litigationCase LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
+  callRequest    CallRequest?         @relation(fields: [callRequestId], references: [id], onDelete: Cascade)
+  supportTicket  SupportTicket?       @relation(fields: [supportTicketId], references: [id], onDelete: Cascade)
+
   @@index([consultationId, sentAt])
   @@index([legalOpinionId, sentAt])
   @@index([serviceRequestId, sentAt])
@@ -716,23 +959,23 @@ model RequestMessage {
 }
 
 model RequestComment {
-  id                  String   @id @default(uuid())
-  authorId            String
-  comment             String
-  isInternal          Boolean  @default(true) // Internal provider notes vs subscriber-visible
-  
+  id         String  @id @default(uuid())
+  authorId   String
+  comment    String
+  isInternal Boolean @default(true) // Internal provider notes vs subscriber-visible
+
   // Polymorphic relations
-  consultationId      String?
-  legalOpinionId      String?
-  serviceRequestId    String?
-  litigationCaseId    String?
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  deletedAt           DateTime?
-  
-  author              User     @relation(fields: [authorId], references: [id])
-  
+  consultationId   String?
+  legalOpinionId   String?
+  serviceRequestId String?
+  litigationCaseId String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  author User @relation(fields: [authorId], references: [id])
+
   @@index([consultationId])
   @@index([legalOpinionId])
   @@index([serviceRequestId])
@@ -740,27 +983,27 @@ model RequestComment {
 }
 
 model RequestStatusHistory {
-  id                  String   @id @default(uuid())
-  fromStatus          String?
-  toStatus            String
-  reason              String?
-  changedBy           String?
-  
+  id         String  @id @default(uuid())
+  fromStatus String?
+  toStatus   String
+  reason     String?
+  changedBy  String?
+
   // Polymorphic relations
-  consultationId      String?
-  legalOpinionId      String?
-  serviceRequestId    String?
-  litigationCaseId    String?
-  callRequestId       String?
-  
-  changedAt           DateTime @default(now())
-  
-  consultation        ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  legalOpinion        LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
-  serviceRequest      ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  litigationCase      LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
-  callRequest         CallRequest?         @relation(fields: [callRequestId], references: [id], onDelete: Cascade)
-  
+  consultationId   String?
+  legalOpinionId   String?
+  serviceRequestId String?
+  litigationCaseId String?
+  callRequestId    String?
+
+  changedAt DateTime @default(now())
+
+  consultation   ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  legalOpinion   LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  litigationCase LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
+  callRequest    CallRequest?         @relation(fields: [callRequestId], references: [id], onDelete: Cascade)
+
   @@index([consultationId, changedAt])
   @@index([legalOpinionId, changedAt])
   @@index([serviceRequestId, changedAt])
@@ -768,8 +1011,8 @@ model RequestStatusHistory {
 }
 
 model RequestCollaborator {
-  id               String   @id @default(uuid())
-  providerUserId   String
+  id             String @id @default(uuid())
+  providerUserId String
 
   // Foreign keys for polymorphic relations
   consultationId   String?
@@ -777,85 +1020,83 @@ model RequestCollaborator {
   serviceRequestId String?
   litigationCaseId String?
 
-  role             String?  // lead, support, reviewer
-  status           String   @default("pending") // pending, accepted, rejected
-  invitedAt        DateTime @default(now())
-  respondedAt      DateTime?
+  role        String? // lead, support, reviewer
+  status      String    @default("pending") // pending, accepted, rejected
+  invitedAt   DateTime  @default(now())
+  respondedAt DateTime?
 
-  providerUser     ProviderUser @relation(fields: [providerUserId], references: [id])
+  providerUser ProviderUser @relation(fields: [providerUserId], references: [id])
 
   // 👇 Relation to ConsultationRequest
-  consultation     ConsultationRequest? @relation("ConsultationCollaborators", fields: [consultationId], references: [id])
+  consultation ConsultationRequest? @relation("ConsultationCollaborators", fields: [consultationId], references: [id])
 
   @@index([providerUserId])
   @@index([consultationId])
 }
 
-
 model ConsultationRequest {
-  id                 String   @id @default(uuid())
-  requestNumber      String   @unique
+  id                 String  @id @default(uuid())
+  requestNumber      String  @unique
   subscriberId       String
   assignedProviderId String?
 
-  consultationType   String
-  category           String?
-  subject            String
-  description        String
-  urgency            String   @default("normal")
-  status             String   @default("pending")
+  consultationType String
+  category         String?
+  subject          String
+  description      String
+  urgency          String  @default("normal")
+  status           String  @default("pending")
 
-  submittedAt        DateTime @default(now())
-  assignedAt         DateTime?
-  respondedAt        DateTime?
-  completedAt        DateTime?
-  slaDeadline        DateTime?
-  slaStatus          String?
+  submittedAt DateTime  @default(now())
+  assignedAt  DateTime?
+  respondedAt DateTime?
+  completedAt DateTime?
+  slaDeadline DateTime?
+  slaStatus   String?
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  deletedAt          DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  subscriber         User     @relation(fields: [subscriberId], references: [id])
-  assignedProvider   User?    @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
+  subscriber       User  @relation(fields: [subscriberId], references: [id])
+  assignedProvider User? @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
 
-  documents          Document[]
-  messages           RequestMessage[]
-  statusHistory      RequestStatusHistory[]
+  documents     Document[]
+  messages      RequestMessage[]
+  statusHistory RequestStatusHistory[]
 
   // 👇 Match the relation name exactly
-  collaborators      RequestCollaborator[] @relation("ConsultationCollaborators")
+  collaborators RequestCollaborator[] @relation("ConsultationCollaborators")
 
-  rating             RequestRating?
+  rating RequestRating?
 
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
   @@index([status, slaDeadline])
 }
 
-
 model RequestRating {
-  id                  String   @id @default(uuid())
-  subscriberId        String
-  rating              Int      // 1-5
-  comment             String?
-  
+  id           String  @id @default(uuid())
+  subscriberId String
+  rating       Int // 1-5
+  comment      String?
+
   // Polymorphic relations
-  consultationId      String?  @unique
-  legalOpinionId      String?  @unique
-  serviceRequestId    String?  @unique
-  litigationCaseId    String?  @unique
-  callRequestId       String?  @unique
-  
-  createdAt           DateTime @default(now())
-  
-  subscriber          User     @relation(fields: [subscriberId], references: [id])
-  consultation        ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
-  legalOpinion        LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
-  serviceRequest      ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  litigationCase      LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
-  callRequest         CallRequest?         @relation(fields: [callRequestId], references: [id], onDelete: Cascade)
-  
+  consultationId   String? @unique
+  legalOpinionId   String? @unique
+  serviceRequestId String? @unique
+  litigationCaseId String? @unique
+  callRequestId    String? @unique
+
+  createdAt DateTime @default(now())
+
+  subscriber     User                 @relation(fields: [subscriberId], references: [id])
+  consultation   ConsultationRequest? @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  legalOpinion   LegalOpinionRequest? @relation(fields: [legalOpinionId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest?      @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  litigationCase LitigationCase?      @relation(fields: [litigationCaseId], references: [id], onDelete: Cascade)
+  callRequest    CallRequest?         @relation(fields: [callRequestId], references: [id], onDelete: Cascade)
+
   @@index([subscriberId])
 }
 
@@ -863,27 +1104,27 @@ model RequestRating {
 // SUPPORT TICKETS
 // ============================================
 model SupportTicket {
-  id            String   @id @default(uuid())
-  ticketNumber  String   @unique
-  subscriberId  String
-  
-  subject       String
-  description   String
-  category      String   // technical, billing, general
-  priority      String   @default("normal") // low, normal, high
-  status        String   @default("open") // open, in_progress, resolved, closed
-  
-  assignedTo    String?
-  resolvedAt    DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  deletedAt     DateTime?
-  
-  subscriber    User     @relation(fields: [subscriberId], references: [id])
-  
-  documents     Document[]
-  messages      RequestMessage[]
-  
+  id           String @id @default(uuid())
+  ticketNumber String @unique
+  subscriberId String
+
+  subject     String
+  description String
+  category    String // technical, billing, general
+  priority    String @default("normal") // low, normal, high
+  status      String @default("open") // open, in_progress, resolved, closed
+
+  assignedTo String?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  subscriber User @relation(fields: [subscriberId], references: [id])
+
+  documents Document[]
+  messages  RequestMessage[]
+
   @@index([subscriberId, status])
   @@index([status, priority])
 }
@@ -892,36 +1133,36 @@ model SupportTicket {
 // SLA & ROUTING
 // ============================================
 model SLAPolicy {
-  id                String   @id @default(uuid())
-  name              String   @unique
-  requestType       String   // consultation, legal_opinion, service, litigation, call
-  priority          String   @default("normal")
-  
-  responseTime      Int      // minutes
-  resolutionTime    Int      // minutes
-  escalationTime    Int?     // minutes
-  
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  id          String @id @default(uuid())
+  name        String @unique
+  requestType String // consultation, legal_opinion, service, litigation, call
+  priority    String @default("normal")
+
+  responseTime   Int // minutes
+  resolutionTime Int // minutes
+  escalationTime Int? // minutes
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([requestType, priority])
 }
 
 model RoutingRule {
-  id                String   @id @default(uuid())
-  name              String
-  requestType       String
-  conditions        Json?    // e.g., {category: "commercial", urgency: "high"}
-  priority          Int      @default(0)
-  
-  routingStrategy   String   // round_robin, load_balanced, specialized
-  targetProviders   Json?    // Array of provider IDs or criteria
-  
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  id          String @id @default(uuid())
+  name        String
+  requestType String
+  conditions  Json? // e.g., {category: "commercial", urgency: "high"}
+  priority    Int    @default(0)
+
+  routingStrategy String // round_robin, load_balanced, specialized
+  targetProviders Json? // Array of provider IDs or criteria
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([requestType, isActive])
 }
 
@@ -929,37 +1170,56 @@ model RoutingRule {
 // NOTIFICATIONS
 // ============================================
 model Notification {
-  id          String   @id @default(uuid())
-  userId      String
-  type        String   // request_assigned, request_update, payment_due, etc.
-  title       String
-  titleAr     String?
-  message     String
-  messageAr   String?
-  
+  id        String  @id @default(uuid())
+  userId    String
+  type      String // request_assigned, request_update, payment_due, etc.
+  title     String
+  titleAr   String?
+  message   String
+  messageAr String?
+
   relatedEntityType String? // consultation, legal_opinion, etc.
   relatedEntityId   String?
-  
-  isRead      Boolean  @default(false)
-  readAt      DateTime?
-  createdAt   DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
 }
 
+model MessageTemplate {
+  id      String @id @default(uuid())
+  code    String @unique // CONSULTATION_ASSIGNED, PAYMENT_DUE, etc.
+  name    String
+  channel String // email, sms, push, in_app
+
+  subject   String? // For emails
+  subjectAr String?
+  body      String // With variables like {{userName}}, {{requestNumber}}
+  bodyAr    String
+
+  variables Json? // List of available variables
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code, channel])
+}
+
 model NotificationPreference {
-  id          String   @id @default(uuid())
-  userId      String
-  channel     String   // email, sms, push, in_app
-  eventType   String   // request_assigned, payment_due, etc.
-  enabled     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  userId    String
+  channel   String // email, sms, push, in_app
+  eventType String // request_assigned, payment_due, etc.
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, channel, eventType])
 }
@@ -968,27 +1228,27 @@ model NotificationPreference {
 // DISCOUNT CAMPAIGNS
 // ============================================
 model DiscountCampaign {
-  id                String   @id @default(uuid())
-  name              String
-  nameAr            String?
-  description       String?
-  descriptionAr     String?
-  
-  discountType      String   // percentage, fixed
-  discountValue     Float
-  
-  targetType        String   // all, new_users, tier_based
-  targetCriteria    Json?
-  
-  validFrom         DateTime
-  validUntil        DateTime?
-  maxRedemptions    Int?
-  currentRedemptions Int     @default(0)
-  
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  id            String  @id @default(uuid())
+  name          String
+  nameAr        String?
+  description   String?
+  descriptionAr String?
+
+  discountType  String // percentage, fixed
+  discountValue Float
+
+  targetType     String // all, new_users, tier_based
+  targetCriteria Json?
+
+  validFrom          DateTime
+  validUntil         DateTime?
+  maxRedemptions     Int?
+  currentRedemptions Int       @default(0)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([isActive, validFrom, validUntil])
 }
 
@@ -996,28 +1256,28 @@ model DiscountCampaign {
 // REPORTS & ANALYTICS
 // ============================================
 model Report {
-  id            String   @id @default(uuid())
-  name          String
-  reportType    String   // financial, operational, performance, compliance
-  parameters    Json?
-  
-  generatedBy   String?
-  generatedAt   DateTime @default(now())
-  
-  fileUrl       String?
-  status        String   @default("completed") // pending, completed, failed
-  
+  id         String @id @default(uuid())
+  name       String
+  reportType String // financial, operational, performance, compliance
+  parameters Json?
+
+  generatedBy String?
+  generatedAt DateTime @default(now())
+
+  fileUrl String?
+  status  String  @default("completed") // pending, completed, failed
+
   @@index([reportType, generatedAt])
 }
 
 model AnalyticsMetric {
-  id            String   @id @default(uuid())
-  metricName    String
-  metricType    String   // counter, gauge, histogram
-  value         Float
-  dimensions    Json?    // {requestType: "consultation", status: "completed"}
-  timestamp     DateTime @default(now())
-  
+  id         String   @id @default(uuid())
+  metricName String
+  metricType String // counter, gauge, histogram
+  value      Float
+  dimensions Json? // {requestType: "consultation", status: "completed"}
+  timestamp  DateTime @default(now())
+
   @@index([metricName, timestamp])
   @@index([timestamp])
 }
@@ -1026,34 +1286,34 @@ model AnalyticsMetric {
 // COMPLIANCE & AUDIT
 // ============================================
 model Session {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   userId       String
-  refreshToken String   @unique
+  refreshToken String    @unique
   ipAddress    String?
   userAgent    String?
   expiresAt    DateTime
-  createdAt    DateTime @default(now())
-  lastUsedAt   DateTime @default(now())
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime  @default(now())
   deletedAt    DateTime?
-  
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model AuditLog {
-  id          String   @id @default(uuid())
-  userId      String?
-  action      String   // login, create_request, update_status, etc.
-  entityType  String?  // user, consultation, payment, etc.
-  entityId    String?
-  details     Json?
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
-  
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String // login, create_request, update_status, etc.
+  entityType String? // user, consultation, payment, etc.
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
@@ -1061,30 +1321,30 @@ model AuditLog {
 }
 
 model DataExportRequest {
-  id            String   @id @default(uuid())
-  userId        String
-  requestType   String   // data_export, account_deletion
-  status        String   @default("pending") // pending, processing, completed, failed
-  
+  id          String @id @default(uuid())
+  userId      String
+  requestType String // data_export, account_deletion
+  status      String @default("pending") // pending, processing, completed, failed
+
   exportFileUrl String?
   completedAt   DateTime?
   expiresAt     DateTime?
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId, status])
 }
 
 model ConsentLog {
-  id            String   @id @default(uuid())
-  userId        String?
-  consentType   String   // terms_and_conditions, privacy_policy, marketing
-  version       String
-  accepted      Boolean
-  ipAddress     String?
-  createdAt     DateTime @default(now())
-  
+  id          String   @id @default(uuid())
+  userId      String?
+  consentType String // terms_and_conditions, privacy_policy, marketing
+  version     String
+  accepted    Boolean
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
   @@index([userId, consentType])
 }
 
@@ -1092,17 +1352,17 @@ model ConsentLog {
 // ANALYTICS & TRACKING
 // ============================================
 model UserActivity {
-  id          String   @id @default(uuid())
-  userId      String?
-  sessionId   String?
-  action      String   // page_view, button_click, form_submit, etc.
-  page        String?
-  metadata    Json?
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
-  
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id        String   @id @default(uuid())
+  userId    String?
+  sessionId String?
+  action    String // page_view, button_click, form_submit, etc.
+  page      String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
@@ -1116,43 +1376,43 @@ model SystemConfig {
   key         String   @unique
   value       Json
   description String?
-  category    String?  // payment, notification, sla, etc.
+  category    String? // payment, notification, sla, etc.
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   @@index([category])
 }
 
 model ErrorLog {
-  id          String   @id @default(uuid())
-  level       String   // error, warning, info
-  message     String
-  stack       String?
-  context     Json?
-  userId      String?
-  requestId   String?
-  createdAt   DateTime @default(now())
-  
+  id        String   @id @default(uuid())
+  level     String // error, warning, info
+  message   String
+  stack     String?
+  context   Json?
+  userId    String?
+  requestId String?
+  createdAt DateTime @default(now())
+
   @@index([level, createdAt])
   @@index([createdAt])
 }
 
 model JobQueue {
-  id          String   @id @default(uuid())
-  type        String   // email, sms, notification, report_generation, etc.
+  id          String    @id @default(uuid())
+  type        String // email, sms, notification, report_generation, etc.
   payload     Json
-  status      String   @default("pending") // pending, processing, completed, failed, retrying
-  priority    Int      @default(0)
-  attempts    Int      @default(0)
-  maxAttempts Int      @default(3)
+  status      String    @default("pending") // pending, processing, completed, failed, retrying
+  priority    Int       @default(0)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
   scheduledAt DateTime?
   startedAt   DateTime?
   completedAt DateTime?
   error       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
   @@index([status, scheduledAt])
   @@index([type, status])
 }
@@ -1161,24 +1421,24 @@ model JobQueue {
 // INTEGRATIONS
 // ============================================
 model IntegrationConfig {
-  id          String   @id @default(uuid())
-  provider    String   @unique // moyasar, hyperpay, twilio, sendgrid, nafath, elm
-  config      Json     // API keys, endpoints, etc. (encrypted)
-  isActive    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  provider  String   @unique // moyasar, hyperpay, twilio, sendgrid, nafath, elm
+  config    Json // API keys, endpoints, etc. (encrypted)
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model WebhookLog {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   provider    String
   event       String
   payload     Json
-  status      String   // received, processed, failed
+  status      String // received, processed, failed
   processedAt DateTime?
   error       String?
-  createdAt   DateTime @default(now())
-  
+  createdAt   DateTime  @default(now())
+
   @@index([provider, event, createdAt])
 }
 
@@ -1186,58 +1446,58 @@ model WebhookLog {
 // CONTENT MANAGEMENT
 // ============================================
 model LegalCategory {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  nameAr      String
-  description String?
+  id            String   @id @default(uuid())
+  name          String   @unique
+  nameAr        String
+  description   String?
   descriptionAr String?
-  parentId    String?
-  icon        String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  parent      LegalCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    LegalCategory[] @relation("CategoryHierarchy")
-  
+  parentId      String?
+  icon          String?
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  parent   LegalCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children LegalCategory[] @relation("CategoryHierarchy")
+
   @@index([parentId])
   @@index([isActive, sortOrder])
 }
 
 model FAQ {
-  id          String   @id @default(uuid())
-  question    String
-  questionAr  String
-  answer      String
-  answerAr    String
-  category    String?
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  viewCount   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id         String   @id @default(uuid())
+  question   String
+  questionAr String
+  answer     String
+  answerAr   String
+  category   String?
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  viewCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@index([category, isActive])
 }
 
 model SystemMessage {
-  id          String   @id @default(uuid())
-  type        String   // banner, modal, alert
-  title       String
-  titleAr     String?
-  message     String
-  messageAr   String?
-  severity    String   // info, warning, error, success
-  
-  targetUsers String?  // all, subscribers, providers, admins
-  
-  startDate   DateTime
-  endDate     DateTime?
-  isActive    Boolean  @default(true)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id        String  @id @default(uuid())
+  type      String // banner, modal, alert
+  title     String
+  titleAr   String?
+  message   String
+  messageAr String?
+  severity  String // info, warning, error, success
+
+  targetUsers String? // all, subscribers, providers, admins
+
+  startDate DateTime
+  endDate   DateTime?
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([isActive, startDate, endDate])
 }

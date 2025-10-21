@@ -57,7 +57,7 @@ export class MembershipPayment {
             record.invoiceId,
             record.provider as PaymentProvider,
             record.providerTxnId,
-            Money.create(record.amount, record.currency),
+            Money.create({ amount: record.amount, currency: record.currency }),
             record.status as PaymentStatus,
             record.metadata,
             record.createdAt,

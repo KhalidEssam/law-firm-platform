@@ -378,7 +378,7 @@ export class ConsumeQuotaUseCase {
 @Injectable()
 export class ListMembershipTiersUseCase {
     constructor(
-        @Inject('IMembershipTierRepository')
+        @Inject('IMembershipTierRepository') // 👈 ADD THIS
         private readonly tierRepo: IMembershipTierRepository,
     ) { }
 
@@ -410,7 +410,7 @@ export class CreatePaymentUseCase {
         const payment = MembershipPayment.create({
             invoiceId: command.invoiceId,
             provider: command.provider,
-            amount: Money.create(command.amount, command.currency),
+            amount: Money.create({ amount: command.amount, currency: command.currency }),
             metadata: command.metadata,
         });
 
@@ -440,5 +440,174 @@ export class CompletePaymentUseCase {
         }
 
         return await this.paymentRepo.markAsCompleted(paymentId, providerTxnId);
+    }
+}
+
+
+
+
+
+
+
+
+// ============================================
+// TIER USE CASES
+// core/application/membership/use-cases/tier.use-cases.ts
+// ============================================
+
+import { BillingCycle } from '../../../domain/membership/value-objects/billing-cycle.vo';
+import { CreateMembershipTierDto, UpdateMembershipTierDto } from '../dto/index.dto';
+
+// ============================================
+// CREATE MEMBERSHIP TIER USE CASE
+// ============================================
+@Injectable()
+export class CreateMembershipTierUseCase {
+    constructor(
+        @Inject('IMembershipTierRepository') // 👈 ADD THIS
+        private readonly tierRepository: IMembershipTierRepository,
+    ) { }
+
+    async execute(dto: CreateMembershipTierDto): Promise<MembershipTier> {
+        // Check if tier with same name already exists
+        const existingTier = await this.tierRepository.findByName(dto.name);
+        if (existingTier) {
+            throw new BadRequestException(`Tier with name "${dto.name}" already exists`);
+        }
+
+        // Create tier entity
+        const tier = MembershipTier.create({
+            name: dto.name,
+            nameAr: dto.nameAr,
+            description: dto.description,
+            descriptionAr: dto.descriptionAr,
+            price: Money.create({
+                amount: dto.price,
+                currency: dto.currency || 'SAR',
+            }),
+            billingCycle: BillingCycle.fromValue(dto.billingCycle),
+            quota: dto.quota || {},
+            benefits: dto.benefits || [],
+            isActive: dto.isActive !== undefined ? dto.isActive : true,
+        });
+
+        // Persist to database
+        return await this.tierRepository.create(tier);
+    }
+}
+
+// ============================================
+// GET MEMBERSHIP TIER BY ID USE CASE
+// ============================================
+@Injectable()
+export class GetMembershipTierByIdUseCase {
+    constructor(
+        @Inject('IMembershipTierRepository') // 👈 ADD THIS
+        private readonly tierRepository: IMembershipTierRepository,
+    ) { }
+
+    async execute(tierId: number): Promise<MembershipTier> {
+        const tier = await this.tierRepository.findById(tierId);
+
+        if (!tier) {
+            throw new NotFoundException(`Membership tier with ID ${tierId} not found`);
+        }
+
+        return tier;
+    }
+}
+
+// ============================================
+// UPDATE MEMBERSHIP TIER USE CASE
+// ============================================
+@Injectable()
+export class UpdateMembershipTierUseCase {
+    constructor(
+        @Inject('IMembershipTierRepository') // 👈 ADD THIS
+        private readonly tierRepository: IMembershipTierRepository,
+    ) { }
+
+    async execute(tierId: number, dto: UpdateMembershipTierDto): Promise<MembershipTier> {
+        // Find existing tier
+        const existingTier = await this.tierRepository.findById(tierId);
+        if (!existingTier) {
+            throw new NotFoundException(`Membership tier with ID ${tierId} not found`);
+        }
+
+        // Check if name is being changed and if new name conflicts
+        if (dto.name && dto.name !== existingTier.name) {
+            const conflictingTier = await this.tierRepository.findByName(dto.name);
+            if (conflictingTier && conflictingTier.id !== tierId) {
+                throw new BadRequestException(`Tier with name "${dto.name}" already exists`);
+            }
+        }
+
+        // Update tier properties
+        if (dto.name !== undefined) {
+            existingTier.name = dto.name;
+        }
+        if (dto.nameAr !== undefined) {
+            existingTier.nameAr = dto.nameAr;
+        }
+        if (dto.description !== undefined) {
+            existingTier.description = dto.description;
+        }
+        if (dto.descriptionAr !== undefined) {
+            existingTier.descriptionAr = dto.descriptionAr;
+        }
+        if (dto.price !== undefined) {
+            existingTier.price = Money.create({
+                amount: dto.price,
+                currency: dto.currency || existingTier.price.currency,
+            });
+        }
+        if (dto.billingCycle !== undefined) {
+            existingTier.billingCycle = BillingCycle.fromValue(dto.billingCycle);
+        }
+        if (dto.quota !== undefined) {
+            existingTier.quota = dto.quota;
+        }
+        if (dto.benefits !== undefined) {
+            existingTier.benefits = dto.benefits;
+        }
+        if (dto.isActive !== undefined) {
+            existingTier.isActive = dto.isActive;
+        }
+
+        // Update timestamp
+        existingTier.updatedAt = new Date();
+
+        // Persist changes
+        return await this.tierRepository.update(existingTier);
+    }
+}
+
+// ============================================
+// DELETE MEMBERSHIP TIER USE CASE
+// ============================================
+@Injectable()
+export class DeleteMembershipTierUseCase {
+    constructor(
+        @Inject('IMembershipTierRepository') // 👈 ADD THIS
+        private readonly tierRepository: IMembershipTierRepository,
+    ) { }
+
+    async execute(tierId: number): Promise<void> {
+        // Find existing tier
+        const tier = await this.tierRepository.findById(tierId);
+        if (!tier) {
+            throw new NotFoundException(`Membership tier with ID ${tierId} not found`);
+        }
+
+        // Check if tier has active memberships
+        const hasActiveMemberships = await this.tierRepository.hasActiveMemberships(tierId);
+        if (hasActiveMemberships) {
+            throw new BadRequestException(
+                'Cannot delete tier with active memberships. Please deactivate the tier instead.',
+            );
+        }
+
+        // Soft delete the tier
+        await this.tierRepository.delete(tierId);
     }
 }

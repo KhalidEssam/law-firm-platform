@@ -15,8 +15,39 @@ import {
     IsInt,
     IsPositive,
     ValidateNested,
+    IsArray,
+
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+
+
+export class TierQuotaDto {
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    consultationsPerMonth?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    opinionsPerMonth?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    servicesPerMonth?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    casesPerMonth?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    callMinutesPerMonth?: number;
+}
 
 // ============================================
 // CREATE MEMBERSHIP DTO
@@ -109,42 +140,33 @@ export class CreateMembershipTierDto {
     @IsPositive()
     price: number;
 
+    @IsOptional()
     @IsString()
     @IsEnum(['SAR', 'USD', 'EUR', 'GBP'])
-    currency: string;
+    currency?: string; // 👈 Make optional with default 'SAR'
 
     @IsString()
     @IsEnum(['monthly', 'quarterly', 'yearly'])
     billingCycle: string;
 
+    // 👇 Changed from individual fields to nested quota object
     @IsOptional()
-    @IsInt()
-    @Min(0)
-    consultationsPerMonth?: number;
+    @ValidateNested()
+    @Type(() => TierQuotaDto)
+    quota?: TierQuotaDto;
+
+    // 👇 Changed from Record to array of strings
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    benefits?: string[];
 
     @IsOptional()
-    @IsInt()
-    @Min(0)
-    opinionsPerMonth?: number;
-
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    servicesPerMonth?: number;
-
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    casesPerMonth?: number;
-
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    callMinutesPerMonth?: number;
-
-    @IsOptional()
-    benefits?: Record<string, any>;
+    @IsBoolean()
+    isActive?: boolean;
 }
+
+
 
 // ============================================
 // UPDATE MEMBERSHIP TIER DTO
@@ -208,7 +230,19 @@ export class UpdateMembershipTierDto {
     callMinutesPerMonth?: number;
 
     @IsOptional()
-    benefits?: Record<string, any>;
+    @IsArray()
+    @IsString({ each: true })
+    benefits?: string[];  // ✅ Changed from Record<string, any>
+
+    @IsOptional()
+    @IsBoolean()
+    isActive?: boolean;
+
+    // 👇 Changed from individual fields to nested quota object
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => TierQuotaDto)
+    quota?: TierQuotaDto;
 }
 
 // ============================================
@@ -330,9 +364,13 @@ export class ListMembershipsQueryDto {
 
 export class ListTiersQueryDto {
     @IsOptional()
-    @Type(() => Boolean)
     @IsBoolean()
+    @Type(() => Boolean)
     isActive?: boolean;
+
+    @IsOptional()
+    @IsEnum(['monthly', 'quarterly', 'yearly'])
+    billingCycle?: string;
 }
 
 export class ListCouponsQueryDto {
@@ -384,15 +422,11 @@ export class MembershipTierResponseDto {
     price: number;
     currency: string;
     billingCycle: string;
-    quota: {
-        consultationsPerMonth?: number;
-        opinionsPerMonth?: number;
-        servicesPerMonth?: number;
-        casesPerMonth?: number;
-        callMinutesPerMonth?: number;
-    };
-    benefits?: Record<string, any>;
+    quota?: TierQuotaDto;
+    benefits?: string[];
     isActive: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export class QuotaResponseDto {

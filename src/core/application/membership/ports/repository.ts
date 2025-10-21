@@ -55,14 +55,14 @@ export interface IMembershipTierRepository {
     findByName(name: string): Promise<MembershipTier | null>;
     findAll(options?: { isActive?: boolean }): Promise<MembershipTier[]>;
     findActive(): Promise<MembershipTier[]>;
-
     // Create (Admin only)
     create(tier: MembershipTier): Promise<MembershipTier>;
-
     // Update (Admin only)
     update(tier: MembershipTier): Promise<MembershipTier>;
     activate(tierId: number): Promise<MembershipTier>;
     deactivate(tierId: number): Promise<MembershipTier>;
+    findByStatus(isActive: boolean): Promise<MembershipTier[]>;
+    hasActiveMemberships(tierId: number): Promise<boolean>;
 
     // Delete (Admin only)
     delete(id: number): Promise<void>;

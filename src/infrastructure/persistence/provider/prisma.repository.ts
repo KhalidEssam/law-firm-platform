@@ -488,7 +488,7 @@ export class PrismaProviderServiceRepository implements IProviderServiceReposito
         const services = await this.prisma.providerService.findMany({
             where: {
                 providerId,
-                serviceType,
+                // serviceType,
             },
         });
         return services.map(ProviderServiceMapper.toDomain);
@@ -498,7 +498,7 @@ export class PrismaProviderServiceRepository implements IProviderServiceReposito
         const count = await this.prisma.providerService.count({
             where: {
                 providerId,
-                serviceType,
+                // serviceType,
             },
         });
         return count > 0;

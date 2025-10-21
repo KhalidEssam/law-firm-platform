@@ -1,49 +1,57 @@
-// src/core/domain/common/value-objects/money.vo.ts
+// core/domain/membership/value-objects/money.vo.ts
 
 export class Money {
     private constructor(
-        private readonly _amount: number,
-        private readonly _currency: string,
+        public readonly amount: number,
+        public readonly currency: string,
     ) {
-        if (_amount < 0) throw new Error('Amount cannot be negative');
-        if (!_currency.match(/^[A-Z]{3}$/))
-            throw new Error('Currency must be a valid ISO 4217 code');
+        if (amount < 0) {
+            throw new Error('Amount cannot be negative');
+        }
+        if (!currency || currency.trim().length === 0) {
+            throw new Error('Currency is required');
+        }
     }
 
-    static create(amount: number, currency: string = 'USD'): Money {
+    static create(params: { amount: number; currency: string }): Money {
+        return new Money(params.amount, params.currency);
+    }
+
+    // Alternative: Support both formats
+    static fromAmount(amount: number, currency: string = 'SAR'): Money {
         return new Money(amount, currency);
     }
 
-    get amount(): number {
-        return this._amount;
+    equals(other: Money): boolean {
+        return this.amount === other.amount && this.currency === other.currency;
     }
 
-    get currency(): string {
-        return this._currency;
-    }
-
-    // ✅ Domain methods
     add(other: Money): Money {
-        this.ensureSameCurrency(other);
-        return new Money(this._amount + other._amount, this._currency);
+        if (this.currency !== other.currency) {
+            throw new Error('Cannot add money with different currencies');
+        }
+        return new Money(this.amount + other.amount, this.currency);
     }
 
     subtract(other: Money): Money {
-        this.ensureSameCurrency(other);
-        if (this._amount < other._amount) throw new Error('Insufficient amount');
-        return new Money(this._amount - other._amount, this._currency);
+        if (this.currency !== other.currency) {
+            throw new Error('Cannot subtract money with different currencies');
+        }
+        return new Money(this.amount - other.amount, this.currency);
     }
 
-    equals(other: Money): boolean {
-        return this._amount === other._amount && this._currency === other._currency;
-    }
-
-    private ensureSameCurrency(other: Money): void {
-        if (this._currency !== other._currency)
-            throw new Error('Currencies do not match');
+    multiply(factor: number): Money {
+        return new Money(this.amount * factor, this.currency);
     }
 
     toString(): string {
-        return `${this._amount.toFixed(2)} ${this._currency}`;
+        return `${this.amount} ${this.currency}`;
+    }
+
+    toJSON() {
+        return {
+            amount: this.amount,
+            currency: this.currency,
+        };
     }
 }

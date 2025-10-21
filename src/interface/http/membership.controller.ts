@@ -13,14 +13,13 @@ import {
     Body,
     Param,
     Query,
-    UseGuards,
     Req,
     HttpCode,
     HttpStatus,
 } from '@nestjs/common';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { Public } from 'src/auth/decorators/public.decorator'; // ✅ use this
+import { Public } from 'src/auth/decorators/public.decorator';
 
 // Use Cases
 import {
@@ -34,6 +33,11 @@ import {
     CheckQuotaUseCase,
     ConsumeQuotaUseCase,
     ListMembershipTiersUseCase,
+    CreateMembershipTierUseCase,
+    UpdateMembershipTierUseCase,
+    DeleteMembershipTierUseCase,
+    GetMembershipTierByIdUseCase,
+ 
     CreatePaymentUseCase,
     CompletePaymentUseCase,
 } from '../../core/application/membership/use-cases/membership.use-cases';
@@ -79,6 +83,10 @@ export class MembershipController {
         private readonly checkQuota: CheckQuotaUseCase,
         private readonly consumeQuota: ConsumeQuotaUseCase,
         private readonly listTiers: ListMembershipTiersUseCase,
+        private readonly createTier: CreateMembershipTierUseCase,      
+        private readonly updateTier: UpdateMembershipTierUseCase,     
+        private readonly deleteTier: DeleteMembershipTierUseCase,      
+        private readonly getTierById: GetMembershipTierByIdUseCase,   
         private readonly createPayment: CreatePaymentUseCase,
         private readonly completePayment: CompletePaymentUseCase,
     ) { }
@@ -108,13 +116,12 @@ export class MembershipController {
     @Get('me')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getMyMembership(@Req() req: any): Promise<{ membership: MembershipResponseDto | null }> {
-        const userId = req.user.userId; // Assuming JWT payload has userId
+        const userId = req.user.userId;
         const membership = await this.getActiveMembershipByUser.execute(userId);
         return {
             membership: membership ? this.mapMembershipToResponse(membership) : null,
         };
     }
-
 
     /**
      * Get user's active membership by user ID
@@ -183,6 +190,99 @@ export class MembershipController {
         };
     }
 
+    /**
+     * Get membership by ID
+     * Accessible by: system admin, platform
+     */
+    @Get(':id')
+    @Roles('system admin', 'platform')
+    @Permissions('read:memberships')
+    async getById(@Param('id') id: string): Promise<{ membership: MembershipResponseDto }> {
+        const membership = await this.getMembershipById.execute(id);
+        return {
+            membership: this.mapMembershipToResponse(membership),
+        };
+    }
+
+    // ============================================
+    // TIER ENDPOINTS
+    // ============================================
+
+    /**
+     * List all tiers (Public)
+     * Accessible by: everyone
+     */
+    @Public()
+    @Get('tiers')
+    async listAllTiers(@Query() query: ListTiersQueryDto): Promise<{ tiers: MembershipTierResponseDto[] }> {
+        const tiers = await this.listTiers.execute(query);
+        return {
+            tiers: tiers.map((tier) => this.mapTierToResponse(tier)),
+        };
+    }
+
+    /**
+     * Get tier by ID (Public)
+     * Accessible by: everyone
+     */
+    @Public()
+    @Get('tiers/:id')
+    async getTier(@Param('id') id: string): Promise<{ tier: MembershipTierResponseDto }> {
+        const tier = await this.getTierById.execute(parseInt(id));
+        return {
+            tier: this.mapTierToResponse(tier)
+        };
+    }
+
+    /**
+     * Create new tier
+     * Accessible by: system admin only
+     */
+    @Post('tiers')
+    @Public()
+    // @Roles('system admin')
+    // @Permissions('create:tiers')
+    @HttpCode(HttpStatus.CREATED)
+    async createNewTier(@Body() dto: CreateMembershipTierDto): Promise<{ tier: MembershipTierResponseDto }> {
+        const tier = await this.createTier.execute(dto);
+        return {
+            tier: this.mapTierToResponse(tier),
+        };
+    }
+
+    /**
+     * Update tier
+     * Accessible by: system admin only
+     */
+    @Put('tiers/:id')
+    @Roles('system admin')
+    @Permissions('update:tiers')
+    @HttpCode(HttpStatus.OK)
+    async updateExistingTier(
+        @Param('id') id: string,
+        @Body() dto: UpdateMembershipTierDto,
+    ): Promise<{ tier: MembershipTierResponseDto }> {
+        const tier = await this.updateTier.execute(parseInt(id), dto);
+        return {
+            tier: this.mapTierToResponse(tier),
+        };
+    }
+
+    /**
+     * Delete tier (soft delete)
+     * Accessible by: system admin only
+     */
+    @Delete('tiers/:id')
+    @Roles('system admin')
+    @Permissions('delete:tiers')
+    @HttpCode(HttpStatus.OK)
+    async deleteTierById(@Param('id') id: string): Promise<{ message: string }> {
+        await this.deleteTier.execute(parseInt(id));
+        return {
+            message: 'Tier deleted successfully',
+        };
+    }
+
     // ============================================
     // COUPON ENDPOINTS
     // ============================================
@@ -239,47 +339,6 @@ export class MembershipController {
         await this.consumeQuota.execute(id, resource, dto.amount);
         return {
             message: `Successfully consumed ${dto.amount} ${resource}`,
-        };
-    }
-
-    // ============================================
-    // TIER ENDPOINTS
-    // ============================================
-
-    /**
-     * List all tiers
-     * Accessible by: everyone (public)
-     */
-    @Public()  // ← Is this here?
-    @Get('tiers')
-    async listAllTiers(@Query() query: ListTiersQueryDto): Promise<{ tiers: MembershipTierResponseDto[] }> {
-        const tiers = await this.listTiers.execute(query);
-        return {
-            tiers: tiers.map((tier) => this.mapTierToResponse(tier)),
-        };
-    }
-
-    /**
-     * Get tier by ID
-     * Accessible by: everyone (public)
-     */
-    @Public()
-    @Get('tiers/:id')
-    async getTierById(@Param('id') id: string): Promise<{ tier: MembershipTierResponseDto }> {
-        // Implementation would use GetTierByIdUseCase
-        return { tier: {} as MembershipTierResponseDto };
-    }
-    /**
-     * Get membership by ID
-     * Accessible by: system admin, platform
-     */
-    @Get(':id')
-    @Roles('system admin', 'platform')
-    @Permissions('read:memberships')
-    async getById(@Param('id') id: string): Promise<{ membership: MembershipResponseDto }> {
-        const membership = await this.getMembershipById.execute(id);
-        return {
-            membership: this.mapMembershipToResponse(membership),
         };
     }
 

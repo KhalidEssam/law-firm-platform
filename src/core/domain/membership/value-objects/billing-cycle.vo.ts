@@ -34,6 +34,14 @@ export class BillingCycle {
     }
 
     /**
+     * Create from a string value (alias for create)
+     * @param value - The billing cycle string
+     */
+    static fromValue(value: string): BillingCycle {
+        return BillingCycle.create(value);
+    }
+
+    /**
      * Get the string value of the billing cycle
      */
     get value(): string {
@@ -77,6 +85,18 @@ export class BillingCycle {
             monthly: 'Monthly',
             quarterly: 'Quarterly',
             yearly: 'Yearly',
+        };
+        return labels[this._value];
+    }
+
+    /**
+     * Get Arabic label
+     */
+    getLabelAr(): string {
+        const labels: Record<BillingCycleType, string> = {
+            monthly: 'شهري',
+            quarterly: 'ربع سنوي',
+            yearly: 'سنوي',
         };
         return labels[this._value];
     }
