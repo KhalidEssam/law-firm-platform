@@ -1,3 +1,8 @@
+// ============================================
+// MEMBERSHIP COUPON ENTITY (FIXED)
+// src/core/domain/membership/entities/membership-coupon.entity.ts
+// ============================================
+
 import crypto from 'crypto';
 
 export class MembershipCoupon {
@@ -14,6 +19,9 @@ export class MembershipCoupon {
         public readonly updatedAt: Date,
     ) { }
 
+    /**
+     * Factory method for creating new coupons
+     */
     static create(props: {
         code: string;
         discountPercentage: number;
@@ -32,6 +40,35 @@ export class MembershipCoupon {
             true,
             new Date(),
             new Date(),
+        );
+    }
+
+    /**
+     * Factory method for DB rehydration
+     */
+    static rehydrate(record: {
+        id: string;
+        code: string;
+        discountPercentage: number;
+        validFrom: Date;
+        validUntil: Date;
+        usageLimit: number;
+        usedCount: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+    }): MembershipCoupon {
+        return new MembershipCoupon(
+            record.id,
+            record.code,
+            record.discountPercentage,
+            record.validFrom,
+            record.validUntil,
+            record.usageLimit,
+            record.usedCount,
+            record.isActive,
+            record.createdAt,
+            record.updatedAt,
         );
     }
 
@@ -59,6 +96,7 @@ export class MembershipCoupon {
             now <= this.validUntil
         );
     }
+
     canBeRedeemed(): { valid: boolean; reason?: string } {
         const now = new Date();
 
@@ -89,5 +127,4 @@ export class MembershipCoupon {
             new Date(),
         );
     }
-
 }

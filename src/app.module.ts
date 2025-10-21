@@ -10,9 +10,12 @@ import { UserModule } from './infrastructure/modules/user.module';
 import { AuthModule } from './auth/auth.module';
 import { Auth0Module } from './infrastructure/persistence/auth0/auth0.module';
 import { RolesModule } from './interface/auth/roles.module';
-import { MembershipModule } from './infrastructure/modules/membership.controller';
+import { MembershipModule } from './infrastructure/modules/membership.module';
 import { ProviderModule } from './infrastructure/modules/provider.module';
 
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { RolesGuard } from './auth/roles.guard';
+import { PermissionsGuard } from './auth/permissions.guard';
 @Module({
   imports: [
     ThrottlerModule.forRoot([{
@@ -35,6 +38,9 @@ import { ProviderModule } from './infrastructure/modules/provider.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
 
 })
