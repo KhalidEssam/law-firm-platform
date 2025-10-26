@@ -741,16 +741,13 @@ model ServiceRequest {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-
   subscriber       User  @relation(fields: [subscriberId], references: [id])
   assignedProvider User? @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
-
   quote         ServiceQuote?
   documents     Document[]
   messages      RequestMessage[]
   statusHistory RequestStatusHistory[]
   rating        RequestRating?
-
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
 }
@@ -759,25 +756,22 @@ model ServiceQuote {
   id               String @id @default(uuid())
   serviceRequestId String @unique
   providerId       String
-
   amount      Float
   currency    String   @default("SAR")
   breakdown   Json?
   description String?
   validUntil  DateTime
-
   status     String    @default("pending") // pending, accepted, rejected, expired
   acceptedAt DateTime?
   rejectedAt DateTime?
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   provider       User           @relation(fields: [providerId], references: [id])
-
   @@index([serviceRequestId])
 }
+
 
 // ============================================
 // LITIGATION CASES
@@ -794,9 +788,7 @@ model LitigationCase {
   description String
   courtName   String?
   caseDetails Json?
-
   status String @default("pending") // pending, quote_sent, quote_accepted, active, closed, cancelled
-
   // Quote
   quoteAmount     Float?
   quoteCurrency   String?   @default("SAR")
@@ -1145,7 +1137,6 @@ model SLAPolicy {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@index([requestType, priority])
 }
 
@@ -1186,7 +1177,6 @@ model Notification {
   createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@index([userId, isRead])
   @@index([userId, createdAt])
 }
@@ -1196,7 +1186,6 @@ model MessageTemplate {
   code    String @unique // CONSULTATION_ASSIGNED, PAYMENT_DUE, etc.
   name    String
   channel String // email, sms, push, in_app
-
   subject   String? // For emails
   subjectAr String?
   body      String // With variables like {{userName}}, {{requestNumber}}
@@ -1489,15 +1478,11 @@ model SystemMessage {
   message   String
   messageAr String?
   severity  String // info, warning, error, success
-
   targetUsers String? // all, subscribers, providers, admins
-
   startDate DateTime
   endDate   DateTime?
   isActive  Boolean   @default(true)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@index([isActive, startDate, endDate])
 }
