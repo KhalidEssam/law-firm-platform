@@ -12,6 +12,7 @@ import { Auth0Module } from './infrastructure/persistence/auth0/auth0.module';
 import { RolesModule } from './interface/auth/roles.module';
 import { MembershipModule } from './infrastructure/modules/membership.module';
 import { ProviderModule } from './infrastructure/modules/provider.module';
+import { ConsultationRequestModule } from './infrastructure/modules/consultation.module';
 
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
@@ -29,7 +30,8 @@ import { PermissionsGuard } from './auth/permissions.guard';
     RolesModule,
     UserModule,
     MembershipModule,
-    ProviderModule
+    ProviderModule,
+    ConsultationRequestModule
   ],
   controllers: [AppController],
   providers: [
