@@ -706,7 +706,6 @@ model ServiceUsage {
   serviceRequestId String?
   litigationCaseId String?
   callRequestId    String?
-
   usedAt      DateTime @default(now())
   periodStart DateTime
   periodEnd   DateTime
@@ -770,7 +769,7 @@ model ServiceQuote {
   serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   provider       User           @relation(fields: [providerId], references: [id])
   @@index([serviceRequestId])
-}
+} 
 
 
 // ============================================
