@@ -7,7 +7,7 @@ import {
   UserId,
   ConsultationStatus,
   ConsultationStatusVO,
-} from '../valeo-objects/consultation-request-domain';
+} from '../value-objects/consultation-request-domain';
 
 // ============================================
 // DOCUMENT ENTITY

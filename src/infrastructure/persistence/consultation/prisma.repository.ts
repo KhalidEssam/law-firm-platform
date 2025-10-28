@@ -21,7 +21,7 @@ import {
     ConsultationCategory,
     Subject,
     Description,
-} from '../../../core/domain/consultation/valeo-objects/consultation-request-domain';
+} from '../../../core/domain/consultation/value-objects/consultation-request-domain';
 
 import {
     Document,

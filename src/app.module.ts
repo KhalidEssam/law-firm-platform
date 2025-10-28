@@ -13,7 +13,7 @@ import { RolesModule } from './interface/auth/roles.module';
 import { MembershipModule } from './infrastructure/modules/membership.module';
 import { ProviderModule } from './infrastructure/modules/provider.module';
 import { ConsultationRequestModule } from './infrastructure/modules/consultation.module';
-
+import { LegalOpinionRequestModule } from './infrastructure/modules/legal-opinion-request.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { PermissionsGuard } from './auth/permissions.guard';
@@ -31,7 +31,8 @@ import { PermissionsGuard } from './auth/permissions.guard';
     UserModule,
     MembershipModule,
     ProviderModule,
-    ConsultationRequestModule
+    ConsultationRequestModule,
+    LegalOpinionRequestModule
   ],
   controllers: [AppController],
   providers: [

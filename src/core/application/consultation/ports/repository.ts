@@ -12,7 +12,7 @@ import {
     ConsultationStatus,
     Urgency,
     SLAStatus,
-} from '../../../domain/consultation/valeo-objects/consultation-request-domain';
+} from '../../../domain/consultation/value-objects/consultation-request-domain';
 
 import {
     Document,
