@@ -18,6 +18,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { PermissionsGuard } from './auth/permissions.guard';
 import { LitigationCaseModule } from './infrastructure/modules/litigation-case.module';
+import { PaymentMethodModule } from './infrastructure/modules/payment-method.module';
 @Module({
   imports: [
     ThrottlerModule.forRoot([{
@@ -34,7 +35,8 @@ import { LitigationCaseModule } from './infrastructure/modules/litigation-case.m
     ProviderModule,
     ConsultationRequestModule,
     LegalOpinionRequestModule,
-    LitigationCaseModule
+    LitigationCaseModule,
+    PaymentMethodModule
   ],
   controllers: [AppController],
   providers: [

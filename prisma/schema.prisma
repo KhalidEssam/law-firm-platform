@@ -306,14 +306,17 @@ model MembershipCouponRedemption {
 }
 
 model PaymentMethod {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
-  type      String // credit_card, debit_card, wallet
-  details   Json?
-  isDefault Boolean  @default(false)
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  type      String    // credit_card, debit_card, wallet
+  details   Json?     // Stores all extra data
+  isDefault Boolean   @default(false)
+  isActive  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, isDefault])
 }
 
