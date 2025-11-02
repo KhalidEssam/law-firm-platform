@@ -25,6 +25,7 @@ import {
     CreateUserDto, UpdateUserProfileDto, UserResponseDto, ListUsersResponseDto,
     UpdateProfileStatusDto, ListUsersQueryDto, SearchUsersQueryDto,
 } from 'application/dtos';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 
 // ============================================
@@ -33,7 +34,7 @@ import {
 // ============================================
 
 @Controller('users')
-@UseGuards(AuthGuard('jwt'), RolesGuard, PermissionsGuard)
+// @UseGuards(AuthGuard('jwt'), RolesGuard, PermissionsGuard)
 export class UserController {
     constructor(
         private readonly createUser: CreateUserUseCase,
@@ -63,6 +64,7 @@ export class UserController {
      * Create a new user (Registration)
      * Accessible by: Anyone (public endpoint - remove guards if needed)
      */
+    @Public()
     @Post()
     @HttpCode(HttpStatus.CREATED)
     async create(@Body() dto: CreateUserDto): Promise<{ user: UserResponseDto }> {
@@ -76,6 +78,7 @@ export class UserController {
      * Check if email is available
      * Accessible by: Anyone (public)
      */
+    @Public()
     @Post('check-email')
     @HttpCode(HttpStatus.OK)
     async checkEmail(@Body() dto: CheckEmailDto): Promise<AvailabilityResponseDto> {
@@ -87,6 +90,7 @@ export class UserController {
      * Check if username is available
      * Accessible by: Anyone (public)
      */
+    @Public()
     @Post('check-username')
     @HttpCode(HttpStatus.OK)
     async checkUsername(@Body() dto: CheckUsernameDto): Promise<AvailabilityResponseDto> {
@@ -103,8 +107,7 @@ export class UserController {
      * Accessible by: user, partner, platform, system admin
      */
     @Get('me')
-    @Roles('user', 'partner', 'platform', 'system admin')
-    async getMyProfile(@Req() req: any): Promise<{ user: UserResponseDto }> {
+    @Roles('user', 'partner', 'platform', 'system admin') async getMyProfile(@Req() req: any): Promise<{ user: UserResponseDto }> {
         const auth0User = req.user;
         console.log(auth0User);
         const user = await this.syncAuth0User.execute({
