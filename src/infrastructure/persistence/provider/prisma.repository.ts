@@ -2,7 +2,7 @@
 // PRISMA REPOSITORY IMPLEMENTATIONS
 // ============================================
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client/extension';
 import {
     ProviderSchedule,
 } from '../../../core/domain/provider/entities/provider-schedule.entity';

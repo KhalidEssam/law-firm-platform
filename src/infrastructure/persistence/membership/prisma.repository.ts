@@ -12,8 +12,6 @@ import { MembershipCoupon } from '../../../core/domain/membership/entities/membe
 import { MembershipCouponRedemption } from '../../../core/domain/membership/entities/membership-coupon-redemption.entity';
 import { MembershipQuotaUsage } from '../../../core/domain/membership/entities/membership-quota-usage.entity';
 import { QuotaResource } from '../../../core/domain/membership/value-objects/quota-resource.vo';
-// import { Money } from '../../../../core/domain/membership/value-objects/money.vo';
-// import { BillingCycle } from '../../../../core/domain/membership/value-objects/billing-cycle.vo';
 import {
     IMembershipRepository,
     IMembershipTierRepository,
@@ -23,10 +21,117 @@ import {
     IMembershipQuotaUsageRepository,
 } from '../../../core/application/membership/ports/repository';
 
+// Prisma 7 imports from generated path
+import {
+    Prisma,
+    BillingCycle as PrismaBillingCycle,
+    Currency as PrismaCurrency,
+    PaymentStatus as PrismaPaymentStatus,
+    DiscountType as PrismaDiscountType,
+} from '@prisma/client';
+
+// ============================================
+// ENUM MAPPERS
+// ============================================
+
+class BillingCycleMapper {
+    private static readonly toPrismaMap: Record<string, PrismaBillingCycle> = {
+        'monthly': PrismaBillingCycle.monthly,
+        'quarterly': PrismaBillingCycle.quarterly,
+        'yearly': PrismaBillingCycle.yearly,
+    };
+
+    private static readonly toDomainMap: Record<PrismaBillingCycle, string> = {
+        [PrismaBillingCycle.monthly]: 'monthly',
+        [PrismaBillingCycle.quarterly]: 'quarterly',
+        [PrismaBillingCycle.yearly]: 'yearly',
+    };
+
+    static toPrisma(cycle: string): PrismaBillingCycle {
+        return this.toPrismaMap[cycle.toLowerCase()] || PrismaBillingCycle.monthly;
+    }
+
+    static toDomain(prismaCycle: PrismaBillingCycle): string {
+        return this.toDomainMap[prismaCycle];
+    }
+}
+
+class CurrencyMapper {
+    private static readonly toPrismaMap: Record<string, PrismaCurrency> = {
+        'SAR': PrismaCurrency.SAR,
+        'USD': PrismaCurrency.USD,
+        'EUR': PrismaCurrency.EUR,
+    };
+
+    private static readonly toDomainMap: Record<PrismaCurrency, string> = {
+        [PrismaCurrency.SAR]: 'SAR',
+        [PrismaCurrency.USD]: 'USD',
+        [PrismaCurrency.EUR]: 'EUR',
+    };
+
+    static toPrisma(currency: string): PrismaCurrency {
+        return this.toPrismaMap[currency.toUpperCase()] || PrismaCurrency.SAR;
+    }
+
+    static toDomain(prismaCurrency: PrismaCurrency): string {
+        return this.toDomainMap[prismaCurrency];
+    }
+}
+
+class PaymentStatusMapper {
+    private static readonly toPrismaMap: Record<string, PrismaPaymentStatus> = {
+        'pending': PrismaPaymentStatus.pending,
+        'paid': PrismaPaymentStatus.paid,
+        'completed': PrismaPaymentStatus.paid,
+        'failed': PrismaPaymentStatus.failed,
+        'refunded': PrismaPaymentStatus.refunded,
+        'partially_refunded': PrismaPaymentStatus.partially_refunded,
+    };
+
+    private static readonly toDomainMap: Record<PrismaPaymentStatus, string> = {
+        [PrismaPaymentStatus.pending]: 'pending',
+        [PrismaPaymentStatus.paid]: 'completed',
+        [PrismaPaymentStatus.failed]: 'failed',
+        [PrismaPaymentStatus.refunded]: 'refunded',
+        [PrismaPaymentStatus.partially_refunded]: 'partially_refunded',
+    };
+
+    static toPrisma(status: string): PrismaPaymentStatus {
+        return this.toPrismaMap[status.toLowerCase()] || PrismaPaymentStatus.pending;
+    }
+
+    static toDomain(prismaStatus: PrismaPaymentStatus): string {
+        return this.toDomainMap[prismaStatus];
+    }
+}
+
+class DiscountTypeMapper {
+    private static readonly toPrismaMap: Record<string, PrismaDiscountType> = {
+        'percentage': PrismaDiscountType.percentage,
+        'fixed': PrismaDiscountType.fixed,
+    };
+
+    private static readonly toDomainMap: Record<PrismaDiscountType, string> = {
+        [PrismaDiscountType.percentage]: 'percentage',
+        [PrismaDiscountType.fixed]: 'fixed',
+    };
+
+    static toPrisma(type: string): PrismaDiscountType {
+        return this.toPrismaMap[type.toLowerCase()] || PrismaDiscountType.percentage;
+    }
+
+    static toDomain(prismaType: PrismaDiscountType): string {
+        return this.toDomainMap[prismaType];
+    }
+}
+
+// ============================================
+// PRISMA MEMBERSHIP REPOSITORY
+// ============================================
 
 @Injectable()
 export class PrismaMembershipRepository implements IMembershipRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     // ============================================
     // MAPPERS
@@ -46,11 +151,10 @@ export class PrismaMembershipRepository implements IMembershipRepository {
         });
     }
 
-    private mapToPrisma(membership: Membership): any {
+    private mapToPrisma(membership: Membership): Prisma.MembershipUpdateInput {
         return {
-            id: membership.id,
-            userId: membership.userId,
-            tierId: membership.tierId,
+            user: { connect: { id: membership.userId } },
+            tier: { connect: { id: membership.tierId } },
             startDate: membership.startDate,
             endDate: membership.endDate,
             isActive: membership.isActive,
@@ -64,11 +168,17 @@ export class PrismaMembershipRepository implements IMembershipRepository {
     // ============================================
 
     async create(membership: Membership): Promise<Membership> {
-        const data = this.mapToPrisma(membership);
         const created = await this.prisma.membership.create({
             data: {
-                ...data,
+                id: membership.id,
+                user: { connect: { id: membership.userId } },
+                tier: { connect: { id: membership.tierId } },
+                startDate: membership.startDate,
+                endDate: membership.endDate,
+                isActive: membership.isActive,
+                autoRenew: membership.autoRenew,
                 createdAt: new Date(),
+                updatedAt: new Date(),
             },
         });
         return this.mapToDomain(created);
@@ -109,7 +219,7 @@ export class PrismaMembershipRepository implements IMembershipRepository {
         limit?: number;
         offset?: number;
     }): Promise<Membership[]> {
-        const where: any = {};
+        const where: Prisma.MembershipWhereInput = {};
 
         if (options?.isActive !== undefined) {
             where.isActive = options.isActive;
@@ -129,7 +239,7 @@ export class PrismaMembershipRepository implements IMembershipRepository {
     }
 
     async count(options?: { isActive?: boolean; tierId?: number }): Promise<number> {
-        const where: any = {};
+        const where: Prisma.MembershipWhereInput = {};
 
         if (options?.isActive !== undefined) {
             where.isActive = options.isActive;
@@ -146,10 +256,16 @@ export class PrismaMembershipRepository implements IMembershipRepository {
     // ============================================
 
     async update(membership: Membership): Promise<Membership> {
-        const data = this.mapToPrisma(membership);
         const updated = await this.prisma.membership.update({
             where: { id: membership.id },
-            data,
+            data: {
+                tierId: membership.tierId,
+                startDate: membership.startDate,
+                endDate: membership.endDate,
+                isActive: membership.isActive,
+                autoRenew: membership.autoRenew,
+                updatedAt: new Date(),
+            },
         });
         return this.mapToDomain(updated);
     }
@@ -250,7 +366,7 @@ export class PrismaMembershipRepository implements IMembershipRepository {
 
 @Injectable()
 export class PrismaMembershipTierRepository implements IMembershipTierRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     private mapToDomain(data: any): MembershipTier {
         return MembershipTier.rehydrate({
@@ -260,21 +376,14 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
             description: data.description,
             descriptionAr: data.descriptionAr,
             price: data.price,
-            currency: data.currency,
-            billingCycle: data.billingCycle,
-            // consultationsPerMonth: data.consultationsPerMonth,
-            // opinionsPerMonth: data.opinionsPerMonth,
-            // servicesPerMonth: data.servicesPerMonth,
-            // casesPerMonth: data.casesPerMonth,
-            // callMinutesPerMonth: data.callMinutesPerMonth,
+            currency: CurrencyMapper.toDomain(data.currency),
+            billingCycle: BillingCycleMapper.toDomain(data.billingCycle),
             benefits: data.benefits,
             isActive: data.isActive,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
         });
     }
-
-
 
     async hasActiveMemberships(tierId: number): Promise<boolean> {
         const count = await this.prisma.membership.count({
@@ -294,7 +403,6 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
         return tiers.map((t) => this.mapToDomain(t));
     }
 
-
     async findById(id: number): Promise<MembershipTier | null> {
         const tier = await this.prisma.membershipTier.findUnique({
             where: { id },
@@ -310,7 +418,7 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
     }
 
     async findAll(options?: { isActive?: boolean }): Promise<MembershipTier[]> {
-        const where: any = {};
+        const where: Prisma.MembershipTierWhereInput = {};
         if (options?.isActive !== undefined) {
             where.isActive = options.isActive;
         }
@@ -326,6 +434,7 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
     async findActive(): Promise<MembershipTier[]> {
         return this.findAll({ isActive: true });
     }
+
     async create(tier: MembershipTier): Promise<MembershipTier> {
         const created = await this.prisma.membershipTier.create({
             data: {
@@ -334,16 +443,16 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
                 description: tier.description,
                 descriptionAr: tier.descriptionAr,
                 price: tier.price.amount,
-                currency: tier.price.currency,
-                billingCycle: tier.billingCycle.value,
-                benefits: tier.benefits ? (tier.benefits as any) : undefined,
+                currency: CurrencyMapper.toPrisma(tier.price.currency),
+                billingCycle: BillingCycleMapper.toPrisma(tier.billingCycle.value),
+                benefits: tier.benefits ? (tier.benefits as Prisma.InputJsonValue) : Prisma.JsonNull,
                 isActive: tier.isActive,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
         });
 
-        // 👇 Create tier services with quotas if provided
+        // Create tier services with quotas if provided
         if (tier.quota) {
             await this.createTierServices(created.id, tier.quota);
         }
@@ -360,44 +469,38 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
                 description: tier.description,
                 descriptionAr: tier.descriptionAr,
                 price: tier.price.amount,
-                currency: tier.price.currency,
-                billingCycle: tier.billingCycle.value,
-                benefits: tier.benefits ? (tier.benefits as any) : undefined,
+                currency: CurrencyMapper.toPrisma(tier.price.currency),
+                billingCycle: BillingCycleMapper.toPrisma(tier.billingCycle.value),
+                benefits: tier.benefits ? (tier.benefits as Prisma.InputJsonValue) : Prisma.JsonNull,
                 isActive: tier.isActive,
                 updatedAt: new Date(),
             },
         });
 
-        // 👇 Update tier services
+        // Update tier services
         if (tier.quota) {
-            // Delete existing tier services
             await this.prisma.tierService.deleteMany({
                 where: { tierId: tier.id },
             });
-
-            // Create new tier services
             await this.createTierServices(tier.id, tier.quota);
         }
 
         return this.mapToDomain(updated);
     }
 
-    // 👇 Helper method to create tier services
+    // Helper method to create tier services
     private async createTierServices(tierId: number, quota: any): Promise<void> {
-        // Fetch service IDs by their codes
         const services = await this.prisma.service.findMany({
             where: {
                 code: {
-                    in: ['CONSULTATION', 'LEGAL_OPINION', 'SERVICE_REQUEST', 'LITIGATION', 'CALL_REQUEST']
-                }
+                    in: ['CONSULTATION', 'LEGAL_OPINION', 'SERVICE_REQUEST', 'LITIGATION', 'CALL_REQUEST'],
+                },
             },
-            select: { id: true, code: true }
+            select: { id: true, code: true },
         });
 
-        // Create a map of service codes to UUIDs
-        const serviceMap = new Map<string, string>(services.map(s => [s.code, s.id]));
+        const serviceMap = new Map<string, string>(services.map((s) => [s.code, s.id]));
 
-        // Build the tier services array with proper typing
         const tierServices: Array<{
             tierId: number;
             serviceId: string;
@@ -450,7 +553,6 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
             });
         }
 
-        // Create all tier services in one go
         if (tierServices.length > 0) {
             await this.prisma.tierService.createMany({
                 data: tierServices,
@@ -487,7 +589,7 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
 
 @Injectable()
 export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     private mapToDomain(data: any): MembershipPayment {
         return MembershipPayment.rehydrate({
@@ -496,8 +598,8 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
             provider: data.provider,
             providerTxnId: data.providerTxnId,
             amount: data.amount,
-            currency: data.currency,
-            status: data.status,
+            currency: CurrencyMapper.toDomain(data.currency),
+            status: PaymentStatusMapper.toDomain(data.status),
             metadata: data.metadata,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -512,9 +614,9 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
                 provider: payment.provider,
                 providerTxnId: payment.providerTxnId,
                 amount: payment.amount.amount,
-                currency: payment.amount.currency,
-                status: payment.status,
-                metadata: payment.metadata as any,
+                currency: CurrencyMapper.toPrisma(payment.amount.currency),
+                status: PaymentStatusMapper.toPrisma(payment.status),
+                metadata: payment.metadata as Prisma.InputJsonValue,
                 createdAt: payment.createdAt,
                 updatedAt: payment.updatedAt,
             },
@@ -545,11 +647,11 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
 
     async findByMembership(
         membershipId: string,
-        options?: { status?: string; limit?: number; offset?: number }
+        options?: { status?: string; limit?: number; offset?: number },
     ): Promise<MembershipPayment[]> {
-        const where: any = { invoiceId: membershipId };
+        const where: Prisma.MembershipPaymentWhereInput = { invoiceId: membershipId };
         if (options?.status) {
-            where.status = options.status;
+            where.status = PaymentStatusMapper.toPrisma(options.status);
         }
 
         const payments = await this.prisma.membershipPayment.findMany({
@@ -567,8 +669,8 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
             where: { id: payment.id },
             data: {
                 providerTxnId: payment.providerTxnId,
-                status: payment.status,
-                metadata: payment.metadata as any,
+                status: PaymentStatusMapper.toPrisma(payment.status),
+                metadata: payment.metadata as Prisma.InputJsonValue,
                 updatedAt: new Date(),
             },
         });
@@ -580,7 +682,7 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
             where: { id: paymentId },
             data: {
                 providerTxnId,
-                status: 'completed',
+                status: PrismaPaymentStatus.paid,
                 updatedAt: new Date(),
             },
         });
@@ -598,8 +700,8 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
         const updated = await this.prisma.membershipPayment.update({
             where: { id: paymentId },
             data: {
-                status: 'failed',
-                metadata: metadata as any,
+                status: PrismaPaymentStatus.failed,
+                metadata: metadata as Prisma.InputJsonValue,
                 updatedAt: new Date(),
             },
         });
@@ -621,8 +723,8 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
         const updated = await this.prisma.membershipPayment.update({
             where: { id: paymentId },
             data: {
-                status: 'refunded',
-                metadata: metadata as any,
+                status: PrismaPaymentStatus.refunded,
+                metadata: metadata as Prisma.InputJsonValue,
                 updatedAt: new Date(),
             },
         });
@@ -634,7 +736,9 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
         endDate?: Date;
         tierId?: number;
     }): Promise<number> {
-        const where: any = { status: 'completed' };
+        const where: Prisma.MembershipPaymentWhereInput = { 
+            status: PrismaPaymentStatus.paid,
+        };
 
         if (options?.startDate || options?.endDate) {
             where.createdAt = {};
@@ -647,7 +751,7 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
             _sum: { amount: true },
         });
 
-        return result._sum.amount || 0;
+        return Number(result._sum.amount) || 0;
     }
 
     async getPaymentStats(options?: { startDate?: Date; endDate?: Date }): Promise<{
@@ -657,7 +761,7 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
         failed: number;
         refunded: number;
     }> {
-        const where: any = {};
+        const where: Prisma.MembershipPaymentWhereInput = {};
 
         if (options?.startDate || options?.endDate) {
             where.createdAt = {};
@@ -667,10 +771,18 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
 
         const [total, completed, pending, failed, refunded] = await Promise.all([
             this.prisma.membershipPayment.count({ where }),
-            this.prisma.membershipPayment.count({ where: { ...where, status: 'completed' } }),
-            this.prisma.membershipPayment.count({ where: { ...where, status: 'pending' } }),
-            this.prisma.membershipPayment.count({ where: { ...where, status: 'failed' } }),
-            this.prisma.membershipPayment.count({ where: { ...where, status: 'refunded' } }),
+            this.prisma.membershipPayment.count({ 
+                where: { ...where, status: PrismaPaymentStatus.paid } 
+            }),
+            this.prisma.membershipPayment.count({ 
+                where: { ...where, status: PrismaPaymentStatus.pending } 
+            }),
+            this.prisma.membershipPayment.count({ 
+                where: { ...where, status: PrismaPaymentStatus.failed } 
+            }),
+            this.prisma.membershipPayment.count({ 
+                where: { ...where, status: PrismaPaymentStatus.refunded } 
+            }),
         ]);
 
         return { total, completed, pending, failed, refunded };
@@ -683,17 +795,17 @@ export class PrismaMembershipPaymentRepository implements IMembershipPaymentRepo
 
 @Injectable()
 export class PrismaMembershipCouponRepository implements IMembershipCouponRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     private mapToDomain(data: any): MembershipCoupon {
         return MembershipCoupon.rehydrate({
             id: data.id,
             code: data.code,
-            discountPercentage: data.discountPercentage,
+            discountPercentage: Number(data.discountValue),
             validFrom: data.validFrom,
             validUntil: data.validUntil,
-            usageLimit: data.usageLimit,
-            usedCount: data.usedCount,
+            usageLimit: data.maxRedemptions,
+            usedCount: data.currentRedemptions,
             isActive: data.isActive,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
@@ -706,9 +818,9 @@ export class PrismaMembershipCouponRepository implements IMembershipCouponReposi
                 id: coupon.id,
                 code: coupon.code,
                 discountValue: coupon.discountPercentage,
+                discountType: PrismaDiscountType.percentage,
                 validFrom: coupon.validFrom,
                 validUntil: coupon.validUntil,
-                discountType: 'percentage',
                 maxRedemptions: coupon.usageLimit,
                 currentRedemptions: coupon.usedCount,
                 isActive: coupon.isActive,
@@ -739,7 +851,7 @@ export class PrismaMembershipCouponRepository implements IMembershipCouponReposi
         limit?: number;
         offset?: number;
     }): Promise<MembershipCoupon[]> {
-        const where: any = {};
+        const where: Prisma.MembershipCouponWhereInput = {};
 
         if (options?.isActive !== undefined) {
             where.isActive = options.isActive;
@@ -775,7 +887,7 @@ export class PrismaMembershipCouponRepository implements IMembershipCouponReposi
                 maxRedemptions: coupon.usageLimit,
                 currentRedemptions: coupon.usedCount,
                 isActive: coupon.isActive,
-                // updatedAt: new Date(),
+                updatedAt: new Date(),
             },
         });
         return this.mapToDomain(updated);
@@ -833,14 +945,13 @@ export class PrismaMembershipCouponRepository implements IMembershipCouponReposi
     }
 }
 
-
 // ============================================
 // PRISMA MEMBERSHIP COUPON REDEMPTION REPOSITORY
 // ============================================
 
 @Injectable()
 export class PrismaMembershipCouponRedemptionRepository implements IMembershipCouponRedemptionRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     private mapToDomain(data: any): MembershipCouponRedemption {
         return MembershipCouponRedemption.create({
@@ -908,10 +1019,9 @@ export class PrismaMembershipCouponRedemptionRepository implements IMembershipCo
 
 @Injectable()
 export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsageRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     private mapToDomain(data: any): MembershipQuotaUsage {
-        // Parse usage JSON to proper format
         const usage: Partial<Record<QuotaResource, number>> = {};
 
         if (data.consultationsUsed !== null) {
@@ -987,9 +1097,9 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
 
     async findByMembership(
         membershipId: string,
-        options?: { startDate?: Date; endDate?: Date }
+        options?: { startDate?: Date; endDate?: Date },
     ): Promise<MembershipQuotaUsage[]> {
-        const where: any = { membershipId };
+        const where: Prisma.MembershipQuotaUsageWhereInput = { membershipId };
 
         if (options?.startDate || options?.endDate) {
             where.AND = [];
@@ -1024,13 +1134,11 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
     async incrementUsage(
         membershipId: string,
         resource: QuotaResource,
-        amount: number
+        amount: number,
     ): Promise<MembershipQuotaUsage> {
-        // Get current quota usage
         let quotaUsage = await this.findCurrentByMembership(membershipId);
 
         if (!quotaUsage) {
-            // Create new quota period if not exists
             const membership = await this.prisma.membership.findUnique({
                 where: { id: membershipId },
             });
@@ -1044,11 +1152,10 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
                     membershipId,
                     periodStart: new Date(),
                     periodEnd: membership.endDate || new Date(),
-                })
+                }),
             );
         }
 
-        // Increment usage
         const updatedQuota = quotaUsage.incrementUsage(resource, amount);
         return await this.update(updatedQuota);
     }
@@ -1056,7 +1163,7 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
     async getRemainingQuota(
         membershipId: string,
         resource: QuotaResource,
-        tierLimit?: number
+        tierLimit?: number,
     ): Promise<number | null> {
         if (tierLimit === undefined || tierLimit === null) {
             return null; // Unlimited
@@ -1072,7 +1179,7 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
         membershipId: string,
         resource: QuotaResource,
         required: number,
-        tierLimit?: number
+        tierLimit?: number,
     ): Promise<boolean> {
         if (tierLimit === undefined || tierLimit === null) {
             return true; // Unlimited quota
@@ -1096,7 +1203,6 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
             throw new Error('Membership not found');
         }
 
-        // Create new quota period with zero usage
         return await this.create(
             MembershipQuotaUsage.create({
                 membershipId,
@@ -1109,8 +1215,7 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
                 },
                 periodStart: new Date(),
                 periodEnd: membership.endDate || new Date(),
-            })
+            }),
         );
     }
 }
-

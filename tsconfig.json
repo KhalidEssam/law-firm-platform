@@ -22,6 +22,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src"], // ✅ only compile source files
+  "include": ["src", "prisma.config.ts"], // ✅ only compile source files
   "exclude": ["node_modules", "dist"] // ✅ never compile generated files
 }

@@ -5,7 +5,16 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
+import {
+
+  Prisma,
+
+  RequestStatus as PrismaRequestStatus,
+
+  PaymentStatus as PrismaPaymentStatus,
+
+} from'@prisma/client';
+
 import {
   ILegalOpinionRequestRepository,
   OpinionRequestFilters,
@@ -50,9 +59,8 @@ import { DeliveryFormat } from 'src/core/domain/legal-opinion/value-objects/deli
 
 @Injectable()
 export class PrismaLegalOpinionRequestRepository
-  implements ILegalOpinionRequestRepository
-{
-  constructor(private readonly prisma: PrismaService) {}
+  implements ILegalOpinionRequestRepository {
+  constructor(private readonly prisma: PrismaService) { }
 
   // ============================================
   // BASIC CRUD OPERATIONS
@@ -186,8 +194,9 @@ export class PrismaLegalOpinionRequestRepository
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<LegalOpinionRequest>> {
     const where: Prisma.LegalOpinionRequestWhereInput = {
-      status: 'completed',
-      paymentStatus: 'pending',
+      status: PrismaRequestStatus.completed,
+
+      paymentStatus: PrismaPaymentStatus.pending,
       deletedAt: null,
     };
 
@@ -274,15 +283,23 @@ export class PrismaLegalOpinionRequestRepository
 
     // Payment stats
     const paidCount = await this.prisma.legalOpinionRequest.count({
-      where: { ...where, paymentStatus: 'paid' },
-    });
-    const unpaidCount = await this.prisma.legalOpinionRequest.count({
-      where: { ...where, paymentStatus: { in: ['pending'] } },
+      where: { ...where, paymentStatus: PrismaPaymentStatus.paid },
+
     });
 
+    const unpaidCount = await this.prisma.legalOpinionRequest.count({
+
+      where: { ...where, paymentStatus: { in: [PrismaPaymentStatus.pending] } },
+
+    });
+
+
+
     // Revenue statistics
+
     const revenueStats = await this.prisma.legalOpinionRequest.aggregate({
-      where: { ...where, quoteAmount: { not: null }, paymentStatus: 'paid' },
+
+      where: { ...where, quoteAmount: { not: null }, paymentStatus: PrismaPaymentStatus.paid },
       _sum: { quoteAmount: true },
       _avg: { quoteAmount: true },
     });
@@ -339,7 +356,7 @@ export class PrismaLegalOpinionRequestRepository
     return this.prisma.legalOpinionRequest.count({
       where: {
         assignedProviderId: lawyerId.getValue(),
-        status: { in: ['in_progress', 'quote_accepted'] },
+        status: { in: [PrismaRequestStatus.in_progress, PrismaRequestStatus.quote_accepted] },
         deletedAt: null,
       },
     });
@@ -429,15 +446,17 @@ export class PrismaLegalOpinionRequestRepository
       const dbStatuses = Array.isArray(filters.status)
         ? filters.status.map((s) => this.mapDomainStatusToDb(s))
         : this.mapDomainStatusToDb(filters.status);
-
-      where.status = Array.isArray(dbStatuses)
-        ? { in: dbStatuses }
-        : dbStatuses;
+      //Fix this 
     }
 
     // Payment status
     if (filters.isPaid !== undefined) {
-      where.paymentStatus = filters.isPaid ? 'paid' : { in: ['pending'] };
+     where.paymentStatus = filters.isPaid
+
+        ? PrismaPaymentStatus.paid
+
+        : { in: [PrismaPaymentStatus.pending] };
+
     }
 
     // Search term (search in subject and description)
@@ -514,37 +533,61 @@ export class PrismaLegalOpinionRequestRepository
    * COMPLETED → completed
    * CANCELLED → cancelled
    */
-  private mapDomainStatusToDb(status: OpinionStatus | string): string {
-    const statusMap: Record<string, string> = {
-      [OpinionStatus.DRAFT]: 'pending',
-      [OpinionStatus.SUBMITTED]: 'pending',
-      [OpinionStatus.UNDER_REVIEW]: 'pending',
-      [OpinionStatus.ASSIGNED]: 'quote_sent',
-      [OpinionStatus.RESEARCH_PHASE]: 'quote_accepted',
-      [OpinionStatus.DRAFTING]: 'in_progress',
-      [OpinionStatus.INTERNAL_REVIEW]: 'in_progress',
-      [OpinionStatus.REVISION_REQUESTED]: 'in_progress',
-      [OpinionStatus.REVISING]: 'in_progress',
-      [OpinionStatus.COMPLETED]: 'completed',
-      [OpinionStatus.CANCELLED]: 'cancelled',
-      [OpinionStatus.REJECTED]: 'cancelled',
+ private mapDomainStatusToDb(status: OpinionStatus | string): PrismaRequestStatus {
+
+    const statusMap: Record<string, PrismaRequestStatus> = {
+
+      [OpinionStatus.DRAFT]: PrismaRequestStatus.pending,
+
+      [OpinionStatus.SUBMITTED]: PrismaRequestStatus.pending,
+
+      [OpinionStatus.UNDER_REVIEW]: PrismaRequestStatus.pending,
+
+      [OpinionStatus.ASSIGNED]: PrismaRequestStatus.quote_sent,
+
+      [OpinionStatus.RESEARCH_PHASE]: PrismaRequestStatus.quote_accepted,
+
+      [OpinionStatus.DRAFTING]: PrismaRequestStatus.in_progress,
+
+      [OpinionStatus.INTERNAL_REVIEW]: PrismaRequestStatus.in_progress,
+
+      [OpinionStatus.REVISION_REQUESTED]: PrismaRequestStatus.in_progress,
+
+      [OpinionStatus.REVISING]: PrismaRequestStatus.in_progress,
+
+      [OpinionStatus.COMPLETED]: PrismaRequestStatus.completed,
+
+      [OpinionStatus.CANCELLED]: PrismaRequestStatus.cancelled,
+
+      [OpinionStatus.REJECTED]: PrismaRequestStatus.cancelled,
+
     };
 
-    return statusMap[status as string] || 'pending';
+ 
+
+    return statusMap[status as string] || PrismaRequestStatus.pending;
   }
 
   /**
    * Map Database Status to Domain Status
    */
-  private mapDbStatusToDomain(dbStatus: string): OpinionStatus {
+   private mapDbStatusToDomain(dbStatus: PrismaRequestStatus | string): OpinionStatus {
+
     const statusMap: Record<string, OpinionStatus> = {
-      pending: OpinionStatus.SUBMITTED,
-      quote_sent: OpinionStatus.ASSIGNED,
-      quote_accepted: OpinionStatus.RESEARCH_PHASE,
-      in_progress: OpinionStatus.DRAFTING,
-      completed: OpinionStatus.COMPLETED,
-      disputed: OpinionStatus.REVISION_REQUESTED,
-      cancelled: OpinionStatus.CANCELLED,
+
+      [PrismaRequestStatus.pending]: OpinionStatus.SUBMITTED,
+
+      [PrismaRequestStatus.quote_sent]: OpinionStatus.ASSIGNED,
+
+      [PrismaRequestStatus.quote_accepted]: OpinionStatus.RESEARCH_PHASE,
+
+      [PrismaRequestStatus.in_progress]: OpinionStatus.DRAFTING,
+
+      [PrismaRequestStatus.completed]: OpinionStatus.COMPLETED,
+
+      [PrismaRequestStatus.disputed]: OpinionStatus.REVISION_REQUESTED,
+
+      [PrismaRequestStatus.cancelled]: OpinionStatus.CANCELLED,
     };
 
     return statusMap[dbStatus] || OpinionStatus.SUBMITTED;
@@ -591,7 +634,7 @@ export class PrismaLegalOpinionRequestRepository
         opinion.estimatedCost?.getCurrency() ||
         opinion.finalCost?.getCurrency() ||
         'SAR',
-      paymentStatus: opinion.isPaid ? 'paid' : 'pending',
+      paymentStatus: opinion.isPaid ? PrismaPaymentStatus.paid : PrismaPaymentStatus.pending,
       paymentReference: opinion.paymentReference || null,
       submittedAt: opinion.submittedAt || new Date(),
       completedAt: opinion.completedAt || null,
@@ -622,7 +665,7 @@ export class PrismaLegalOpinionRequestRepository
       : undefined;
 
     const finalCost =
-      data.paymentStatus === 'paid' && data.quoteAmount
+      data.paymentStatus === PrismaPaymentStatus.paid && data.quoteAmount
         ? Money.create(data.quoteAmount, data.quoteCurrency || 'SAR')
         : undefined;
 
@@ -675,20 +718,19 @@ export class PrismaLegalOpinionRequestRepository
       // Pricing
       estimatedCost,
       finalCost,
-      isPaid: data.paymentStatus === 'paid',
+      isPaid: data.paymentStatus === PrismaPaymentStatus.paid,
       paymentReference: data.paymentReference,
 
       // Timestamps
       submittedAt: data.submittedAt,
       assignedAt:
-        data.status === 'quote_sent' || data.status === 'in_progress'
+        data.status === PrismaRequestStatus.quote_sent || data.status === PrismaRequestStatus.in_progress
           ? data.updatedAt
           : undefined,
       researchStartedAt:
-        data.status === 'in_progress' ? data.updatedAt : undefined,
+        data.status === PrismaRequestStatus.in_progress ? data.updatedAt : undefined,
       draftCompletedAt:
-        data.status === 'completed' ? data.completedAt : undefined,
-      reviewStartedAt: undefined,
+        data.status === PrismaRequestStatus.completed ? data.completedAt : undefined,
       completedAt: data.completedAt,
       expectedCompletionDate: data.quoteValidUntil,
 

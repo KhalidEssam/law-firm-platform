@@ -4,7 +4,7 @@
 // ============================================
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import {
     ILitigationCaseRepository,
     LitigationCaseFilters,
@@ -23,18 +23,89 @@ import {
     CaseTitle,
     CaseDescription,
     CaseStatus,
+    CaseStatusEnum,
     CourtName,
     CaseDetails,
     Money,
     QuoteDetails,
     PaymentStatus,
+    PaymentStatusEnum,
     PaymentReference,
 } from '../../../core/domain/litigation-case/value-objects/litigation-case.vo';
-import { LitigationCase as PrismaLitigationCase } from '@prisma/client';
+
+// Prisma 7 imports from generated path
+import {
+  LitigationCase as PrismaLitigationCase,
+    RequestStatus as PrismaRequestStatus,
+    PaymentStatus as PrismaPaymentStatus,
+    Currency as PrismaCurrency,
+    Prisma,
+} from '@prisma/client';
+
+// ============================================
+// ENUM MAPPERS
+// ============================================
+
+class CaseStatusMapper {
+    private static readonly toPrismaMap: Record<CaseStatusEnum, PrismaRequestStatus> = {
+        [CaseStatusEnum.PENDING]: PrismaRequestStatus.pending,
+        [CaseStatusEnum.QUOTE_SENT]: PrismaRequestStatus.quote_sent,
+        [CaseStatusEnum.QUOTE_ACCEPTED]: PrismaRequestStatus.quote_accepted,
+        [CaseStatusEnum.ACTIVE]: PrismaRequestStatus.in_progress,
+        [CaseStatusEnum.CLOSED]: PrismaRequestStatus.closed,
+        [CaseStatusEnum.CANCELLED]: PrismaRequestStatus.cancelled,
+    };
+
+    private static readonly toDomainMap: Record<PrismaRequestStatus, CaseStatusEnum> = {
+        [PrismaRequestStatus.pending]: CaseStatusEnum.PENDING,
+        [PrismaRequestStatus.assigned]: CaseStatusEnum.PENDING,
+        [PrismaRequestStatus.in_progress]: CaseStatusEnum.ACTIVE,
+        [PrismaRequestStatus.quote_sent]: CaseStatusEnum.QUOTE_SENT,
+        [PrismaRequestStatus.quote_accepted]: CaseStatusEnum.QUOTE_ACCEPTED,
+        [PrismaRequestStatus.completed]: CaseStatusEnum.CLOSED,
+        [PrismaRequestStatus.disputed]: CaseStatusEnum.ACTIVE,
+        [PrismaRequestStatus.cancelled]: CaseStatusEnum.CANCELLED,
+        [PrismaRequestStatus.closed]: CaseStatusEnum.CLOSED,
+    };
+
+    static toPrisma(status: CaseStatus): PrismaRequestStatus {
+        return this.toPrismaMap[status.getValue() as CaseStatusEnum];
+    }
+
+    static toDomain(prismaStatus: PrismaRequestStatus): CaseStatus {
+        return CaseStatus.create(this.toDomainMap[prismaStatus]);
+    }
+}
+
+class PaymentStatusMapper {
+    private static readonly toPrismaMap: Record<PaymentStatusEnum, PrismaPaymentStatus> = {
+        [PaymentStatusEnum.PENDING]: PrismaPaymentStatus.pending,
+        [PaymentStatusEnum.PAID]: PrismaPaymentStatus.paid,
+        [PaymentStatusEnum.REFUNDED]: PrismaPaymentStatus.refunded,
+        [PaymentStatusEnum.PARTIALLY_PAID]: PrismaPaymentStatus.partially_refunded,
+    };
+
+    private static readonly toDomainMap: Record<PrismaPaymentStatus, PaymentStatusEnum> = {
+        [PrismaPaymentStatus.pending]: PaymentStatusEnum.PENDING,
+        [PrismaPaymentStatus.paid]: PaymentStatusEnum.PAID,
+        [PrismaPaymentStatus.failed]: PaymentStatusEnum.PENDING,
+        [PrismaPaymentStatus.refunded]: PaymentStatusEnum.REFUNDED,
+        [PrismaPaymentStatus.partially_refunded]: PaymentStatusEnum.PARTIALLY_PAID,
+    };
+
+    static toPrisma(status: PaymentStatus): PrismaPaymentStatus {
+        return this.toPrismaMap[status.getValue() as PaymentStatusEnum];
+    }
+
+    static toDomain(prismaStatus: PrismaPaymentStatus | null): PaymentStatus {
+        if (!prismaStatus) return PaymentStatus.create(PaymentStatusEnum.PENDING);
+        return PaymentStatus.create(this.toDomainMap[prismaStatus]);
+    }
+}
 
 @Injectable()
 export class PrismaLitigationCaseRepository implements ILitigationCaseRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async save(litigationCase: LitigationCase): Promise<LitigationCase> {
         const data = this.toPrisma(litigationCase);
@@ -87,7 +158,7 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
         const sortBy = pagination?.sortBy || 'createdAt';
         const sortOrder = pagination?.sortOrder || 'desc';
 
-        const where = {
+        const where: Prisma.LitigationCaseWhereInput = {
             subscriberId: subscriberId.getValue(),
             deletedAt: null,
         };
@@ -118,7 +189,7 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
         const sortBy = pagination?.sortBy || 'createdAt';
         const sortOrder = pagination?.sortOrder || 'desc';
 
-        const where = {
+        const where: Prisma.LitigationCaseWhereInput = {
             assignedProviderId: providerId.getValue(),
             deletedAt: null,
         };
@@ -149,7 +220,7 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
         const sortBy = pagination.sortBy || 'createdAt';
         const sortOrder = pagination.sortOrder || 'desc';
 
-        const where: any = {
+        const where: Prisma.LitigationCaseWhereInput = {
             deletedAt: null,
         };
 
@@ -167,14 +238,14 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
 
         if (filters.status) {
             if (Array.isArray(filters.status)) {
-                where.status = { in: filters.status };
+                where.status = { in: filters.status as PrismaRequestStatus[] };
             } else {
-                where.status = filters.status;
+                where.status = filters.status as PrismaRequestStatus;
             }
         }
 
         if (filters.paymentStatus) {
-            where.paymentStatus = filters.paymentStatus;
+            where.paymentStatus = filters.paymentStatus as PrismaPaymentStatus;
         }
 
         if (filters.searchTerm) {
@@ -231,8 +302,8 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
         const sortBy = pagination?.sortBy || 'createdAt';
         const sortOrder = pagination?.sortOrder || 'desc';
 
-        const where = {
-            status: status.getValue(),
+        const where: Prisma.LitigationCaseWhereInput = {
+            status: CaseStatusMapper.toPrisma(status),
             deletedAt: null,
         };
 
@@ -272,7 +343,7 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
     }
 
     async count(filters?: LitigationCaseFilters): Promise<number> {
-        const where: any = { deletedAt: null };
+        const where: Prisma.LitigationCaseWhereInput = { deletedAt: null };
 
         if (filters?.subscriberId) {
             where.subscriberId = filters.subscriberId;
@@ -288,21 +359,21 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
 
         if (filters?.status) {
             if (Array.isArray(filters.status)) {
-                where.status = { in: filters.status };
+                where.status = { in: filters.status as PrismaRequestStatus[] };
             } else {
-                where.status = filters.status;
+                where.status = filters.status as PrismaRequestStatus;
             }
         }
 
         if (filters?.paymentStatus) {
-            where.paymentStatus = filters.paymentStatus;
+            where.paymentStatus = filters.paymentStatus as PrismaPaymentStatus;
         }
 
         return await this.prisma.litigationCase.count({ where });
     }
 
     async getStatistics(filters?: LitigationCaseFilters): Promise<LitigationCaseStatistics> {
-        const where: any = { deletedAt: null };
+        const where: Prisma.LitigationCaseWhereInput = { deletedAt: null };
 
         if (filters?.subscriberId) {
             where.subscriberId = filters.subscriberId;
@@ -314,9 +385,9 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
 
         if (filters?.status) {
             if (Array.isArray(filters.status)) {
-                where.status = { in: filters.status };
+                where.status = { in: filters.status as PrismaRequestStatus[] };
             } else {
-                where.status = filters.status;
+                where.status = filters.status as PrismaRequestStatus;
             }
         }
 
@@ -347,14 +418,14 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
                 byPaymentStatus[c.paymentStatus] = (byPaymentStatus[c.paymentStatus] || 0) + 1;
             }
 
-            if (c.quoteAmount && c.paymentStatus === 'paid') {
-                totalRevenue += c.quoteAmount;
+            if (c.quoteAmount && c.paymentStatus === PrismaPaymentStatus.paid) {
+                totalRevenue += Number(c.quoteAmount);
             }
         }
 
-        const activeCount = byStatus['active'] || 0;
-        const closedCount = byStatus['closed'] || 0;
-        const paidCount = byPaymentStatus['paid'] || 0;
+        const activeCount = byStatus[PrismaRequestStatus.in_progress] || 0;
+        const closedCount = byStatus[PrismaRequestStatus.closed] || 0;
+        const paidCount = byPaymentStatus[PrismaPaymentStatus.paid] || 0;
         const averageRevenue = paidCount > 0 ? totalRevenue / paidCount : 0;
 
         return {
@@ -373,7 +444,7 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
     // MAPPING METHODS
     // ============================================
 
-    private toPrisma(litigationCase: LitigationCase): any {
+    private toPrisma(litigationCase: LitigationCase): Prisma.LitigationCaseCreateInput {
         const quoteAmount = litigationCase.quoteAmount;
         const caseDetails = litigationCase.caseDetails;
         const quoteDetails = litigationCase.quoteDetails;
@@ -381,21 +452,23 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
         return {
             id: litigationCase.id.getValue(),
             caseNumber: litigationCase.caseNumber.toString(),
-            subscriberId: litigationCase.subscriberId.getValue(),
-            assignedProviderId: litigationCase.assignedProviderId?.getValue() || null,
+            subscriber: { connect: { id: litigationCase.subscriberId.getValue() } },
+            assignedProvider: litigationCase.assignedProviderId
+                ? { connect: { id: litigationCase.assignedProviderId.getValue() } }
+                : undefined,
             caseType: litigationCase.caseType.getValue(),
             caseSubtype: litigationCase.caseSubtype?.getValue() || null,
             title: litigationCase.title.getValue(),
             description: litigationCase.description.getValue(),
             courtName: litigationCase.courtName?.getValue() || null,
-            caseDetails: caseDetails ? caseDetails.toJSON() : null,
-            status: litigationCase.status.getValue(),
+            caseDetails: caseDetails ? (caseDetails.toJSON() as Prisma.InputJsonValue) : Prisma.JsonNull,
+            status: CaseStatusMapper.toPrisma(litigationCase.status),
             quoteAmount: quoteAmount?.getAmount() || null,
-            quoteCurrency: quoteAmount?.getCurrency() || null,
-            quoteDetails: quoteDetails ? quoteDetails.toJSON() : null,
+            quoteCurrency: (quoteAmount?.getCurrency() as PrismaCurrency) || null,
+            quoteDetails: quoteDetails ? (quoteDetails.toJSON() as Prisma.InputJsonValue) : Prisma.JsonNull,
             quoteValidUntil: litigationCase.quoteValidUntil || null,
             quoteAcceptedAt: litigationCase.quoteAcceptedAt || null,
-            paymentStatus: litigationCase.paymentStatus.getValue(),
+            paymentStatus: PaymentStatusMapper.toPrisma(litigationCase.paymentStatus),
             paymentReference: litigationCase.paymentReference?.getValue() || null,
             submittedAt: litigationCase.submittedAt,
             closedAt: litigationCase.closedAt || null,
@@ -418,15 +491,19 @@ export class PrismaLitigationCaseRepository implements ILitigationCaseRepository
             title: CaseTitle.create(prisma.title),
             description: CaseDescription.create(prisma.description),
             courtName: prisma.courtName ? CourtName.create(prisma.courtName) : undefined,
-            caseDetails: prisma.caseDetails ? CaseDetails.create(prisma.caseDetails as any) : undefined,
-            status: CaseStatus.create(prisma.status),
-            quoteAmount: prisma.quoteAmount && prisma.quoteCurrency
-                ? Money.create(prisma.quoteAmount, prisma.quoteCurrency)
+            caseDetails: prisma.caseDetails 
+                ? CaseDetails.create(prisma.caseDetails as Record<string, any>) 
                 : undefined,
-            quoteDetails: prisma.quoteDetails ? QuoteDetails.create(prisma.quoteDetails as any) : undefined,
+            status: CaseStatusMapper.toDomain(prisma.status),
+            quoteAmount: prisma.quoteAmount && prisma.quoteCurrency
+                ? Money.create(Number(prisma.quoteAmount), prisma.quoteCurrency)
+                : undefined,
+            quoteDetails: prisma.quoteDetails 
+                ? QuoteDetails.create(prisma.quoteDetails as Record<string, any>) 
+                : undefined,
             quoteValidUntil: prisma.quoteValidUntil || undefined,
             quoteAcceptedAt: prisma.quoteAcceptedAt || undefined,
-            paymentStatus: PaymentStatus.create(prisma.paymentStatus || 'pending'),
+            paymentStatus: PaymentStatusMapper.toDomain(prisma.paymentStatus),
             paymentReference: prisma.paymentReference
                 ? PaymentReference.create(prisma.paymentReference)
                 : undefined,

@@ -127,6 +127,9 @@ export class CaseType {
     }
 }
 
+
+import { RequestStatus as PrismaRequestStatus } from '@prisma/client';
+
 // ============================================
 // CASE STATUS
 // ============================================
@@ -154,8 +157,37 @@ export class CaseStatus {
         return new CaseStatus(normalizedValue);
     }
 
-    getValue(): string {
+    // Create from Prisma enum
+    static fromPrisma(prismaStatus: PrismaRequestStatus): CaseStatus {
+        const mapping: Record<PrismaRequestStatus, CaseStatusEnum> = {
+            [PrismaRequestStatus.pending]: CaseStatusEnum.PENDING,
+            [PrismaRequestStatus.assigned]: CaseStatusEnum.PENDING,
+            [PrismaRequestStatus.in_progress]: CaseStatusEnum.ACTIVE,
+            [PrismaRequestStatus.quote_sent]: CaseStatusEnum.QUOTE_SENT,
+            [PrismaRequestStatus.quote_accepted]: CaseStatusEnum.QUOTE_ACCEPTED,
+            [PrismaRequestStatus.completed]: CaseStatusEnum.CLOSED,
+            [PrismaRequestStatus.disputed]: CaseStatusEnum.ACTIVE,
+            [PrismaRequestStatus.cancelled]: CaseStatusEnum.CANCELLED,
+            [PrismaRequestStatus.closed]: CaseStatusEnum.CLOSED,
+        };
+        return new CaseStatus(mapping[prismaStatus]);
+    }
+
+    getValue(): CaseStatusEnum {
         return this.value;
+    }
+
+    // Convert to Prisma enum for queries
+    toPrisma(): PrismaRequestStatus {
+        const mapping: Record<CaseStatusEnum, PrismaRequestStatus> = {
+            [CaseStatusEnum.PENDING]: PrismaRequestStatus.pending,
+            [CaseStatusEnum.QUOTE_SENT]: PrismaRequestStatus.quote_sent,
+            [CaseStatusEnum.QUOTE_ACCEPTED]: PrismaRequestStatus.quote_accepted,
+            [CaseStatusEnum.ACTIVE]: PrismaRequestStatus.in_progress,
+            [CaseStatusEnum.CLOSED]: PrismaRequestStatus.closed,
+            [CaseStatusEnum.CANCELLED]: PrismaRequestStatus.cancelled,
+        };
+        return mapping[this.value];
     }
 
     equals(other: CaseStatus): boolean {

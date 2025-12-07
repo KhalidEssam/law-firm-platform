@@ -1,11 +1,13 @@
-
 // ============================================
 // PROVIDER MODULE
 // src/modules/provider/provider.module.ts
 // ============================================
 
 import { Module } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+
+// Import PrismaModule and PrismaService
+import { PrismaModule } from '../../prisma/prisma.module';
+import { PrismaService } from '../../prisma/prisma.service';
 
 // Controllers
 import {
@@ -62,6 +64,7 @@ import {
 } from '../../core/application/provider/use-cases/provider-usecase';
 
 @Module({
+    imports: [PrismaModule],  // ✅ Import PrismaModule
     controllers: [
         ProviderProfileController,
         ProviderUserController,
@@ -70,48 +73,35 @@ import {
     ],
     providers: [
         // ============================================
-        // PRISMA CLIENT
-        // ============================================
-        {
-            provide: 'PRISMA_CLIENT',
-            useFactory: () => {
-                const prisma = new PrismaClient({
-                    log: ['query', 'info', 'warn', 'error'],
-                });
-                return prisma;
-            },
-        },
-
-        // ============================================
-        // REPOSITORIES
+        // REPOSITORIES - Now inject PrismaService
         // ============================================
         {
             provide: 'PROVIDER_PROFILE_REPOSITORY',
-            useFactory: (prisma: PrismaClient) => {
+            useFactory: (prisma: PrismaService) => {
                 return new PrismaProviderProfileRepository(prisma);
             },
-            inject: ['PRISMA_CLIENT'],
+            inject: [PrismaService],  // ✅ Inject PrismaService
         },
         {
             provide: 'PROVIDER_USER_REPOSITORY',
-            useFactory: (prisma: PrismaClient) => {
+            useFactory: (prisma: PrismaService) => {
                 return new PrismaProviderUserRepository(prisma);
             },
-            inject: ['PRISMA_CLIENT'],
+            inject: [PrismaService],
         },
         {
             provide: 'PROVIDER_SERVICE_REPOSITORY',
-            useFactory: (prisma: PrismaClient) => {
+            useFactory: (prisma: PrismaService) => {
                 return new PrismaProviderServiceRepository(prisma);
             },
-            inject: ['PRISMA_CLIENT'],
+            inject: [PrismaService],
         },
         {
             provide: 'PROVIDER_SCHEDULE_REPOSITORY',
-            useFactory: (prisma: PrismaClient) => {
+            useFactory: (prisma: PrismaService) => {
                 return new PrismaProviderScheduleRepository(prisma);
             },
-            inject: ['PRISMA_CLIENT'],
+            inject: [PrismaService],
         },
 
         // ============================================
@@ -285,11 +275,10 @@ import {
         },
     ],
     exports: [
-        'PRISMA_CLIENT',
         'PROVIDER_PROFILE_REPOSITORY',
         'PROVIDER_USER_REPOSITORY',
         'PROVIDER_SERVICE_REPOSITORY',
         'PROVIDER_SCHEDULE_REPOSITORY',
     ],
 })
-export class ProviderModule { }
+export class ProviderModule {}

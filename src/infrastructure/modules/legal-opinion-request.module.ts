@@ -5,7 +5,6 @@
 
 import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
-
 // Controller
 import { LegalOpinionRequestController } from 'src/interface/http/legal-opinion-request.controller';
 

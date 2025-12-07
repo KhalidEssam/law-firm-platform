@@ -5,8 +5,16 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 
+// Prisma 7 imports from generated path
+import {
+    Prisma,
+    RequestStatus as PrismaRequestStatus,
+    Priority as PrismaPriority,
+    SLAStatus as PrismaSLAStatus,
+    RequestType as PrismaRequestType,
+    MessageType as PrismaMessageType,
+} from '@prisma/client';
 // Domain imports
 import {
     ConsultationRequest,
@@ -14,10 +22,13 @@ import {
     UserId,
     RequestNumber,
     ConsultationTypeVO,
+    ConsultationType,
     ConsultationStatusVO,
     ConsultationStatus,
     Urgency,
+    UrgencyLevel,
     SLAStatus,
+    // SLAStatusEnum,
     ConsultationCategory,
     Subject,
     Description,
@@ -38,6 +49,134 @@ import {
     RatingValue,
     RatingComment,
 } from '../../../core/domain/consultation/entities/consultation-request-entities';
+
+// ============================================
+// ENUM MAPPERS
+// ============================================
+
+class ConsultationStatusMapper {
+    private static readonly toPrismaMap: Record<ConsultationStatus, PrismaRequestStatus> = {
+        [ConsultationStatus.PENDING]: PrismaRequestStatus.pending,
+        [ConsultationStatus.ASSIGNED]: PrismaRequestStatus.assigned,
+        [ConsultationStatus.IN_PROGRESS]: PrismaRequestStatus.in_progress,
+        [ConsultationStatus.AWAITING_INFO]: PrismaRequestStatus.pending, // Map to closest
+        // [ConsultationStatus.QUOTE_SENT]: PrismaRequestStatus.quote_sent,
+        // [ConsultationStatus.QUOTE_ACCEPTED]: PrismaRequestStatus.quote_accepted,
+        [ConsultationStatus.COMPLETED]: PrismaRequestStatus.completed,
+        [ConsultationStatus.DISPUTED]: PrismaRequestStatus.disputed,
+        [ConsultationStatus.CANCELLED]: PrismaRequestStatus.cancelled,
+        [ConsultationStatus.RESPONDED]: PrismaRequestStatus.closed,
+    };
+
+    private static readonly toDomainMap: Record<PrismaRequestStatus, ConsultationStatus> = {
+        [PrismaRequestStatus.pending]: ConsultationStatus.PENDING,
+        [PrismaRequestStatus.assigned]: ConsultationStatus.ASSIGNED,
+        [PrismaRequestStatus.in_progress]: ConsultationStatus.IN_PROGRESS,
+        [PrismaRequestStatus.quote_sent]: ConsultationStatus.IN_PROGRESS,
+        [PrismaRequestStatus.quote_accepted]: ConsultationStatus.ASSIGNED,
+        [PrismaRequestStatus.completed]: ConsultationStatus.COMPLETED,
+        [PrismaRequestStatus.disputed]: ConsultationStatus.DISPUTED,
+        [PrismaRequestStatus.cancelled]: ConsultationStatus.CANCELLED,
+        [PrismaRequestStatus.closed]: ConsultationStatus.CANCELLED,
+    };
+
+    static toPrisma(status: ConsultationStatusVO | ConsultationStatus): PrismaRequestStatus {
+        const value = typeof status === 'string' ? status : status.getValue();
+        return this.toPrismaMap[value as ConsultationStatus] || PrismaRequestStatus.pending;
+    }
+
+    static toDomain(prismaStatus: PrismaRequestStatus): ConsultationStatusVO {
+        return ConsultationStatusVO.create(this.toDomainMap[prismaStatus]);
+    }
+}
+
+class UrgencyMapper {
+    private static readonly toPrismaMap: Record<string, PrismaPriority> = {
+        'low': PrismaPriority.low,
+        'normal': PrismaPriority.normal,
+        'high': PrismaPriority.high,
+        'urgent': PrismaPriority.urgent,
+    };
+
+    private static readonly toDomainMap: Record<PrismaPriority, string> = {
+        [PrismaPriority.low]: 'low',
+        [PrismaPriority.normal]: 'normal',
+        [PrismaPriority.high]: 'high',
+        [PrismaPriority.urgent]: 'urgent',
+    };
+
+    static toPrisma(urgency: Urgency): PrismaPriority {
+        return this.toPrismaMap[urgency.getValue()] || PrismaPriority.normal;
+    }
+
+    static toDomain(prismaPriority: PrismaPriority): Urgency {
+        return Urgency.create(this.toDomainMap[prismaPriority]);
+    }
+}
+
+class SLAStatusMapper {
+    private static readonly toPrismaMap: Record<string, PrismaSLAStatus> = {
+        'on_track': PrismaSLAStatus.on_track,
+        'at_risk': PrismaSLAStatus.at_risk,
+        'breached': PrismaSLAStatus.breached,
+    };
+
+    private static readonly toDomainMap: Record<PrismaSLAStatus, string> = {
+        [PrismaSLAStatus.on_track]: 'on_track',
+        [PrismaSLAStatus.at_risk]: 'at_risk',
+        [PrismaSLAStatus.breached]: 'breached',
+    };
+
+    static toPrisma(slaStatus: SLAStatus): PrismaSLAStatus {
+        return this.toPrismaMap[slaStatus.getValue()] || PrismaSLAStatus.on_track;
+    }
+
+    static toDomain(prismaSLAStatus: PrismaSLAStatus): SLAStatus {
+        return SLAStatus.create(this.toDomainMap[prismaSLAStatus]);
+    }
+}
+
+class ConsultationTypeMapper {
+    private static readonly toPrismaMap: Record<string, PrismaRequestType> = {
+        'consultation': PrismaRequestType.consultation,
+        'legal_opinion': PrismaRequestType.legal_opinion,
+        'service': PrismaRequestType.service,
+        'litigation': PrismaRequestType.litigation,
+        'call': PrismaRequestType.call,
+    };
+
+    private static readonly toDomainMap: Record<PrismaRequestType, string> = {
+        [PrismaRequestType.consultation]: 'consultation',
+        [PrismaRequestType.legal_opinion]: 'legal_opinion',
+        [PrismaRequestType.service]: 'service',
+        [PrismaRequestType.litigation]: 'litigation',
+        [PrismaRequestType.call]: 'call',
+    };
+
+    static toPrisma(type: ConsultationTypeVO): PrismaRequestType {
+        return this.toPrismaMap[type.getValue()] || PrismaRequestType.consultation;
+    }
+
+    static toDomain(prismaType: PrismaRequestType): ConsultationTypeVO {
+        return ConsultationTypeVO.create(this.toDomainMap[prismaType]);
+    }
+}
+
+class MessageTypeMapper {
+    static toPrisma(type: MessageType): PrismaMessageType {
+        const map: Record<string, PrismaMessageType> = {
+            'text': PrismaMessageType.text,
+            'info_request': PrismaMessageType.info_request,
+            'document_request': PrismaMessageType.document_request,
+            'system': PrismaMessageType.system,
+        };
+        return map[type] || PrismaMessageType.text;
+    }
+
+    static toDomain(prismaType: PrismaMessageType): MessageType {
+        return prismaType as MessageType;
+    }
+}
 
 // ============================================
 // INTERFACES
@@ -73,6 +212,7 @@ export interface PaginatedResult<T> {
         hasPrevious: boolean;
     };
 }
+
 // ============================================
 // MAIN REPOSITORY
 // ============================================
@@ -86,23 +226,27 @@ export class ConsultationRequestRepository {
     // ============================================
 
     async create(consultation: ConsultationRequest): Promise<ConsultationRequest> {
-        const data = {
+        const data: Prisma.ConsultationRequestCreateInput = {
             id: consultation.id.getValue(),
             requestNumber: consultation.requestNumber.getValue(),
-            subscriberId: consultation.subscriberId?.getValue() || '',
-            assignedProviderId: consultation.assignedProviderId?.getValue(),
-            consultationType: consultation.consultationType.getValue(),
+            subscriber: { connect: { id: consultation.subscriberId?.getValue() || '' } },
+            assignedProvider: consultation.assignedProviderId
+                ? { connect: { id: consultation.assignedProviderId.getValue() } }
+                : undefined,
+            consultationType: ConsultationTypeMapper.toPrisma(consultation.consultationType),
             category: consultation.category?.getValue(),
             subject: consultation.subject.getValue(),
             description: consultation.description.getValue(),
-            urgency: consultation.urgency.getValue(),
-            status: consultation.status.getValue(),
+            urgency: UrgencyMapper.toPrisma(consultation.urgency),
+            status: ConsultationStatusMapper.toPrisma(consultation.status),
             submittedAt: consultation.submittedAt,
             assignedAt: consultation.assignedAt,
             respondedAt: consultation.respondedAt,
             completedAt: consultation.completedAt,
             slaDeadline: consultation.slaDeadline,
-            slaStatus: consultation.slaStatus?.getValue(),
+            slaStatus: consultation.slaStatus
+                ? SLAStatusMapper.toPrisma(consultation.slaStatus)
+                : undefined,
             createdAt: consultation.createdAt,
             updatedAt: consultation.updatedAt,
             deletedAt: consultation.deletedAt,
@@ -173,7 +317,7 @@ export class ConsultationRequestRepository {
             where: { id: id.getValue() },
             data: {
                 assignedProviderId: providerId.getValue(),
-                status: ConsultationStatus.ASSIGNED,
+                status: PrismaRequestStatus.assigned,
                 assignedAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -200,7 +344,7 @@ export class ConsultationRequestRepository {
         const updated = await this.prisma.consultationRequest.update({
             where: { id: id.getValue() },
             data: {
-                status: status.getValue(),
+                status: ConsultationStatusMapper.toPrisma(status),
                 respondedAt: additionalData?.respondedAt,
                 completedAt: additionalData?.completedAt,
                 updatedAt: new Date(),
@@ -219,7 +363,7 @@ export class ConsultationRequestRepository {
             data: {
                 id: document.id.getValue(),
                 consultationId: document.consultationId.getValue(),
-                uploadedBy: document.uploadedBy.getValue(),
+                uploadedBy: document.uploadedBy.getValue(), // Direct string assignment
                 fileName: document.fileName.getValue(),
                 fileUrl: document.fileUrl.getValue(),
                 fileType: document.fileType,
@@ -233,7 +377,6 @@ export class ConsultationRequestRepository {
 
         return this.toDocumentDomain(created);
     }
-
     // ============================================
     // USE CASE 10: SEND MESSAGE
     // ============================================
@@ -242,10 +385,10 @@ export class ConsultationRequestRepository {
         const created = await this.prisma.requestMessage.create({
             data: {
                 id: message.id.getValue(),
-                consultationId: message.consultationId.getValue(),
-                senderId: message.senderId.getValue(),
+                consultationId: message.consultationId.getValue(), // Direct string
+                senderId: message.senderId.getValue(), // Direct string assignment
                 message: message.message.getValue(),
-                messageType: message.messageType,
+                messageType: MessageTypeMapper.toPrisma(message.messageType),
                 isRead: message.isRead,
                 sentAt: message.sentAt,
                 deletedAt: message.deletedAt,
@@ -263,8 +406,8 @@ export class ConsultationRequestRepository {
         const created = await this.prisma.requestRating.create({
             data: {
                 id: rating.id.getValue(),
-                consultationId: rating.consultationId.getValue(),
-                subscriberId: rating.subscriberId.getValue(),
+                consultation: { connect: { id: rating.consultationId.getValue() } },
+                subscriber: { connect: { id: rating.subscriberId.getValue() } },
                 rating: rating.rating.getValue(),
                 comment: rating.comment?.getValue(),
                 createdAt: rating.createdAt,
@@ -299,10 +442,8 @@ export class ConsultationRequestRepository {
     }> {
         const where = this.buildWhereClause(filters);
 
-        // Total count
         const total = await this.prisma.consultationRequest.count({ where });
 
-        // Group by status
         const statusGroups = await this.prisma.consultationRequest.groupBy({
             by: ['status'],
             where,
@@ -314,7 +455,6 @@ export class ConsultationRequestRepository {
             return acc;
         }, {} as Record<string, number>);
 
-        // Group by urgency
         const urgencyGroups = await this.prisma.consultationRequest.groupBy({
             by: ['urgency'],
             where,
@@ -326,7 +466,6 @@ export class ConsultationRequestRepository {
             return acc;
         }, {} as Record<string, number>);
 
-        // Group by SLA status
         const slaGroups = await this.prisma.consultationRequest.groupBy({
             by: ['slaStatus'],
             where,
@@ -340,7 +479,6 @@ export class ConsultationRequestRepository {
             return acc;
         }, {} as Record<string, number>);
 
-        // Calculate average response time (submittedAt to assignedAt)
         const assignedRecords = await this.prisma.consultationRequest.findMany({
             where: {
                 ...where,
@@ -356,11 +494,10 @@ export class ConsultationRequestRepository {
             assignedRecords.length > 0
                 ? assignedRecords.reduce((sum, record) => {
                     const diff = record.assignedAt!.getTime() - record.submittedAt.getTime();
-                    return sum + diff / (1000 * 60 * 60); // Convert to hours
+                    return sum + diff / (1000 * 60 * 60);
                 }, 0) / assignedRecords.length
                 : 0;
 
-        // Calculate average completion time
         const completedRecords = await this.prisma.consultationRequest.findMany({
             where: {
                 ...where,
@@ -376,12 +513,11 @@ export class ConsultationRequestRepository {
             completedRecords.length > 0
                 ? completedRecords.reduce((sum, record) => {
                     const diff = record.completedAt!.getTime() - record.submittedAt.getTime();
-                    return sum + diff / (1000 * 60 * 60); // Convert to hours
+                    return sum + diff / (1000 * 60 * 60);
                 }, 0) / completedRecords.length
                 : 0;
 
-        // SLA breach rate
-        const breachedCount = bySLAStatus['breached'] || 0;
+        const breachedCount = bySLAStatus[PrismaSLAStatus.breached] || 0;
         const slaBreachRate = total > 0 ? (breachedCount / total) * 100 : 0;
 
         return {
@@ -405,10 +541,9 @@ export class ConsultationRequestRepository {
                 slaDeadline: { not: null },
                 status: {
                     in: [
-                        ConsultationStatus.PENDING,
-                        ConsultationStatus.ASSIGNED,
-                        ConsultationStatus.IN_PROGRESS,
-                        ConsultationStatus.AWAITING_INFO,
+                        PrismaRequestStatus.pending,
+                        PrismaRequestStatus.assigned,
+                        PrismaRequestStatus.in_progress,
                     ],
                 },
                 deletedAt: null,
@@ -425,7 +560,7 @@ export class ConsultationRequestRepository {
         const updated = await this.prisma.consultationRequest.update({
             where: { id: id.getValue() },
             data: {
-                slaStatus: slaStatus.getValue(),
+                slaStatus: SLAStatusMapper.toPrisma(slaStatus),
                 updatedAt: new Date(),
             },
         });
@@ -472,26 +607,26 @@ export class ConsultationRequestRepository {
 
         if (filters.status) {
             where.status = Array.isArray(filters.status)
-                ? { in: filters.status }
-                : filters.status;
+                ? { in: filters.status as PrismaRequestStatus[] }
+                : (filters.status as PrismaRequestStatus);
         }
 
         if (filters.consultationType) {
             where.consultationType = Array.isArray(filters.consultationType)
-                ? { in: filters.consultationType }
-                : filters.consultationType;
+                ? { in: filters.consultationType as PrismaRequestType[] }
+                : (filters.consultationType as PrismaRequestType);
         }
 
         if (filters.urgency) {
             where.urgency = Array.isArray(filters.urgency)
-                ? { in: filters.urgency }
-                : filters.urgency;
+                ? { in: filters.urgency as PrismaPriority[] }
+                : (filters.urgency as PrismaPriority);
         }
 
         if (filters.slaStatus) {
             where.slaStatus = Array.isArray(filters.slaStatus)
-                ? { in: filters.slaStatus }
-                : filters.slaStatus;
+                ? { in: filters.slaStatus as PrismaSLAStatus[] }
+                : (filters.slaStatus as PrismaSLAStatus);
         }
 
         if (filters.submittedFrom || filters.submittedTo) {
@@ -515,7 +650,9 @@ export class ConsultationRequestRepository {
         return where;
     }
 
-    private buildOrderBy(pagination?: PaginationParams): Prisma.ConsultationRequestOrderByWithRelationInput {
+    private buildOrderBy(
+        pagination?: PaginationParams,
+    ): Prisma.ConsultationRequestOrderByWithRelationInput {
         if (!pagination?.sortBy) {
             return { createdAt: 'desc' };
         }
@@ -532,18 +669,18 @@ export class ConsultationRequestRepository {
             assignedProviderId: data.assignedProviderId
                 ? UserId.create(data.assignedProviderId)
                 : undefined,
-            consultationType: ConsultationTypeVO.create(data.consultationType),
+            consultationType: ConsultationTypeMapper.toDomain(data.consultationType),
             category: data.category ? ConsultationCategory.create(data.category) : undefined,
             subject: Subject.create(data.subject),
             description: Description.create(data.description),
-            urgency: Urgency.create(data.urgency),
-            status: ConsultationStatusVO.create(data.status),
+            urgency: UrgencyMapper.toDomain(data.urgency),
+            status: ConsultationStatusMapper.toDomain(data.status),
             submittedAt: data.submittedAt,
             assignedAt: data.assignedAt,
             respondedAt: data.respondedAt,
             completedAt: data.completedAt,
             slaDeadline: data.slaDeadline,
-            slaStatus: data.slaStatus ? SLAStatus.create(data.slaStatus) : undefined,
+            slaStatus: data.slaStatus ? SLAStatusMapper.toDomain(data.slaStatus) : undefined,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
             deletedAt: data.deletedAt,
@@ -572,7 +709,7 @@ export class ConsultationRequestRepository {
             consultationId: ConsultationId.create(data.consultationId),
             senderId: UserId.create(data.senderId),
             message: MessageContent.create(data.message),
-            messageType: data.messageType as MessageType,
+            messageType: MessageTypeMapper.toDomain(data.messageType),
             isRead: data.isRead,
             sentAt: data.sentAt,
             deletedAt: data.deletedAt,

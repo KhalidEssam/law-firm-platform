@@ -2,9 +2,8 @@
 // PAYMENT METHOD PRISMA REPOSITORY
 // Infrastructure Layer - Database Adapter
 // ============================================
-
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
 import {
     IPaymentMethodRepository,
     PaymentMethodFilters,
@@ -18,11 +17,56 @@ import {
     PaymentMethodId,
     UserId,
     PaymentMethodType,
+    PaymentMethodTypeEnum,
     PaymentMethodDetailsFactory,
     PaymentNickname,
     CardDetails,
 } from '../../../core/domain/payment-method/value-objects/payment-method.vo';
-import { PaymentMethod as PrismaPaymentMethod } from '@prisma/client';
+import {
+    PaymentMethod as PrismaPaymentMethod,
+    PaymentMethodType as PrismaPaymentMethodType,
+    Prisma, } from '@prisma/client';
+
+// ============================================
+// PAYMENT METHOD TYPE MAPPER
+// ============================================
+class PaymentMethodTypeMapper {
+    private static readonly toPrismaMap: Record<PaymentMethodTypeEnum, PrismaPaymentMethodType> = {
+        [PaymentMethodTypeEnum.CREDIT_CARD]: PrismaPaymentMethodType.credit_card,
+        [PaymentMethodTypeEnum.DEBIT_CARD]: PrismaPaymentMethodType.debit_card,
+        [PaymentMethodTypeEnum.WALLET]: PrismaPaymentMethodType.wallet,
+        [PaymentMethodTypeEnum.BANK_TRANSFER]: PrismaPaymentMethodType.bank_transfer,
+        [PaymentMethodTypeEnum.GOOGLE_PAY]: PrismaPaymentMethodType.wallet,
+        [PaymentMethodTypeEnum.APPLE_PAY]: PrismaPaymentMethodType.wallet,
+        [PaymentMethodTypeEnum.MADA]: PrismaPaymentMethodType.wallet,
+
+
+        
+    };
+
+    private static readonly toDomainMap: Record<PrismaPaymentMethodType, PaymentMethodTypeEnum> = {
+        [PrismaPaymentMethodType.credit_card]: PaymentMethodTypeEnum.CREDIT_CARD,
+        [PrismaPaymentMethodType.debit_card]: PaymentMethodTypeEnum.DEBIT_CARD,
+        [PrismaPaymentMethodType.wallet]: PaymentMethodTypeEnum.WALLET,
+        [PrismaPaymentMethodType.bank_transfer]: PaymentMethodTypeEnum.BANK_TRANSFER,
+        // [PrismaPaymentMethodType.mada]: PaymentMethodTypeEnum.MADA,
+        // [PrismaPaymentMethodType.google_pay]: PaymentMethodTypeEnum.GOOGLE_PAY,
+        // [PrismaPaymentMethodType.apple_pay]: PaymentMethodTypeEnum.APPLE_PAY
+    };
+
+    static toPrisma(type: PaymentMethodType): PrismaPaymentMethodType {
+        return this.toPrismaMap[type.getValue() as PaymentMethodTypeEnum];
+    }
+
+    static toPrismaFromString(type: string): PrismaPaymentMethodType {
+        return type as PrismaPaymentMethodType;
+    }
+
+    static toDomain(prismaType: PrismaPaymentMethodType): PaymentMethodType {
+        return PaymentMethodType.create(this.toDomainMap[prismaType]);
+    }
+}
+
 
 @Injectable()
 export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
@@ -135,7 +179,7 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
         };
     }
 
-    async findByType(
+   async findByType(
         type: PaymentMethodType,
         pagination?: PaginationParams,
     ): Promise<PaginatedResult<PaymentMethod>> {
@@ -145,8 +189,8 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
         const sortBy = pagination?.sortBy || 'createdAt';
         const sortOrder = pagination?.sortOrder || 'desc';
 
-        const where = {
-            type: type.getValue(),
+        const where: Prisma.PaymentMethodWhereInput = {
+            type: PaymentMethodTypeMapper.toPrisma(type),
             deletedAt: null,
         };
 
@@ -184,7 +228,7 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
         // For now, we'll fetch all cards and filter in memory (not ideal for large datasets)
         const allCards = await this.prisma.paymentMethod.findMany({
             where: {
-                type: { in: ['credit_card', 'debit_card', 'mada'] },
+                type: { in: ['credit_card', 'debit_card'] },
                 deletedAt: null,
             },
             orderBy: { [sortBy]: sortOrder },
