@@ -8,31 +8,285 @@ datasource db {
 }
 
 // ============================================
+// ENUMS
+// ============================================
+
+// User & Profile
+enum ProfileStatus {
+  pending
+  active
+  suspended
+  deactivated
+}
+
+enum Gender {
+  male
+  female
+  other
+  prefer_not_to_say
+}
+
+// Provider
+enum VerificationStatus {
+  pending
+  approved
+  rejected
+  suspended
+}
+
+enum ProviderUserRole {
+  account_manager
+  lawyer
+  assistant
+}
+
+// Request Statuses
+enum RequestStatus {
+  pending
+  assigned
+  in_progress
+  quote_sent
+  quote_accepted
+  completed
+  disputed
+  cancelled
+  closed
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+  partially_refunded
+}
+
+enum InvoiceStatus {
+  unpaid
+  paid
+  overdue
+  cancelled
+}
+
+// Priorities & Urgency
+enum Priority {
+  low
+  normal
+  high
+  urgent
+}
+
+// Payment & Billing
+enum PaymentMethodType {
+  credit_card
+  debit_card
+  wallet
+  bank_transfer
+}
+
+enum DiscountType {
+  percentage
+  fixed
+}
+
+enum BillingCycle {
+  monthly
+  quarterly
+  yearly
+}
+
+enum Currency {
+  SAR
+  USD
+  EUR
+}
+
+// SLA & Routing
+enum RequestType {
+  consultation
+  legal_opinion
+  service
+  litigation
+  call
+}
+
+enum RoutingStrategy {
+  round_robin
+  load_balanced
+  specialized
+  manual
+}
+
+// Dispute & Refund
+enum DisputeStatus {
+  open
+  under_review
+  resolved
+  escalated
+  closed
+}
+
+enum RefundStatus {
+  pending
+  approved
+  rejected
+  processed
+}
+
+// Notification & Messages
+enum NotificationChannel {
+  email
+  sms
+  push
+  in_app
+}
+
+enum MessageType {
+  text
+  info_request
+  document_request
+  system
+}
+
+// Job Queue
+enum JobStatus {
+  pending
+  processing
+  completed
+  failed
+  retrying
+}
+
+enum JobType {
+  email
+  sms
+  notification
+  report_generation
+  data_export
+}
+
+// Hearing Types
+enum HearingType {
+  initial
+  follow_up
+  verdict
+  appeal
+}
+
+// Address Types
+enum AddressType {
+  home
+  work
+  billing
+}
+
+// Ticket & Support
+enum TicketCategory {
+  technical
+  billing
+  general
+  complaint
+}
+
+enum TicketStatus {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+// Collaborator
+enum CollaboratorRole {
+  lead
+  support
+  reviewer
+}
+
+enum CollaboratorStatus {
+  pending
+  accepted
+  rejected
+}
+
+// Log Levels
+enum LogLevel {
+  error
+  warning
+  info
+  debug
+}
+
+// Report Types
+enum ReportType {
+  financial
+  operational
+  performance
+  compliance
+}
+
+// SLA Status
+enum SLAStatus {
+  on_track
+  at_risk
+  breached
+}
+
+// Transaction Types
+enum TransactionType {
+  subscription
+  wallet_topup
+  service_payment
+  refund
+}
+
+// Quote Status
+enum QuoteStatus {
+  pending
+  accepted
+  rejected
+  expired
+}
+
+// System Message Types
+enum SystemMessageType {
+  banner
+  modal
+  alert
+}
+
+enum Severity {
+  info
+  warning
+  error
+  success
+}
+
+// ============================================
 // USER & AUTH
 // ============================================
 model User {
-  id               String    @id @default(uuid())
-  auth0Id          String?   @unique
-  email            String    @unique
+  id               String        @id @default(uuid())
+  auth0Id          String?       @unique
+  email            String        @unique
   username         String
   nickname         String?
   fullName         String?
-  gender           String?
+  gender           Gender?
   ageGroup         String?
   nationality      String?
   employmentSector String?
   profession       String?
   city             String?
-  biography        String?   @db.VarChar(500) // Add this field
-  photo            String? // Add this field
+  biography        String?       @db.VarChar(500)
+  photo            String?
   personalEmail    String?
   loyaltyTier      String?
   subscriptionTier String?
-  profileStatus    String?   @default("pending")
-  mobileVerified   Boolean   @default(false)
-  emailVerified    Boolean   @default(false)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  profileStatus    ProfileStatus @default(pending)
+  mobileVerified   Boolean       @default(false)
+  emailVerified    Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   deletedAt        DateTime?
 
   roles         UserRole[]
@@ -74,6 +328,10 @@ model User {
 
   @@index([email])
   @@index([auth0Id])
+  @@index([profileStatus])
+  @@index([createdAt])
+  @@index([subscriptionTier])
+  @@index([deletedAt])
 }
 
 model UserPhoneNumber {
@@ -93,18 +351,18 @@ model UserPhoneNumber {
 }
 
 model UserAddress {
-  id         String    @id @default(uuid())
+  id         String      @id @default(uuid())
   userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type       String    @default("home") // home, work, billing
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       AddressType @default(home)
   street     String
   city       String
   state      String?
   country    String
   postalCode String?
-  isPrimary  Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  isPrimary  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   deletedAt  DateTime?
 
   @@index([userId, isPrimary])
@@ -173,26 +431,25 @@ model Membership {
   couponRedemptions MembershipCouponRedemption[]
   changeLogs        MembershipChangeLog[]
   quotaUsage        MembershipQuotaUsage[]
-  serviceUsage      ServiceUsage[] // 👈 ADD THIS
+  serviceUsage      ServiceUsage[]
+
+  @@index([isActive, endDate])
+  @@index([tierId, isActive])
+  @@index([userId, isActive, endDate])
 }
 
 model MembershipTier {
-  id            Int     @id @default(autoincrement())
-  name          String  @unique
+  id            Int          @id @default(autoincrement())
+  name          String       @unique
   nameAr        String?
   description   String?
   descriptionAr String?
   price         Float
-  currency      String  @default("SAR")
-  billingCycle  String  @default("monthly")
-
-  // Remove these hardcoded fields:
-  // consultationsPerMonth Int?
-  // opinionsPerMonth      Int?
-  // etc.
+  currency      Currency     @default(SAR)
+  billingCycle  BillingCycle @default(monthly)
 
   benefits   Json?
-  features   Json? // Array of feature descriptions
+  features   Json?
   isActive   Boolean @default(true)
   isFeatured Boolean @default(false)
   sortOrder  Int     @default(0)
@@ -201,9 +458,11 @@ model MembershipTier {
   updatedAt DateTime @updatedAt
 
   memberships       Membership[]
-  tierServices      TierService[] // 👈 Dynamic service quotas
+  tierServices      TierService[]
   oldTierChangeLogs MembershipChangeLog[] @relation("OldTier")
   newTierChangeLogs MembershipChangeLog[] @relation("NewTier")
+
+  @@index([isActive, sortOrder])
 }
 
 model MembershipChangeLog {
@@ -241,31 +500,32 @@ model MembershipQuotaUsage {
 // BILLING & PAYMENTS
 // ============================================
 model MembershipInvoice {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   membershipId  String
-  invoiceNumber String   @unique
+  invoiceNumber String        @unique
   amount        Float
-  currency      String   @default("SAR")
+  currency      Currency      @default(SAR)
   dueDate       DateTime
-  status        String   @default("unpaid") // unpaid, paid, overdue, cancelled
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        InvoiceStatus @default(unpaid)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   membership Membership          @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   payments   MembershipPayment[]
 
   @@index([membershipId])
   @@index([status, dueDate])
+  @@index([createdAt])
 }
 
 model MembershipPayment {
   id            String            @id @default(uuid())
   invoiceId     String
-  provider      String // moyasar, hyperpay, etc.
+  provider      String
   providerTxnId String?
   amount        Float
-  currency      String            @default("SAR")
-  status        String            @default("pending") // pending, completed, failed, refunded
+  currency      Currency          @default(SAR)
+  status        PaymentStatus     @default(pending)
   metadata      Json?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
@@ -273,6 +533,8 @@ model MembershipPayment {
 
   @@index([invoiceId])
   @@index([providerTxnId])
+  @@index([status, createdAt])
+  @@index([provider, providerTxnId])
 }
 
 model MembershipCoupon {
@@ -280,7 +542,7 @@ model MembershipCoupon {
   code               String                       @unique
   description        String?
   descriptionAr      String?
-  discountType       String // percentage, fixed
+  discountType       DiscountType
   discountValue      Float
   validFrom          DateTime
   validUntil         DateTime?
@@ -290,6 +552,8 @@ model MembershipCoupon {
   createdAt          DateTime                     @default(now())
   updatedAt          DateTime                     @default(now())
   redemptions        MembershipCouponRedemption[]
+
+  @@index([isActive, validFrom, validUntil])
 }
 
 model MembershipCouponRedemption {
@@ -306,18 +570,20 @@ model MembershipCouponRedemption {
 }
 
 model PaymentMethod {
-  id        String    @id @default(uuid())
+  id        String            @id @default(uuid())
   userId    String
-  type      String    // credit_card, debit_card, wallet
-  details   Json?     // Stores all extra data
-  isDefault Boolean   @default(false)
-  isActive  Boolean   @default(false)
-  createdAt DateTime  @default(now())
+  type      PaymentMethodType
+  details   Json?
+  isDefault Boolean           @default(false)
+  isActive  Boolean           @default(false)
+  createdAt DateTime          @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, isDefault])
+  @@index([userId, isActive])
 }
 
 model Refund {
@@ -326,12 +592,12 @@ model Refund {
 
   // Reference to original payment
   transactionLogId String?
-  paymentId        String? // MembershipPayment or other payment
+  paymentId        String?
 
   amount   Float
-  currency String @default("SAR")
+  currency Currency     @default(SAR)
   reason   String
-  status   String @default("pending") // pending, approved, rejected, processed
+  status   RefundStatus @default(pending)
 
   // Admin review
   reviewedBy  String?
@@ -360,9 +626,9 @@ model Dispute {
 
   reason      String
   description String
-  evidence    Json? // Array of document URLs
-  status      String @default("open") // open, under_review, resolved, escalated, closed
-  priority    String @default("normal")
+  evidence    Json?
+  status      DisputeStatus @default(open)
+  priority    Priority      @default(normal)
 
   // Resolution
   resolution String?
@@ -378,44 +644,47 @@ model Dispute {
 
   @@index([userId, status])
   @@index([status, priority])
+  @@index([createdAt])
 }
 
 model TransactionLog {
-  id        String   @id @default(uuid())
+  id        String          @id @default(uuid())
   userId    String
-  type      String // subscription, wallet_topup, service_payment, refund
+  type      TransactionType
   amount    Float
-  currency  String   @default("SAR")
+  currency  Currency        @default(SAR)
   reference String?
-  status    String
+  status    PaymentStatus
   metadata  Json?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([type, status])
+  @@index([createdAt])
+  @@index([reference])
 }
 
 // ============================================
 // LEGAL PROVIDERS
 // ============================================
 model ProviderProfile {
-  id                 String  @id @default(uuid())
-  userId             String  @unique
+  id                 String             @id @default(uuid())
+  userId             String             @unique
   organizationName   String
   organizationNameAr String?
-  licenseNumber      String  @unique
+  licenseNumber      String             @unique
   taxNumber          String?
   description        String?
   descriptionAr      String?
 
   // Status
-  verificationStatus String  @default("pending") // pending, approved, rejected, suspended
-  isActive           Boolean @default(false)
+  verificationStatus VerificationStatus @default(pending)
+  isActive           Boolean            @default(false)
 
   // Working hours
-  workingDays  Json? // {monday: true, tuesday: true, ...}
-  workingHours Json? // {start: "09:00", end: "17:00"}
+  workingDays  Json?
+  workingHours Json?
 
   // Contact
   businessEmail String?
@@ -430,23 +699,25 @@ model ProviderProfile {
   deletedAt DateTime?
 
   user              User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  specializations   ProviderSpecialization[] // 👈 ADD THIS
-  availabilitySlots AvailabilitySlot[] // 👈 ADD THIS
+  specializations   ProviderSpecialization[]
+  availabilitySlots AvailabilitySlot[]
   users             ProviderUser[]
   services          ProviderService[]
   schedules         ProviderSchedule[]
 
   @@index([verificationStatus])
+  @@index([isActive, verificationStatus])
+  @@index([createdAt])
 }
 
 model AvailabilitySlot {
   id         String   @id @default(uuid())
   providerId String
   date       DateTime @db.Date
-  startTime  String // HH:mm
+  startTime  String
   endTime    String
   isBooked   Boolean  @default(false)
-  bookedBy   String? // CallRequest ID
+  bookedBy   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -454,18 +725,19 @@ model AvailabilitySlot {
 
   @@unique([providerId, date, startTime])
   @@index([providerId, date, isBooked])
+  @@index([date, isBooked, providerId])
 }
 
 model ProviderUser {
-  id                String    @id @default(uuid())
+  id                String           @id @default(uuid())
   providerId        String
   userId            String
-  role              String // account_manager, lawyer, assistant
+  role              ProviderUserRole
   specializations   Json?
-  isActive          Boolean   @default(true)
-  canAcceptRequests Boolean   @default(true)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  isActive          Boolean          @default(true)
+  canAcceptRequests Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   deletedAt         DateTime?
 
   provider ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
@@ -475,6 +747,7 @@ model ProviderUser {
 
   @@unique([providerId, userId])
   @@index([providerId, isActive])
+  @@index([userId, isActive])
 }
 
 model ProviderReview {
@@ -601,8 +874,8 @@ model DocumentTemplate {
 // LEGAL OPINION REQUESTS
 // ============================================
 model LegalOpinionRequest {
-  id                 String  @id @default(uuid())
-  requestNumber      String  @unique
+  id                 String        @id @default(uuid())
+  requestNumber      String        @unique
   subscriberId       String
   assignedProviderId String?
 
@@ -610,11 +883,11 @@ model LegalOpinionRequest {
   description String
   caseDetails Json?
 
-  status String @default("pending") // pending, quote_sent, quote_accepted, in_progress, completed, disputed, cancelled
+  status RequestStatus @default(pending)
 
   // Quote
   quoteAmount     Float?
-  quoteCurrency   String?   @default("SAR")
+  quoteCurrency   Currency? @default(SAR)
   quoteValidUntil DateTime?
   quoteAcceptedAt DateTime?
 
@@ -628,7 +901,7 @@ model LegalOpinionRequest {
   disputeResolution String?
 
   // Payment
-  paymentStatus    String? @default("pending") // pending, paid, refunded
+  paymentStatus    PaymentStatus? @default(pending)
   paymentReference String?
 
   submittedAt DateTime  @default(now())
@@ -647,6 +920,9 @@ model LegalOpinionRequest {
 
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
+  @@index([status, paymentStatus])
+  @@index([createdAt])
+  @@index([quoteValidUntil])
 }
 
 // ============================================
@@ -654,26 +930,27 @@ model LegalOpinionRequest {
 // ============================================
 model Service {
   id                String   @id @default(uuid())
-  code              String   @unique // CONSULTATION, LEGAL_OPINION, etc.
+  code              String   @unique
   name              String
   nameAr            String
   description       String?
   descriptionAr     String?
-  category          String // consultation, document_review, litigation, etc.
+  category          String
   basePrice         Float?
-  currency          String   @default("SAR")
-  estimatedDuration Int? // in minutes
+  currency          Currency @default(SAR)
+  estimatedDuration Int?
   icon              String?
   isActive          Boolean  @default(true)
   sortOrder         Int      @default(0)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  serviceUsage     ServiceUsage[] // 👈 ADD THIS
+  serviceUsage     ServiceUsage[]
   tierServices     TierService[]
   providerServices ProviderService[]
 
   @@index([category, isActive])
+  @@index([isActive, sortOrder])
 }
 
 // Link services to membership tiers with quotas
@@ -709,25 +986,26 @@ model ServiceUsage {
   serviceRequestId String?
   litigationCaseId String?
   callRequestId    String?
-  usedAt      DateTime @default(now())
-  periodStart DateTime
-  periodEnd   DateTime
+  usedAt           DateTime @default(now())
+  periodStart      DateTime
+  periodEnd        DateTime
 
   // Billing
   chargedAmount Float?
-  currency      String  @default("SAR")
-  isBilled      Boolean @default(false)
+  currency      Currency @default(SAR)
+  isBilled      Boolean  @default(false)
 
   membership Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
   service    Service    @relation(fields: [serviceId], references: [id])
 
   @@index([membershipId, serviceId, periodStart])
   @@index([membershipId, usedAt])
+  @@index([isBilled, usedAt])
 }
 
 model ServiceRequest {
-  id                 String  @id @default(uuid())
-  requestNumber      String  @unique
+  id                 String        @id @default(uuid())
+  requestNumber      String        @unique
   subscriberId       String
   assignedProviderId String?
 
@@ -736,42 +1014,49 @@ model ServiceRequest {
   description  String
   requirements Json?
 
-  status String @default("pending") // pending, quote_sent, quote_accepted, in_progress, completed, cancelled
+  status RequestStatus @default(pending)
 
   submittedAt DateTime  @default(now())
   completedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
+
   subscriber       User  @relation(fields: [subscriberId], references: [id])
   assignedProvider User? @relation("AssignedProvider", fields: [assignedProviderId], references: [id])
+
   quote         ServiceQuote?
   documents     Document[]
   messages      RequestMessage[]
   statusHistory RequestStatusHistory[]
   rating        RequestRating?
+
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }
 
 model ServiceQuote {
-  id               String @id @default(uuid())
-  serviceRequestId String @unique
+  id               String      @id @default(uuid())
+  serviceRequestId String      @unique
   providerId       String
-  amount      Float
-  currency    String   @default("SAR")
-  breakdown   Json?
-  description String?
-  validUntil  DateTime
-  status     String    @default("pending") // pending, accepted, rejected, expired
-  acceptedAt DateTime?
-  rejectedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  amount           Float
+  currency         Currency    @default(SAR)
+  breakdown        Json?
+  description      String?
+  validUntil       DateTime
+  status           QuoteStatus @default(pending)
+  acceptedAt       DateTime?
+  rejectedAt       DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
   provider       User           @relation(fields: [providerId], references: [id])
+
   @@index([serviceRequestId])
+  @@index([status, validUntil])
 } 
 
 
@@ -779,8 +1064,8 @@ model ServiceQuote {
 // LITIGATION CASES
 // ============================================
 model LitigationCase {
-  id                 String  @id @default(uuid())
-  caseNumber         String  @unique
+  id                 String        @id @default(uuid())
+  caseNumber         String        @unique
   subscriberId       String
   assignedProviderId String?
 
@@ -790,16 +1075,17 @@ model LitigationCase {
   description String
   courtName   String?
   caseDetails Json?
-  status String @default("pending") // pending, quote_sent, quote_accepted, active, closed, cancelled
+  status      RequestStatus @default(pending)
+
   // Quote
   quoteAmount     Float?
-  quoteCurrency   String?   @default("SAR")
+  quoteCurrency   Currency?     @default(SAR)
   quoteDetails    Json?
   quoteValidUntil DateTime?
   quoteAcceptedAt DateTime?
 
   // Payment
-  paymentStatus    String? @default("pending")
+  paymentStatus    PaymentStatus? @default(pending)
   paymentReference String?
 
   submittedAt DateTime  @default(now())
@@ -819,31 +1105,34 @@ model LitigationCase {
 
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
+  @@index([caseType, status])
+  @@index([createdAt])
 }
 
 model CaseHearing {
-  id              String    @id @default(uuid())
+  id              String       @id @default(uuid())
   caseId          String
   hearingDate     DateTime
-  hearingType     String? // initial, follow_up, verdict
+  hearingType     HearingType?
   location        String?
   notes           String?
   outcome         String?
   nextHearingDate DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   case LitigationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
   @@index([caseId, hearingDate])
+  @@index([hearingDate])
 }
 
 // ============================================
 // CALL REQUESTS
 // ============================================
 model CallRequest {
-  id                 String  @id @default(uuid())
-  requestNumber      String  @unique
+  id                 String        @id @default(uuid())
+  requestNumber      String        @unique
   subscriberId       String
   assignedProviderId String?
 
@@ -852,18 +1141,18 @@ model CallRequest {
   preferredDate    DateTime?
   preferredTime    String?
 
-  status String @default("pending") // pending, scheduled, in_progress, completed, cancelled
+  status RequestStatus @default(pending)
 
   // Scheduled call details
   scheduledAt       DateTime?
-  scheduledDuration Int? // minutes
+  scheduledDuration Int?
   actualDuration    Int?
 
   // Call session
   callStartedAt DateTime?
   callEndedAt   DateTime?
   recordingUrl  String?
-  callPlatform  String? // zoom, google_meet, custom
+  callPlatform  String?
   callLink      String?
 
   submittedAt DateTime  @default(now())
@@ -881,6 +1170,8 @@ model CallRequest {
 
   @@index([subscriberId, status])
   @@index([assignedProviderId, scheduledAt])
+  @@index([status, scheduledAt])
+  @@index([createdAt])
 }
 
 // ============================================
@@ -921,10 +1212,10 @@ model Document {
 }
 
 model RequestMessage {
-  id          String @id @default(uuid())
+  id          String      @id @default(uuid())
   senderId    String
   message     String
-  messageType String @default("text") // text, info_request, document_request, system
+  messageType MessageType @default(text)
 
   // Polymorphic relations
   consultationId   String?
@@ -950,6 +1241,7 @@ model RequestMessage {
   @@index([serviceRequestId, sentAt])
   @@index([litigationCaseId, sentAt])
   @@index([callRequestId, sentAt])
+  @@index([senderId, sentAt])
 }
 
 model RequestComment {
@@ -1014,23 +1306,23 @@ model RequestCollaborator {
   serviceRequestId String?
   litigationCaseId String?
 
-  role        String? // lead, support, reviewer
-  status      String    @default("pending") // pending, accepted, rejected
-  invitedAt   DateTime  @default(now())
+  role        CollaboratorRole?
+  status      CollaboratorStatus @default(pending)
+  invitedAt   DateTime           @default(now())
   respondedAt DateTime?
 
   providerUser ProviderUser @relation(fields: [providerUserId], references: [id])
 
-  // 👇 Relation to ConsultationRequest
   consultation ConsultationRequest? @relation("ConsultationCollaborators", fields: [consultationId], references: [id])
 
   @@index([providerUserId])
   @@index([consultationId])
+  @@index([status])
 }
 
 model ConsultationRequest {
-  id                 String  @id @default(uuid())
-  requestNumber      String  @unique
+  id                 String        @id @default(uuid())
+  requestNumber      String        @unique
   subscriberId       String
   assignedProviderId String?
 
@@ -1038,15 +1330,15 @@ model ConsultationRequest {
   category         String?
   subject          String
   description      String
-  urgency          String  @default("normal")
-  status           String  @default("pending")
+  urgency          Priority      @default(normal)
+  status           RequestStatus @default(pending)
 
   submittedAt DateTime  @default(now())
   assignedAt  DateTime?
   respondedAt DateTime?
   completedAt DateTime?
   slaDeadline DateTime?
-  slaStatus   String?
+  slaStatus   SLAStatus?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -1059,7 +1351,6 @@ model ConsultationRequest {
   messages      RequestMessage[]
   statusHistory RequestStatusHistory[]
 
-  // 👇 Match the relation name exactly
   collaborators RequestCollaborator[] @relation("ConsultationCollaborators")
 
   rating RequestRating?
@@ -1067,6 +1358,11 @@ model ConsultationRequest {
   @@index([subscriberId, status])
   @@index([assignedProviderId, status])
   @@index([status, slaDeadline])
+  @@index([status, urgency])
+  @@index([createdAt])
+  @@index([slaStatus, slaDeadline])
+  @@index([subscriberId, createdAt])
+  @@index([status, assignedProviderId, slaDeadline])
 }
 
 model RequestRating {
@@ -1104,9 +1400,9 @@ model SupportTicket {
 
   subject     String
   description String
-  category    String // technical, billing, general
-  priority    String @default("normal") // low, normal, high
-  status      String @default("open") // open, in_progress, resolved, closed
+  category    TicketCategory
+  priority    Priority       @default(normal)
+  status      TicketStatus   @default(open)
 
   assignedTo String?
   resolvedAt DateTime?
@@ -1121,42 +1417,47 @@ model SupportTicket {
 
   @@index([subscriberId, status])
   @@index([status, priority])
+  @@index([createdAt])
+  @@index([assignedTo, status])
 }
 
 // ============================================
 // SLA & ROUTING
 // ============================================
 model SLAPolicy {
-  id          String @id @default(uuid())
-  name        String @unique
-  requestType String // consultation, legal_opinion, service, litigation, call
-  priority    String @default("normal")
+  id          String      @id @default(uuid())
+  name        String      @unique
+  requestType RequestType
+  priority    Priority    @default(normal)
 
-  responseTime   Int // minutes
-  resolutionTime Int // minutes
-  escalationTime Int? // minutes
+  responseTime   Int
+  resolutionTime Int
+  escalationTime Int?
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@index([requestType, priority])
+  @@index([isActive])
 }
 
 model RoutingRule {
-  id          String @id @default(uuid())
+  id          String          @id @default(uuid())
   name        String
-  requestType String
-  conditions  Json? // e.g., {category: "commercial", urgency: "high"}
-  priority    Int    @default(0)
+  requestType RequestType
+  conditions  Json?
+  priority    Int             @default(0)
 
-  routingStrategy String // round_robin, load_balanced, specialized
-  targetProviders Json? // Array of provider IDs or criteria
+  routingStrategy RoutingStrategy
+  targetProviders Json?
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([requestType, isActive])
+  @@index([isActive, priority])
 }
 
 // ============================================
@@ -1165,13 +1466,13 @@ model RoutingRule {
 model Notification {
   id        String  @id @default(uuid())
   userId    String
-  type      String // request_assigned, request_update, payment_due, etc.
+  type      String
   title     String
   titleAr   String?
   message   String
   messageAr String?
 
-  relatedEntityType String? // consultation, legal_opinion, etc.
+  relatedEntityType RequestType?
   relatedEntityId   String?
 
   isRead    Boolean   @default(false)
@@ -1179,40 +1480,45 @@ model Notification {
   createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, isRead])
   @@index([userId, createdAt])
+  @@index([userId, type, isRead])
+  @@index([createdAt])
 }
 
 model MessageTemplate {
-  id      String @id @default(uuid())
-  code    String @unique // CONSULTATION_ASSIGNED, PAYMENT_DUE, etc.
+  id      String              @id @default(uuid())
+  code    String              @unique
   name    String
-  channel String // email, sms, push, in_app
-  subject   String? // For emails
+  channel NotificationChannel
+  subject   String?
   subjectAr String?
-  body      String // With variables like {{userName}}, {{requestNumber}}
+  body      String
   bodyAr    String
 
-  variables Json? // List of available variables
+  variables Json?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([code, channel])
+  @@index([channel, isActive])
 }
 
 model NotificationPreference {
-  id        String   @id @default(uuid())
+  id        String              @id @default(uuid())
   userId    String
-  channel   String // email, sms, push, in_app
-  eventType String // request_assigned, payment_due, etc.
-  enabled   Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  channel   NotificationChannel
+  eventType String
+  enabled   Boolean             @default(true)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, channel, eventType])
+  @@index([userId, enabled])
 }
 
 // ============================================
@@ -1225,10 +1531,10 @@ model DiscountCampaign {
   description   String?
   descriptionAr String?
 
-  discountType  String // percentage, fixed
+  discountType  DiscountType
   discountValue Float
 
-  targetType     String // all, new_users, tier_based
+  targetType     String
   targetCriteria Json?
 
   validFrom          DateTime
@@ -1241,24 +1547,26 @@ model DiscountCampaign {
   updatedAt DateTime @updatedAt
 
   @@index([isActive, validFrom, validUntil])
+  @@index([targetType, isActive])
 }
 
 // ============================================
 // REPORTS & ANALYTICS
 // ============================================
 model Report {
-  id         String @id @default(uuid())
+  id         String     @id @default(uuid())
   name       String
-  reportType String // financial, operational, performance, compliance
+  reportType ReportType
   parameters Json?
 
   generatedBy String?
   generatedAt DateTime @default(now())
 
   fileUrl String?
-  status  String  @default("completed") // pending, completed, failed
+  status  JobStatus @default(completed)
 
   @@index([reportType, generatedAt])
+  @@index([status, generatedAt])
 }
 
 model AnalyticsMetric {
@@ -1294,28 +1602,29 @@ model Session {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   userId     String?
-  action     String // login, create_request, update_status, etc.
-  entityType String? // user, consultation, payment, etc.
+  action     String
+  entityType RequestType?
   entityId   String?
   details    Json?
   ipAddress  String?
   userAgent  String?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime     @default(now())
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
   @@index([entityType, entityId])
+  @@index([createdAt])
 }
 
 model DataExportRequest {
-  id          String @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String
-  requestType String // data_export, account_deletion
-  status      String @default("pending") // pending, processing, completed, failed
+  requestType String
+  status      JobStatus @default(pending)
 
   exportFileUrl String?
   completedAt   DateTime?
@@ -1325,6 +1634,7 @@ model DataExportRequest {
   updatedAt DateTime @updatedAt
 
   @@index([userId, status])
+  @@index([status, createdAt])
 }
 
 model ConsentLog {
@@ -1377,7 +1687,7 @@ model SystemConfig {
 
 model ErrorLog {
   id        String   @id @default(uuid())
-  level     String // error, warning, info
+  level     LogLevel
   message   String
   stack     String?
   context   Json?
@@ -1387,13 +1697,14 @@ model ErrorLog {
 
   @@index([level, createdAt])
   @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model JobQueue {
   id          String    @id @default(uuid())
-  type        String // email, sms, notification, report_generation, etc.
+  type        JobType
   payload     Json
-  status      String    @default("pending") // pending, processing, completed, failed, retrying
+  status      JobStatus @default(pending)
   priority    Int       @default(0)
   attempts    Int       @default(0)
   maxAttempts Int       @default(3)
@@ -1406,6 +1717,8 @@ model JobQueue {
 
   @@index([status, scheduledAt])
   @@index([type, status])
+  @@index([status, priority, scheduledAt])
+  @@index([createdAt])
 }
 
 // ============================================
@@ -1473,18 +1786,20 @@ model FAQ {
 }
 
 model SystemMessage {
-  id        String  @id @default(uuid())
-  type      String // banner, modal, alert
-  title     String
-  titleAr   String?
-  message   String
-  messageAr String?
-  severity  String // info, warning, error, success
-  targetUsers String? // all, subscribers, providers, admins
-  startDate DateTime
-  endDate   DateTime?
-  isActive  Boolean   @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String            @id @default(uuid())
+  type        SystemMessageType
+  title       String
+  titleAr     String?
+  message     String
+  messageAr   String?
+  severity    Severity
+  targetUsers String?
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
   @@index([isActive, startDate, endDate])
+  @@index([type, isActive])
 }
