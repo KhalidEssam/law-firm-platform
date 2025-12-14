@@ -1,0 +1,927 @@
+{
+  "info": {
+    "name": "Billing API Collection",
+    "description": "Complete API collection for testing Billing module endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"membershipId\": \"mem_123456789\",\n  \"amount\": 299.99,\n  \"currency\": \"SAR\",\n  \"dueDate\": \"2025-01-15T00:00:00.000Z\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices?limit=20&offset=0&status=unpaid&orderBy=createdAt&orderDir=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" },
+                { "key": "status", "value": "unpaid", "description": "unpaid | paid | overdue | cancelled" },
+                { "key": "membershipId", "value": "", "disabled": true },
+                { "key": "dueBefore", "value": "", "disabled": true },
+                { "key": "dueAfter", "value": "", "disabled": true },
+                { "key": "orderBy", "value": "createdAt", "description": "createdAt | dueDate | amount" },
+                { "key": "orderDir", "value": "desc", "description": "asc | desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Overdue Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/overdue",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "overdue"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoices Due Soon",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/due-soon?days=7",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "due-soon"],
+              "query": [
+                { "key": "days", "value": "7" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice by Number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/number/INV-2025-001234",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "number", "INV-2025-001234"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoices by Membership",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/membership/mem_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "membership", "mem_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Get Unpaid Invoices by Membership",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/membership/mem_123456789/unpaid",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "membership", "mem_123456789", "unpaid"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/inv_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "inv_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Mark Invoice as Paid",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/inv_123456789/paid",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "inv_123456789", "paid"]
+            }
+          }
+        },
+        {
+          "name": "Mark Invoice as Overdue",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/inv_123456789/overdue",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "inv_123456789", "overdue"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/inv_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "invoices", "inv_123456789"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Create Subscription Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "subscription"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"amount\": 99.99,\n  \"currency\": \"SAR\",\n  \"membershipId\": \"mem_123456789\",\n  \"metadata\": {\n    \"planName\": \"Premium\",\n    \"billingCycle\": \"monthly\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Wallet Topup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/wallet-topup",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "wallet-topup"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"amount\": 500.00,\n  \"currency\": \"SAR\",\n  \"paymentMethodId\": \"pm_visa_1234\",\n  \"metadata\": {\n    \"source\": \"mobile_app\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Service Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/service-payment",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "service-payment"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"amount\": 1500.00,\n  \"currency\": \"SAR\",\n  \"serviceRequestId\": \"sr_123456789\",\n  \"metadata\": {\n    \"serviceType\": \"legal_consultation\",\n    \"lawyerId\": \"lawyer_456\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions?limit=20&offset=0&orderBy=createdAt&orderDir=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" },
+                { "key": "userId", "value": "", "disabled": true },
+                { "key": "type", "value": "", "disabled": true, "description": "subscription | wallet_topup | service_payment | refund" },
+                { "key": "status", "value": "", "disabled": true, "description": "pending | paid | failed | refunded | partially_refunded" },
+                { "key": "fromDate", "value": "", "disabled": true },
+                { "key": "toDate", "value": "", "disabled": true },
+                { "key": "orderBy", "value": "createdAt", "description": "createdAt | amount" },
+                { "key": "orderDir", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "pending"]
+            }
+          }
+        },
+        {
+          "name": "Get Failed Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/failed",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "failed"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by Reference",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/reference/TXN-2025-ABC123",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "reference", "TXN-2025-ABC123"]
+            }
+          }
+        },
+        {
+          "name": "Get User Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/user/user_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "user", "user_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Get User Transaction Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/user/user_123456789/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "user", "user_123456789", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Get User Total Spent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/user/user_123456789/total-spent",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "user", "user_123456789", "total-spent"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/txn_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "txn_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Mark Transaction as Paid",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/txn_123456789/paid",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "txn_123456789", "paid"]
+            }
+          }
+        },
+        {
+          "name": "Mark Transaction as Failed",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/txn_123456789/failed",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "txn_123456789", "failed"]
+            }
+          }
+        },
+        {
+          "name": "Mark Transaction as Refunded",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/transactions/txn_123456789/refunded",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "transactions", "txn_123456789", "refunded"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refunds",
+      "item": [
+        {
+          "name": "Request Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"amount\": 150.00,\n  \"currency\": \"SAR\",\n  \"reason\": \"Service was not delivered as promised. The consultation was cancelled by the provider without prior notice.\",\n  \"transactionLogId\": \"txn_123456789\",\n  \"paymentId\": \"pay_123456789\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Refunds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds?limit=20&offset=0&orderBy=createdAt&orderDir=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" },
+                { "key": "userId", "value": "", "disabled": true },
+                { "key": "status", "value": "", "disabled": true, "description": "pending | approved | rejected | processed" },
+                { "key": "reviewedBy", "value": "", "disabled": true },
+                { "key": "fromDate", "value": "", "disabled": true },
+                { "key": "toDate", "value": "", "disabled": true },
+                { "key": "orderBy", "value": "createdAt", "description": "createdAt | amount | reviewedAt | processedAt" },
+                { "key": "orderDir", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Refunds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "pending"]
+            }
+          }
+        },
+        {
+          "name": "Get Approved Refunds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/approved",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "approved"]
+            }
+          }
+        },
+        {
+          "name": "Get Refund Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/statistics?fromDate=2025-01-01&toDate=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "statistics"],
+              "query": [
+                { "key": "fromDate", "value": "2025-01-01" },
+                { "key": "toDate", "value": "2025-12-31" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Total Refunded Amount",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/total-refunded",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "total-refunded"]
+            }
+          }
+        },
+        {
+          "name": "Get Pending Refund Amount",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/pending-amount",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "pending-amount"]
+            }
+          }
+        },
+        {
+          "name": "Get User Refunds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/user/user_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "user", "user_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Get Refund by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/ref_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "ref_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Approve Refund",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/ref_123456789/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "ref_123456789", "approve"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewedBy\": \"admin_user_123\",\n  \"reviewNotes\": \"Refund approved after verifying the service cancellation. Customer complaint is valid.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject Refund",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/ref_123456789/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "ref_123456789", "reject"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewedBy\": \"admin_user_123\",\n  \"reviewNotes\": \"Refund rejected. Service was delivered as per the agreement. No grounds for refund.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Process Refund",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/refunds/ref_123456789/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "refunds", "ref_123456789", "process"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refundReference\": \"REF-2025-XYZ789\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Disputes",
+      "item": [
+        {
+          "name": "Create Dispute",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"reason\": \"Service quality issue\",\n  \"description\": \"The legal consultation provided was not satisfactory. The lawyer did not address my specific concerns and provided generic advice that was not applicable to my case.\",\n  \"consultationId\": \"cons_123456789\",\n  \"evidence\": {\n    \"attachments\": [\"screenshot1.png\", \"email_thread.pdf\"],\n    \"witnesses\": [\"witness@email.com\"]\n  },\n  \"priority\": \"high\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Dispute (Legal Opinion)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"reason\": \"Delayed delivery\",\n  \"description\": \"The legal opinion was promised within 3 business days but was delivered after 2 weeks without any communication about the delay.\",\n  \"legalOpinionId\": \"lo_123456789\",\n  \"evidence\": {\n    \"orderDate\": \"2025-01-01\",\n    \"promisedDeliveryDate\": \"2025-01-04\",\n    \"actualDeliveryDate\": \"2025-01-15\"\n  },\n  \"priority\": \"normal\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Dispute (Service Request)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"reason\": \"Billing discrepancy\",\n  \"description\": \"I was charged 2000 SAR but the agreed price was 1500 SAR. Please review the invoice and correct the amount.\",\n  \"serviceRequestId\": \"sr_123456789\",\n  \"evidence\": {\n    \"agreedPrice\": 1500,\n    \"chargedAmount\": 2000,\n    \"quoteReference\": \"QUOTE-2025-001\"\n  },\n  \"priority\": \"urgent\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Dispute (Litigation Case)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user_123456789\",\n  \"reason\": \"Missed court deadline\",\n  \"description\": \"The assigned lawyer missed a critical court filing deadline which resulted in case dismissal. This is a serious professional negligence issue.\",\n  \"litigationCaseId\": \"lit_123456789\",\n  \"evidence\": {\n    \"deadlineDate\": \"2025-01-10\",\n    \"caseNumber\": \"COURT-2025-12345\",\n    \"dismissalNotice\": \"dismissal_notice.pdf\"\n  },\n  \"priority\": \"urgent\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Disputes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes?limit=20&offset=0&orderBy=createdAt&orderDir=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" },
+                { "key": "userId", "value": "", "disabled": true },
+                { "key": "status", "value": "", "disabled": true, "description": "open | under_review | resolved | escalated | closed" },
+                { "key": "priority", "value": "", "disabled": true, "description": "low | normal | high | urgent" },
+                { "key": "resolvedBy", "value": "", "disabled": true },
+                { "key": "escalatedTo", "value": "", "disabled": true },
+                { "key": "consultationId", "value": "", "disabled": true },
+                { "key": "legalOpinionId", "value": "", "disabled": true },
+                { "key": "serviceRequestId", "value": "", "disabled": true },
+                { "key": "litigationCaseId", "value": "", "disabled": true },
+                { "key": "fromDate", "value": "", "disabled": true },
+                { "key": "toDate", "value": "", "disabled": true },
+                { "key": "orderBy", "value": "createdAt", "description": "createdAt | priority | resolvedAt | escalatedAt" },
+                { "key": "orderDir", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Open Disputes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/open",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "open"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Disputes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get Escalated Disputes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/escalated",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "escalated"]
+            }
+          }
+        },
+        {
+          "name": "Get High Priority Disputes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/high-priority",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "high-priority"]
+            }
+          }
+        },
+        {
+          "name": "Get Disputes Requiring Attention",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/requiring-attention",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "requiring-attention"]
+            }
+          }
+        },
+        {
+          "name": "Get Dispute Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/statistics?fromDate=2025-01-01&toDate=2025-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "statistics"],
+              "query": [
+                { "key": "fromDate", "value": "2025-01-01" },
+                { "key": "toDate", "value": "2025-12-31" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Disputes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/user/user_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "user", "user_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Get Dispute by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/dsp_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "dsp_123456789"]
+            }
+          }
+        },
+        {
+          "name": "Start Dispute Review",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/dsp_123456789/review",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "dsp_123456789", "review"]
+            }
+          }
+        },
+        {
+          "name": "Escalate Dispute",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/dsp_123456789/escalate",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "dsp_123456789", "escalate"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"escalatedTo\": \"senior_manager_456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Resolve Dispute",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/dsp_123456789/resolve",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "dsp_123456789", "resolve"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolvedBy\": \"admin_user_123\",\n  \"resolution\": \"After thorough investigation, we have confirmed the customer's complaint. A full refund of 1500 SAR has been processed. Additionally, we have issued a 20% discount voucher for future services as a goodwill gesture.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Close Dispute",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/dsp_123456789/close",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "dsp_123456789", "close"]
+            }
+          }
+        },
+        {
+          "name": "Update Dispute Priority",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/dsp_123456789/priority",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "dsp_123456789", "priority"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priority\": \"urgent\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Add Dispute Evidence",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/disputes/dsp_123456789/evidence",
+              "host": ["{{baseUrl}}"],
+              "path": ["billing", "disputes", "dsp_123456789", "evidence"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"evidence\": {\n    \"additionalDocuments\": [\"contract_signed.pdf\", \"payment_receipt.pdf\"],\n    \"witnessStatement\": \"I witnessed the consultation and can confirm the service was substandard.\",\n    \"timestamp\": \"2025-01-15T10:30:00.000Z\"\n  }\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
