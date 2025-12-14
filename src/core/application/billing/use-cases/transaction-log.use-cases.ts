@@ -9,7 +9,7 @@ import { Money, CurrencyEnum } from '../../../domain/billing/value-objects/money
 import { TransactionType, TransactionTypeEnum } from '../../../domain/billing/value-objects/transaction-type.vo';
 import { PaymentStatus, PaymentStatusEnum } from '../../../domain/billing/value-objects/payment-status.vo';
 import {
-    ITransactionLogRepository,
+    type ITransactionLogRepository,
     TransactionLogListOptions,
     TransactionSummary,
 } from '../../../domain/billing/ports/transaction-log.repository';

@@ -8,7 +8,7 @@ import { Dispute } from '../../../domain/billing/entities/dispute.entity';
 import { DisputeStatus, DisputeStatusEnum } from '../../../domain/billing/value-objects/dispute-status.vo';
 import { Priority, PriorityEnum } from '../../../domain/billing/value-objects/priority.vo';
 import {
-    IDisputeRepository,
+    type IDisputeRepository,
     DisputeListOptions,
     DisputeStatistics,
 } from '../../../domain/billing/ports/dispute.repository';

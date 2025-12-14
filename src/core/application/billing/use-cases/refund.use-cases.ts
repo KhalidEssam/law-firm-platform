@@ -8,7 +8,7 @@ import { Refund } from '../../../domain/billing/entities/refund.entity';
 import { Money, CurrencyEnum } from '../../../domain/billing/value-objects/money.vo';
 import { RefundStatusEnum } from '../../../domain/billing/value-objects/refund-status.vo';
 import {
-    IRefundRepository,
+    type IRefundRepository,
     RefundListOptions,
     RefundStatistics,
 } from '../../../domain/billing/ports/refund.repository';

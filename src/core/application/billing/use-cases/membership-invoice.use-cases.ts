@@ -8,7 +8,7 @@ import { MembershipInvoice } from '../../../domain/billing/entities/membership-i
 import { Money, CurrencyEnum } from '../../../domain/billing/value-objects/money.vo';
 import { InvoiceStatusEnum } from '../../../domain/billing/value-objects/invoice-status.vo';
 import {
-    IMembershipInvoiceRepository,
+    type IMembershipInvoiceRepository,
     MembershipInvoiceListOptions
 } from '../../../domain/billing/ports/membership-invoice.repository';
 import {
