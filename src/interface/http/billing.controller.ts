@@ -144,63 +144,63 @@ import {
 export class BillingController {
     constructor(
         // Invoice use cases
-        private readonly createInvoice: CreateMembershipInvoiceUseCase,
-        private readonly getInvoiceById: GetMembershipInvoiceByIdUseCase,
-        private readonly getInvoiceByNumber: GetMembershipInvoiceByNumberUseCase,
-        private readonly listInvoices: ListMembershipInvoicesUseCase,
-        private readonly getInvoicesByMembership: GetInvoicesByMembershipUseCase,
-        private readonly markInvoicePaid: MarkInvoicePaidUseCase,
-        private readonly markInvoiceOverdue: MarkInvoiceOverdueUseCase,
-        private readonly cancelInvoice: CancelMembershipInvoiceUseCase,
-        private readonly getOverdueInvoices: GetOverdueInvoicesUseCase,
-        private readonly getInvoicesDueSoon: GetInvoicesDueSoonUseCase,
-        private readonly getUnpaidInvoicesByMembership: GetUnpaidInvoicesByMembershipUseCase,
-        private readonly getTotalUnpaidAmount: GetTotalUnpaidAmountUseCase,
+        private readonly createInvoiceUseCase: CreateMembershipInvoiceUseCase,
+        private readonly getInvoiceByIdUseCase: GetMembershipInvoiceByIdUseCase,
+        private readonly getInvoiceByNumberUseCase: GetMembershipInvoiceByNumberUseCase,
+        private readonly listInvoicesUseCase: ListMembershipInvoicesUseCase,
+        private readonly getInvoicesByMembershipUseCase: GetInvoicesByMembershipUseCase,
+        private readonly markInvoicePaidUseCase: MarkInvoicePaidUseCase,
+        private readonly markInvoiceOverdueUseCase: MarkInvoiceOverdueUseCase,
+        private readonly cancelInvoiceUseCase: CancelMembershipInvoiceUseCase,
+        private readonly getOverdueInvoicesUseCase: GetOverdueInvoicesUseCase,
+        private readonly getInvoicesDueSoonUseCase: GetInvoicesDueSoonUseCase,
+        private readonly getUnpaidInvoicesByMembershipUseCase: GetUnpaidInvoicesByMembershipUseCase,
+        private readonly getTotalUnpaidAmountUseCase: GetTotalUnpaidAmountUseCase,
         // Transaction use cases
-        private readonly createSubscriptionPayment: CreateSubscriptionPaymentUseCase,
-        private readonly createWalletTopup: CreateWalletTopupUseCase,
-        private readonly createServicePayment: CreateServicePaymentUseCase,
-        private readonly getTransactionById: GetTransactionLogByIdUseCase,
-        private readonly getTransactionByReference: GetTransactionByReferenceUseCase,
-        private readonly listTransactions: ListTransactionLogsUseCase,
-        private readonly getUserTransactions: GetUserTransactionsUseCase,
-        private readonly markTransactionPaid: MarkTransactionPaidUseCase,
-        private readonly markTransactionFailed: MarkTransactionFailedUseCase,
-        private readonly markTransactionRefunded: MarkTransactionRefundedUseCase,
-        private readonly getUserTransactionSummary: GetUserTransactionSummaryUseCase,
-        private readonly getPendingTransactions: GetPendingTransactionsUseCase,
-        private readonly getFailedTransactions: GetFailedTransactionsUseCase,
-        private readonly getTotalSpent: GetTotalSpentUseCase,
+        private readonly createSubscriptionPaymentUseCase: CreateSubscriptionPaymentUseCase,
+        private readonly createWalletTopupUseCase: CreateWalletTopupUseCase,
+        private readonly createServicePaymentUseCase: CreateServicePaymentUseCase,
+        private readonly getTransactionByIdUseCase: GetTransactionLogByIdUseCase,
+        private readonly getTransactionByReferenceUseCase: GetTransactionByReferenceUseCase,
+        private readonly listTransactionsUseCase: ListTransactionLogsUseCase,
+        private readonly getUserTransactionsUseCase: GetUserTransactionsUseCase,
+        private readonly markTransactionPaidUseCase: MarkTransactionPaidUseCase,
+        private readonly markTransactionFailedUseCase: MarkTransactionFailedUseCase,
+        private readonly markTransactionRefundedUseCase: MarkTransactionRefundedUseCase,
+        private readonly getUserTransactionSummaryUseCase: GetUserTransactionSummaryUseCase,
+        private readonly getPendingTransactionsUseCase: GetPendingTransactionsUseCase,
+        private readonly getFailedTransactionsUseCase: GetFailedTransactionsUseCase,
+        private readonly getTotalSpentUseCase: GetTotalSpentUseCase,
         // Refund use cases
-        private readonly requestRefund: RequestRefundUseCase,
-        private readonly getRefundById: GetRefundByIdUseCase,
-        private readonly listRefunds: ListRefundsUseCase,
-        private readonly getUserRefunds: GetUserRefundsUseCase,
-        private readonly approveRefund: ApproveRefundUseCase,
-        private readonly rejectRefund: RejectRefundUseCase,
-        private readonly processRefund: ProcessRefundUseCase,
-        private readonly getPendingRefunds: GetPendingRefundsUseCase,
-        private readonly getApprovedRefunds: GetApprovedRefundsUseCase,
-        private readonly getRefundStatistics: GetRefundStatisticsUseCase,
-        private readonly getTotalRefundedAmount: GetTotalRefundedAmountUseCase,
-        private readonly getPendingRefundAmount: GetPendingRefundAmountUseCase,
+        private readonly requestRefundUseCase: RequestRefundUseCase,
+        private readonly getRefundByIdUseCase: GetRefundByIdUseCase,
+        private readonly listRefundsUseCase: ListRefundsUseCase,
+        private readonly getUserRefundsUseCase: GetUserRefundsUseCase,
+        private readonly approveRefundUseCase: ApproveRefundUseCase,
+        private readonly rejectRefundUseCase: RejectRefundUseCase,
+        private readonly processRefundUseCase: ProcessRefundUseCase,
+        private readonly getPendingRefundsUseCase: GetPendingRefundsUseCase,
+        private readonly getApprovedRefundsUseCase: GetApprovedRefundsUseCase,
+        private readonly getRefundStatisticsUseCase: GetRefundStatisticsUseCase,
+        private readonly getTotalRefundedAmountUseCase: GetTotalRefundedAmountUseCase,
+        private readonly getPendingRefundAmountUseCase: GetPendingRefundAmountUseCase,
         // Dispute use cases
-        private readonly createDispute: CreateDisputeUseCase,
-        private readonly getDisputeById: GetDisputeByIdUseCase,
-        private readonly listDisputes: ListDisputesUseCase,
-        private readonly getUserDisputes: GetUserDisputesUseCase,
-        private readonly startDisputeReview: StartDisputeReviewUseCase,
-        private readonly escalateDispute: EscalateDisputeUseCase,
-        private readonly resolveDispute: ResolveDisputeUseCase,
-        private readonly closeDispute: CloseDisputeUseCase,
-        private readonly updateDisputePriority: UpdateDisputePriorityUseCase,
-        private readonly addDisputeEvidence: AddDisputeEvidenceUseCase,
-        private readonly getOpenDisputes: GetOpenDisputesUseCase,
-        private readonly getActiveDisputes: GetActiveDisputesUseCase,
-        private readonly getEscalatedDisputes: GetEscalatedDisputesUseCase,
-        private readonly getHighPriorityDisputes: GetHighPriorityDisputesUseCase,
-        private readonly getDisputesRequiringAttention: GetDisputesRequiringAttentionUseCase,
-        private readonly getDisputeStatistics: GetDisputeStatisticsUseCase,
+        private readonly createDisputeUseCase: CreateDisputeUseCase,
+        private readonly getDisputeByIdUseCase: GetDisputeByIdUseCase,
+        private readonly listDisputesUseCase: ListDisputesUseCase,
+        private readonly getUserDisputesUseCase: GetUserDisputesUseCase,
+        private readonly startDisputeReviewUseCase: StartDisputeReviewUseCase,
+        private readonly escalateDisputeUseCase: EscalateDisputeUseCase,
+        private readonly resolveDisputeUseCase: ResolveDisputeUseCase,
+        private readonly closeDisputeUseCase: CloseDisputeUseCase,
+        private readonly updateDisputePriorityUseCase: UpdateDisputePriorityUseCase,
+        private readonly addDisputeEvidenceUseCase: AddDisputeEvidenceUseCase,
+        private readonly getOpenDisputesUseCase: GetOpenDisputesUseCase,
+        private readonly getActiveDisputesUseCase: GetActiveDisputesUseCase,
+        private readonly getEscalatedDisputesUseCase: GetEscalatedDisputesUseCase,
+        private readonly getHighPriorityDisputesUseCase: GetHighPriorityDisputesUseCase,
+        private readonly getDisputesRequiringAttentionUseCase: GetDisputesRequiringAttentionUseCase,
+        private readonly getDisputeStatisticsUseCase: GetDisputeStatisticsUseCase,
     ) {}
 
     // ============================================
@@ -214,7 +214,7 @@ export class BillingController {
     async createMembershipInvoice(
         @Body() dto: CreateMembershipInvoiceDto,
     ): Promise<{ invoice: MembershipInvoiceResponseDto }> {
-        const invoice = await this.createInvoice.execute(dto);
+        const invoice = await this.createInvoiceUseCase.execute(dto);
         return { invoice: this.mapInvoiceToResponse(invoice) };
     }
 
@@ -224,11 +224,10 @@ export class BillingController {
     async listMembershipInvoices(
         @Query() query: ListMembershipInvoicesQueryDto,
     ): Promise<MembershipInvoiceListResponseDto> {
-        const invoices = await this.listInvoices.execute(query);
-        const total = invoices.length; // For proper pagination, count should come from use case
+        const result = await this.listInvoicesUseCase.execute(query);
         return {
-            invoices: invoices.map(inv => this.mapInvoiceToResponse(inv)),
-            total,
+            invoices: result.invoices.map(inv => this.mapInvoiceToResponse(inv)),
+            total: result.total,
             limit: query.limit ?? 20,
             offset: query.offset ?? 0,
         };
@@ -238,7 +237,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:invoices')
     async getOverdueInvoicesList(): Promise<{ invoices: MembershipInvoiceResponseDto[] }> {
-        const invoices = await this.getOverdueInvoices.execute();
+        const invoices = await this.getOverdueInvoicesUseCase.execute();
         return { invoices: invoices.map(inv => this.mapInvoiceToResponse(inv)) };
     }
 
@@ -248,7 +247,7 @@ export class BillingController {
     async getInvoicesDueSoonList(
         @Query('days') days?: number,
     ): Promise<{ invoices: MembershipInvoiceResponseDto[] }> {
-        const invoices = await this.getInvoicesDueSoon.execute(days ?? 7);
+        const invoices = await this.getInvoicesDueSoonUseCase.execute(days ?? 7);
         return { invoices: invoices.map(inv => this.mapInvoiceToResponse(inv)) };
     }
 
@@ -257,7 +256,7 @@ export class BillingController {
     async getInvoiceByInvoiceNumber(
         @Param('invoiceNumber') invoiceNumber: string,
     ): Promise<{ invoice: MembershipInvoiceResponseDto }> {
-        const invoice = await this.getInvoiceByNumber.execute(invoiceNumber);
+        const invoice = await this.getInvoiceByNumberUseCase.execute(invoiceNumber);
         return { invoice: this.mapInvoiceToResponse(invoice) };
     }
 
@@ -266,7 +265,7 @@ export class BillingController {
     async getInvoicesForMembership(
         @Param('membershipId') membershipId: string,
     ): Promise<{ invoices: MembershipInvoiceResponseDto[] }> {
-        const invoices = await this.getInvoicesByMembership.execute(membershipId);
+        const invoices = await this.getInvoicesByMembershipUseCase.execute(membershipId);
         return { invoices: invoices.map(inv => this.mapInvoiceToResponse(inv)) };
     }
 
@@ -276,8 +275,8 @@ export class BillingController {
         @Param('membershipId') membershipId: string,
     ): Promise<{ invoices: MembershipInvoiceResponseDto[]; totalUnpaid: number }> {
         const [invoices, total] = await Promise.all([
-            this.getUnpaidInvoicesByMembership.execute(membershipId),
-            this.getTotalUnpaidAmount.execute(membershipId),
+            this.getUnpaidInvoicesByMembershipUseCase.execute(membershipId),
+            this.getTotalUnpaidAmountUseCase.execute(membershipId),
         ]);
         return {
             invoices: invoices.map(inv => this.mapInvoiceToResponse(inv)),
@@ -288,7 +287,7 @@ export class BillingController {
     @Get('invoices/:id')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getInvoiceById(@Param('id') id: string): Promise<{ invoice: MembershipInvoiceResponseDto }> {
-        const invoice = await this.getInvoiceById.execute(id);
+        const invoice = await this.getInvoiceByIdUseCase.execute(id);
         return { invoice: this.mapInvoiceToResponse(invoice) };
     }
 
@@ -296,7 +295,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('update:invoices')
     async markInvoiceAsPaid(@Param('id') id: string): Promise<{ invoice: MembershipInvoiceResponseDto }> {
-        const invoice = await this.markInvoicePaid.execute(id);
+        const invoice = await this.markInvoicePaidUseCase.execute(id);
         return { invoice: this.mapInvoiceToResponse(invoice) };
     }
 
@@ -304,7 +303,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('update:invoices')
     async markInvoiceAsOverdue(@Param('id') id: string): Promise<{ invoice: MembershipInvoiceResponseDto }> {
-        const invoice = await this.markInvoiceOverdue.execute(id);
+        const invoice = await this.markInvoiceOverdueUseCase.execute(id);
         return { invoice: this.mapInvoiceToResponse(invoice) };
     }
 
@@ -312,7 +311,7 @@ export class BillingController {
     @Roles('system admin')
     @Permissions('delete:invoices')
     async cancelMembershipInvoice(@Param('id') id: string): Promise<{ invoice: MembershipInvoiceResponseDto }> {
-        const invoice = await this.cancelInvoice.execute(id);
+        const invoice = await this.cancelInvoiceUseCase.execute(id);
         return { invoice: this.mapInvoiceToResponse(invoice) };
     }
 
@@ -327,7 +326,7 @@ export class BillingController {
     async createSubscription(
         @Body() dto: CreateSubscriptionPaymentDto,
     ): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.createSubscriptionPayment.execute(dto);
+        const transaction = await this.createSubscriptionPaymentUseCase.execute(dto);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -337,7 +336,7 @@ export class BillingController {
     async createTopup(
         @Body() dto: CreateWalletTopupDto,
     ): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.createWalletTopup.execute(dto);
+        const transaction = await this.createWalletTopupUseCase.execute(dto);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -347,7 +346,7 @@ export class BillingController {
     async createServicePmt(
         @Body() dto: CreateServicePaymentDto,
     ): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.createServicePayment.execute(dto);
+        const transaction = await this.createServicePaymentUseCase.execute(dto);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -357,10 +356,10 @@ export class BillingController {
     async listAllTransactions(
         @Query() query: ListTransactionLogsQueryDto,
     ): Promise<TransactionLogListResponseDto> {
-        const transactions = await this.listTransactions.execute(query);
+        const result = await this.listTransactionsUseCase.execute(query);
         return {
-            transactions: transactions.map(txn => this.mapTransactionToResponse(txn)),
-            total: transactions.length,
+            transactions: result.transactions.map(txn => this.mapTransactionToResponse(txn)),
+            total: result.total,
             limit: query.limit ?? 20,
             offset: query.offset ?? 0,
         };
@@ -370,7 +369,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:transactions')
     async getPendingTransactionsList(): Promise<{ transactions: TransactionLogResponseDto[] }> {
-        const transactions = await this.getPendingTransactions.execute();
+        const transactions = await this.getPendingTransactionsUseCase.execute();
         return { transactions: transactions.map(txn => this.mapTransactionToResponse(txn)) };
     }
 
@@ -378,7 +377,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:transactions')
     async getFailedTransactionsList(): Promise<{ transactions: TransactionLogResponseDto[] }> {
-        const transactions = await this.getFailedTransactions.execute();
+        const transactions = await this.getFailedTransactionsUseCase.execute();
         return { transactions: transactions.map(txn => this.mapTransactionToResponse(txn)) };
     }
 
@@ -388,7 +387,7 @@ export class BillingController {
     async getTransactionByRef(
         @Param('reference') reference: string,
     ): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.getTransactionByReference.execute(reference);
+        const transaction = await this.getTransactionByReferenceUseCase.execute(reference);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -397,7 +396,7 @@ export class BillingController {
     async getUserTransactionsList(
         @Param('userId') userId: string,
     ): Promise<{ transactions: TransactionLogResponseDto[] }> {
-        const transactions = await this.getUserTransactions.execute(userId);
+        const transactions = await this.getUserTransactionsUseCase.execute(userId);
         return { transactions: transactions.map(txn => this.mapTransactionToResponse(txn)) };
     }
 
@@ -406,21 +405,21 @@ export class BillingController {
     async getUserSummary(
         @Param('userId') userId: string,
     ): Promise<{ summary: TransactionSummaryResponseDto }> {
-        const summary = await this.getUserTransactionSummary.execute(userId);
+        const summary = await this.getUserTransactionSummaryUseCase.execute(userId);
         return { summary };
     }
 
     @Get('transactions/user/:userId/total-spent')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getUserTotalSpent(@Param('userId') userId: string): Promise<{ totalSpent: number }> {
-        const totalSpent = await this.getTotalSpent.execute(userId);
+        const totalSpent = await this.getTotalSpentUseCase.execute(userId);
         return { totalSpent };
     }
 
     @Get('transactions/:id')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getTransaction(@Param('id') id: string): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.getTransactionById.execute(id);
+        const transaction = await this.getTransactionByIdUseCase.execute(id);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -428,7 +427,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('update:transactions')
     async markTransactionAsPaid(@Param('id') id: string): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.markTransactionPaid.execute(id);
+        const transaction = await this.markTransactionPaidUseCase.execute(id);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -436,7 +435,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('update:transactions')
     async markTransactionAsFailed(@Param('id') id: string): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.markTransactionFailed.execute(id);
+        const transaction = await this.markTransactionFailedUseCase.execute(id);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -444,7 +443,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('update:transactions')
     async markTransactionAsRefunded(@Param('id') id: string): Promise<{ transaction: TransactionLogResponseDto }> {
-        const transaction = await this.markTransactionRefunded.execute(id);
+        const transaction = await this.markTransactionRefundedUseCase.execute(id);
         return { transaction: this.mapTransactionToResponse(transaction) };
     }
 
@@ -456,7 +455,7 @@ export class BillingController {
     @Roles('user', 'partner', 'platform', 'system admin')
     @HttpCode(HttpStatus.CREATED)
     async requestNewRefund(@Body() dto: RequestRefundDto): Promise<{ refund: RefundResponseDto }> {
-        const refund = await this.requestRefund.execute(dto);
+        const refund = await this.requestRefundUseCase.execute(dto);
         return { refund: this.mapRefundToResponse(refund) };
     }
 
@@ -464,10 +463,10 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:refunds')
     async listAllRefunds(@Query() query: ListRefundsQueryDto): Promise<RefundListResponseDto> {
-        const refunds = await this.listRefunds.execute(query);
+        const result = await this.listRefundsUseCase.execute(query);
         return {
-            refunds: refunds.map(r => this.mapRefundToResponse(r)),
-            total: refunds.length,
+            refunds: result.refunds.map(r => this.mapRefundToResponse(r)),
+            total: result.total,
             limit: query.limit ?? 20,
             offset: query.offset ?? 0,
         };
@@ -477,7 +476,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:refunds')
     async getPendingRefundsList(): Promise<{ refunds: RefundResponseDto[] }> {
-        const refunds = await this.getPendingRefunds.execute();
+        const refunds = await this.getPendingRefundsUseCase.execute();
         return { refunds: refunds.map(r => this.mapRefundToResponse(r)) };
     }
 
@@ -485,7 +484,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:refunds')
     async getApprovedRefundsList(): Promise<{ refunds: RefundResponseDto[] }> {
-        const refunds = await this.getApprovedRefunds.execute();
+        const refunds = await this.getApprovedRefundsUseCase.execute();
         return { refunds: refunds.map(r => this.mapRefundToResponse(r)) };
     }
 
@@ -496,7 +495,7 @@ export class BillingController {
         @Query('fromDate') fromDate?: string,
         @Query('toDate') toDate?: string,
     ): Promise<{ statistics: RefundStatisticsResponseDto }> {
-        const statistics = await this.getRefundStatistics.execute(
+        const statistics = await this.getRefundStatisticsUseCase.execute(
             fromDate ? new Date(fromDate) : undefined,
             toDate ? new Date(toDate) : undefined,
         );
@@ -507,7 +506,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:refunds')
     async getTotalRefunded(): Promise<{ totalRefunded: number }> {
-        const totalRefunded = await this.getTotalRefundedAmount.execute();
+        const totalRefunded = await this.getTotalRefundedAmountUseCase.execute();
         return { totalRefunded };
     }
 
@@ -515,21 +514,21 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:refunds')
     async getPendingAmount(): Promise<{ pendingAmount: number }> {
-        const pendingAmount = await this.getPendingRefundAmount.execute();
+        const pendingAmount = await this.getPendingRefundAmountUseCase.execute();
         return { pendingAmount };
     }
 
     @Get('refunds/user/:userId')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getUserRefundsList(@Param('userId') userId: string): Promise<{ refunds: RefundResponseDto[] }> {
-        const refunds = await this.getUserRefunds.execute(userId);
+        const refunds = await this.getUserRefundsUseCase.execute(userId);
         return { refunds: refunds.map(r => this.mapRefundToResponse(r)) };
     }
 
     @Get('refunds/:id')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getRefund(@Param('id') id: string): Promise<{ refund: RefundResponseDto }> {
-        const refund = await this.getRefundById.execute(id);
+        const refund = await this.getRefundByIdUseCase.execute(id);
         return { refund: this.mapRefundToResponse(refund) };
     }
 
@@ -540,7 +539,7 @@ export class BillingController {
         @Param('id') id: string,
         @Body() dto: ReviewRefundDto,
     ): Promise<{ refund: RefundResponseDto }> {
-        const refund = await this.approveRefund.execute(id, dto.reviewedBy, dto.reviewNotes);
+        const refund = await this.approveRefundUseCase.execute(id, dto);
         return { refund: this.mapRefundToResponse(refund) };
     }
 
@@ -551,7 +550,7 @@ export class BillingController {
         @Param('id') id: string,
         @Body() dto: ReviewRefundDto,
     ): Promise<{ refund: RefundResponseDto }> {
-        const refund = await this.rejectRefund.execute(id, dto.reviewedBy, dto.reviewNotes);
+        const refund = await this.rejectRefundUseCase.execute(id, dto);
         return { refund: this.mapRefundToResponse(refund) };
     }
 
@@ -562,7 +561,7 @@ export class BillingController {
         @Param('id') id: string,
         @Body() dto: ProcessRefundDto,
     ): Promise<{ refund: RefundResponseDto }> {
-        const refund = await this.processRefund.execute(id, dto.refundReference);
+        const refund = await this.processRefundUseCase.execute(id, dto);
         return { refund: this.mapRefundToResponse(refund) };
     }
 
@@ -574,7 +573,7 @@ export class BillingController {
     @Roles('user', 'partner', 'platform', 'system admin')
     @HttpCode(HttpStatus.CREATED)
     async createNewDispute(@Body() dto: CreateDisputeDto): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.createDispute.execute(dto);
+        const dispute = await this.createDisputeUseCase.execute(dto);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
@@ -582,10 +581,10 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:disputes')
     async listAllDisputes(@Query() query: ListDisputesQueryDto): Promise<DisputeListResponseDto> {
-        const disputes = await this.listDisputes.execute(query);
+        const result = await this.listDisputesUseCase.execute(query);
         return {
-            disputes: disputes.map(d => this.mapDisputeToResponse(d)),
-            total: disputes.length,
+            disputes: result.disputes.map(d => this.mapDisputeToResponse(d)),
+            total: result.total,
             limit: query.limit ?? 20,
             offset: query.offset ?? 0,
         };
@@ -595,7 +594,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:disputes')
     async getOpenDisputesList(): Promise<{ disputes: DisputeResponseDto[] }> {
-        const disputes = await this.getOpenDisputes.execute();
+        const disputes = await this.getOpenDisputesUseCase.execute();
         return { disputes: disputes.map(d => this.mapDisputeToResponse(d)) };
     }
 
@@ -603,7 +602,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:disputes')
     async getActiveDisputesList(): Promise<{ disputes: DisputeResponseDto[] }> {
-        const disputes = await this.getActiveDisputes.execute();
+        const disputes = await this.getActiveDisputesUseCase.execute();
         return { disputes: disputes.map(d => this.mapDisputeToResponse(d)) };
     }
 
@@ -611,7 +610,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:disputes')
     async getEscalatedDisputesList(): Promise<{ disputes: DisputeResponseDto[] }> {
-        const disputes = await this.getEscalatedDisputes.execute();
+        const disputes = await this.getEscalatedDisputesUseCase.execute();
         return { disputes: disputes.map(d => this.mapDisputeToResponse(d)) };
     }
 
@@ -619,7 +618,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:disputes')
     async getHighPriorityDisputesList(): Promise<{ disputes: DisputeResponseDto[] }> {
-        const disputes = await this.getHighPriorityDisputes.execute();
+        const disputes = await this.getHighPriorityDisputesUseCase.execute();
         return { disputes: disputes.map(d => this.mapDisputeToResponse(d)) };
     }
 
@@ -627,7 +626,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('read:disputes')
     async getDisputesRequiringAttentionList(): Promise<{ disputes: DisputeResponseDto[] }> {
-        const disputes = await this.getDisputesRequiringAttention.execute();
+        const disputes = await this.getDisputesRequiringAttentionUseCase.execute();
         return { disputes: disputes.map(d => this.mapDisputeToResponse(d)) };
     }
 
@@ -638,7 +637,7 @@ export class BillingController {
         @Query('fromDate') fromDate?: string,
         @Query('toDate') toDate?: string,
     ): Promise<{ statistics: DisputeStatisticsResponseDto }> {
-        const statistics = await this.getDisputeStatistics.execute(
+        const statistics = await this.getDisputeStatisticsUseCase.execute(
             fromDate ? new Date(fromDate) : undefined,
             toDate ? new Date(toDate) : undefined,
         );
@@ -648,14 +647,14 @@ export class BillingController {
     @Get('disputes/user/:userId')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getUserDisputesList(@Param('userId') userId: string): Promise<{ disputes: DisputeResponseDto[] }> {
-        const disputes = await this.getUserDisputes.execute(userId);
+        const disputes = await this.getUserDisputesUseCase.execute(userId);
         return { disputes: disputes.map(d => this.mapDisputeToResponse(d)) };
     }
 
     @Get('disputes/:id')
     @Roles('user', 'partner', 'platform', 'system admin')
     async getDispute(@Param('id') id: string): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.getDisputeById.execute(id);
+        const dispute = await this.getDisputeByIdUseCase.execute(id);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
@@ -663,7 +662,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('update:disputes')
     async startReview(@Param('id') id: string): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.startDisputeReview.execute(id);
+        const dispute = await this.startDisputeReviewUseCase.execute(id);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
@@ -674,7 +673,7 @@ export class BillingController {
         @Param('id') id: string,
         @Body() dto: EscalateDisputeDto,
     ): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.escalateDispute.execute(id, dto.escalatedTo);
+        const dispute = await this.escalateDisputeUseCase.execute(id, dto);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
@@ -685,7 +684,7 @@ export class BillingController {
         @Param('id') id: string,
         @Body() dto: ResolveDisputeDto,
     ): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.resolveDispute.execute(id, dto.resolvedBy, dto.resolution);
+        const dispute = await this.resolveDisputeUseCase.execute(id, dto);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
@@ -693,7 +692,7 @@ export class BillingController {
     @Roles('system admin', 'platform')
     @Permissions('update:disputes')
     async close(@Param('id') id: string): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.closeDispute.execute(id);
+        const dispute = await this.closeDisputeUseCase.execute(id);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
@@ -704,7 +703,7 @@ export class BillingController {
         @Param('id') id: string,
         @Body() dto: UpdateDisputePriorityDto,
     ): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.updateDisputePriority.execute(id, dto.priority);
+        const dispute = await this.updateDisputePriorityUseCase.execute(id, dto);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
@@ -714,7 +713,7 @@ export class BillingController {
         @Param('id') id: string,
         @Body() dto: AddDisputeEvidenceDto,
     ): Promise<{ dispute: DisputeResponseDto }> {
-        const dispute = await this.addDisputeEvidence.execute(id, dto.evidence);
+        const dispute = await this.addDisputeEvidenceUseCase.execute(id, dto);
         return { dispute: this.mapDisputeToResponse(dispute) };
     }
 
