@@ -1,0 +1,558 @@
+{
+  "info": {
+    "name": "Exoln LEX - Legal Opinion API",
+    "description": "API collection for Legal Opinion Request management including workflow from draft to completion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Client Endpoints",
+      "description": "Endpoints for clients to create and manage their opinion requests",
+      "item": [
+        {
+          "name": "Create Opinion Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Corporate Merger Legal Analysis\",\n  \"description\": \"Requesting legal opinion on the proposed merger between Company A and Company B\",\n  \"category\": \"corporate_law\",\n  \"urgency\": \"normal\",\n  \"questions\": [\n    \"What are the regulatory requirements for this merger?\",\n    \"Are there any antitrust concerns?\",\n    \"What is the recommended timeline?\"\n  ],\n  \"attachments\": [],\n  \"preferredLanguage\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests"]
+            },
+            "description": "Create a new legal opinion request in draft status (Client, Admin)"
+          }
+        },
+        {
+          "name": "Update Opinion Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated: Corporate Merger Legal Analysis\",\n  \"description\": \"Updated description with more details\",\n  \"questions\": [\n    \"What are the regulatory requirements?\",\n    \"Are there antitrust concerns?\",\n    \"What is the timeline?\",\n    \"What are the tax implications?\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Update opinion request (only in draft status)"
+          }
+        },
+        {
+          "name": "Submit Opinion Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "submit"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Submit draft opinion request for review (Client, Admin)"
+          }
+        },
+        {
+          "name": "Get My Requests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/my-requests?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", "my-requests"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "submitted",
+                  "description": "Filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all opinion requests for the authenticated client"
+          }
+        },
+        {
+          "name": "Cancel Opinion Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Merger deal has been called off\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "cancel"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Cancel opinion request (only in early stages)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lawyer Endpoints",
+      "description": "Endpoints for lawyers to manage assigned opinion requests",
+      "item": [
+        {
+          "name": "Get My Assignments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/my-assignments?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", "my-assignments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "assigned",
+                  "description": "Filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get opinions assigned to the authenticated lawyer"
+          }
+        },
+        {
+          "name": "Start Research",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/start-research",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "start-research"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Start research phase (Lawyer, Provider, Admin)"
+          }
+        },
+        {
+          "name": "Start Drafting",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/start-drafting",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "start-drafting"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Start drafting the legal opinion (Lawyer, Provider, Admin)"
+          }
+        },
+        {
+          "name": "Submit for Review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/submit-for-review",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "submit-for-review"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Submit drafted opinion for internal review (Lawyer, Provider, Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Endpoints",
+      "description": "Admin operations for opinion request management",
+      "item": [
+        {
+          "name": "List All Opinions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "submitted",
+                  "description": "Filter by status: draft, submitted, assigned, researching, drafting, review, revision, completed, cancelled, rejected",
+                  "disabled": true
+                },
+                {
+                  "key": "clientId",
+                  "value": "client-uuid",
+                  "description": "Filter by client",
+                  "disabled": true
+                },
+                {
+                  "key": "lawyerId",
+                  "value": "lawyer-uuid",
+                  "description": "Filter by assigned lawyer",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "corporate_law",
+                  "description": "Filter by category",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List all opinion requests with filters (Admin, Manager)"
+          }
+        },
+        {
+          "name": "Assign to Lawyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lawyerId\": \"lawyer-uuid\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "assign"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Assign opinion request to a lawyer (Admin, Manager)"
+          }
+        },
+        {
+          "name": "Set Estimated Cost",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estimatedCost\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/set-estimated-cost",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "set-estimated-cost"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Set estimated cost for the opinion (Admin, Manager)"
+          }
+        },
+        {
+          "name": "Mark as Paid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentReference\": \"PAY-2024-12345\",\n  \"finalCost\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/mark-as-paid",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "mark-as-paid"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Mark opinion as paid (Admin, Manager)"
+          }
+        },
+        {
+          "name": "Request Revision",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Please expand on the antitrust implications section\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/request-revision",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "request-revision"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Request revision on drafted opinion (Admin, Manager)"
+          }
+        },
+        {
+          "name": "Complete Opinion",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "complete"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Mark opinion as completed and deliver to client (Admin, Manager)"
+          }
+        },
+        {
+          "name": "Reject Opinion Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Request is out of scope for our services\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Reject opinion request (Admin, Manager)"
+          }
+        },
+        {
+          "name": "Delete Opinion Request",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Soft delete opinion request (Admin only)"
+          }
+        },
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", "statistics"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "completed",
+                  "description": "Filter by status",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "corporate_law",
+                  "description": "Filter by category",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get opinion statistics (Admin, Manager)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shared Endpoints",
+      "description": "Endpoints accessible by multiple roles",
+      "item": [
+        {
+          "name": "Get Opinion by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/legal-opinion-requests/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["legal-opinion-requests", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "opinion-request-uuid",
+                  "description": "Opinion request ID"
+                }
+              ]
+            },
+            "description": "Get opinion request by ID (Client, Lawyer, Provider, Admin, Manager)"
+          }
+        }
+      ]
+    }
+  ]
+}

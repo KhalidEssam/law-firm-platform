@@ -1,0 +1,501 @@
+{
+  "info": {
+    "name": "Exoln LEX - Litigation Case API",
+    "description": "API collection for Litigation Case management including case creation, quotes, payments, and case lifecycle.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Subscriber Endpoints",
+      "description": "Endpoints for subscribers to create and manage their litigation cases",
+      "item": [
+        {
+          "name": "Create Litigation Case",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Commercial Dispute Resolution\",\n  \"description\": \"Dispute with supplier over contract breach\",\n  \"caseType\": \"commercial\",\n  \"urgency\": \"normal\",\n  \"opposingParty\": {\n    \"name\": \"ABC Supplies Inc.\",\n    \"contactInfo\": \"info@abcsupplies.com\"\n  },\n  \"estimatedValue\": 500000,\n  \"currency\": \"SAR\",\n  \"courtJurisdiction\": \"Riyadh Commercial Court\",\n  \"documents\": [],\n  \"preferredLanguage\": \"ar\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases"]
+            },
+            "description": "Create a new litigation case (Subscriber, Admin)"
+          }
+        },
+        {
+          "name": "Update Litigation Case",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated: Commercial Dispute Resolution\",\n  \"description\": \"Updated description with more details\",\n  \"estimatedValue\": 600000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Update case details (only in pending/quote_sent status)"
+          }
+        },
+        {
+          "name": "Get My Cases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/my-cases?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", "my-cases"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all cases for the authenticated subscriber"
+          }
+        },
+        {
+          "name": "Accept Quote",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/accept-quote",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "accept-quote"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Accept the quote sent by provider (Subscriber, Admin)"
+          }
+        },
+        {
+          "name": "Cancel Case",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Settlement reached outside of court\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "cancel"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Cancel case (early stages only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Provider Endpoints",
+      "description": "Endpoints for providers to manage assigned litigation cases",
+      "item": [
+        {
+          "name": "Get My Assignments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/my-assignments?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", "my-assignments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all cases assigned to the authenticated provider"
+          }
+        },
+        {
+          "name": "Send Quote",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 50000,\n  \"currency\": \"SAR\",\n  \"validUntil\": \"2024-02-28T23:59:59Z\",\n  \"breakdown\": {\n    \"courtFees\": 5000,\n    \"legalFees\": 40000,\n    \"administrativeFees\": 5000\n  },\n  \"estimatedDuration\": \"6-12 months\",\n  \"notes\": \"Quote includes all court appearances and document preparation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/send-quote",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "send-quote"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Send price quote to client (Provider, Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Endpoints",
+      "description": "Admin operations for litigation case management",
+      "item": [
+        {
+          "name": "List All Cases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status: pending, assigned, quote_sent, quote_accepted, paid, active, closed, cancelled, refunded",
+                  "disabled": true
+                },
+                {
+                  "key": "subscriberId",
+                  "value": "subscriber-uuid",
+                  "description": "Filter by subscriber",
+                  "disabled": true
+                },
+                {
+                  "key": "providerId",
+                  "value": "provider-uuid",
+                  "description": "Filter by assigned provider",
+                  "disabled": true
+                },
+                {
+                  "key": "caseType",
+                  "value": "commercial",
+                  "description": "Filter by case type: commercial, civil, criminal, family, labor",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List all litigation cases with filters (Platform, Admin)"
+          }
+        },
+        {
+          "name": "Assign Provider",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": \"provider-uuid\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "assign"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Assign case to provider (Platform, Admin)"
+          }
+        },
+        {
+          "name": "Mark as Paid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paymentReference\": \"PAY-2024-LIT-12345\",\n  \"amount\": 50000,\n  \"paymentMethod\": \"bank_transfer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/mark-as-paid",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "mark-as-paid"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Mark case as paid (Platform, Admin)"
+          }
+        },
+        {
+          "name": "Activate Case",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "activate"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Activate case after payment (Platform, Admin)"
+          }
+        },
+        {
+          "name": "Close Case",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/close",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "close"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Close active case (Platform, Admin)"
+          }
+        },
+        {
+          "name": "Process Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refundReference\": \"REF-2024-LIT-12345\",\n  \"amount\": 50000,\n  \"reason\": \"Case cancelled before work started\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id/refund",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id", "refund"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Process refund for paid case (Platform, Admin)"
+          }
+        },
+        {
+          "name": "Delete Case",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Soft delete case (Admin only)"
+          }
+        },
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/statistics",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", "statistics"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Filter by status",
+                  "disabled": true
+                },
+                {
+                  "key": "caseType",
+                  "value": "commercial",
+                  "description": "Filter by case type",
+                  "disabled": true
+                },
+                {
+                  "key": "fromDate",
+                  "value": "2024-01-01",
+                  "description": "Filter from date",
+                  "disabled": true
+                },
+                {
+                  "key": "toDate",
+                  "value": "2024-12-31",
+                  "description": "Filter to date",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get case statistics (Platform, Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shared Endpoints",
+      "description": "Endpoints accessible by multiple roles",
+      "item": [
+        {
+          "name": "Get Case by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/litigation-cases/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["litigation-cases", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "case-uuid",
+                  "description": "Litigation case ID"
+                }
+              ]
+            },
+            "description": "Get case by ID (Subscriber, Provider, Platform, Admin)"
+          }
+        }
+      ]
+    }
+  ]
+}
