@@ -1,0 +1,486 @@
+{
+  "info": {
+    "name": "Exoln LEX - Consultation API",
+    "description": "API collection for Consultation Request management including creating, assigning, and managing legal consultations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Subscriber Endpoints",
+      "description": "Endpoints for subscribers to manage their consultation requests",
+      "item": [
+        {
+          "name": "Create Consultation Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Corporate Contract Review\",\n  \"description\": \"Need review of a partnership agreement for a new business venture\",\n  \"consultationType\": \"corporate_law\",\n  \"urgency\": \"normal\",\n  \"preferredLanguage\": \"en\",\n  \"attachments\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests"]
+            },
+            "description": "Create a new consultation request (Subscriber, Admin)"
+          }
+        },
+        {
+          "name": "Get My Consultations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/my/consultations?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", "my", "consultations"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all consultation requests for the authenticated subscriber"
+          }
+        },
+        {
+          "name": "Cancel Consultation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"No longer needed - issue resolved\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "cancel"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Cancel a consultation request (Subscriber, Admin)"
+          }
+        },
+        {
+          "name": "Dispute Consultation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Unsatisfied with the quality of advice provided\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/dispute",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "dispute"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Dispute a completed consultation (within 48 hours)"
+          }
+        },
+        {
+          "name": "Add Rating",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"review\": \"Excellent consultation! Very helpful and professional.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/rating",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "rating"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Add rating to a completed consultation (Subscriber, Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Provider Endpoints",
+      "description": "Endpoints for providers to manage assigned consultations",
+      "item": [
+        {
+          "name": "Get Assigned Consultations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/assigned/me?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", "assigned", "me"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "status",
+                  "value": "in_progress",
+                  "description": "Filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all consultations assigned to the authenticated provider"
+          }
+        },
+        {
+          "name": "Mark as In Progress",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/in-progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "in-progress"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Mark consultation as in progress (Provider, Admin)"
+          }
+        },
+        {
+          "name": "Complete Consultation",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "complete"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Mark consultation as completed (Provider, Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Endpoints",
+      "description": "Admin operations for consultation management",
+      "item": [
+        {
+          "name": "List All Consultations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "subscriberId",
+                  "value": "subscriber-uuid",
+                  "description": "Filter by subscriber",
+                  "disabled": true
+                },
+                {
+                  "key": "assignedProviderId",
+                  "value": "provider-uuid",
+                  "description": "Filter by assigned provider",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "description": "Filter by status: pending, assigned, in_progress, completed, cancelled, disputed",
+                  "disabled": true
+                },
+                {
+                  "key": "consultationType",
+                  "value": "corporate_law",
+                  "description": "Filter by consultation type",
+                  "disabled": true
+                },
+                {
+                  "key": "urgency",
+                  "value": "urgent",
+                  "description": "Filter by urgency: low, normal, urgent, critical",
+                  "disabled": true
+                },
+                {
+                  "key": "slaStatus",
+                  "value": "at_risk",
+                  "description": "Filter by SLA status: on_track, at_risk, breached",
+                  "disabled": true
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "contract",
+                  "description": "Search in title and description",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List all consultation requests with filters (Subscriber, Provider, Admin)"
+          }
+        },
+        {
+          "name": "Assign to Provider",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": \"provider-uuid\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "assign"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Assign consultation to a provider (Admin, Provider Manager)"
+          }
+        },
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/statistics/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", "statistics", "overview"],
+              "query": [
+                {
+                  "key": "subscriberId",
+                  "value": "subscriber-uuid",
+                  "description": "Filter by subscriber",
+                  "disabled": true
+                },
+                {
+                  "key": "assignedProviderId",
+                  "value": "provider-uuid",
+                  "description": "Filter by provider",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "completed",
+                  "description": "Filter by status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get consultation statistics (Admin, Provider Manager, Analytics)"
+          }
+        },
+        {
+          "name": "Update SLA Statuses",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/sla/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", "sla", "update"]
+            },
+            "description": "Batch update SLA statuses (Admin, System - typically called by cron job)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shared Endpoints",
+      "description": "Endpoints accessible by multiple roles",
+      "item": [
+        {
+          "name": "Get Consultation by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Get consultation request by ID (Subscriber, Provider, Admin)"
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileName\": \"contract.pdf\",\n  \"fileUrl\": \"https://storage.example.com/files/contract.pdf\",\n  \"fileType\": \"application/pdf\",\n  \"fileSize\": 245000,\n  \"description\": \"Partnership agreement document\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/documents",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "documents"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Upload document to consultation (Subscriber, Provider, Admin)"
+          }
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"I have a follow-up question regarding the contract terms.\",\n  \"attachments\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consultation-requests/:id/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["consultation-requests", ":id", "messages"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "consultation-uuid",
+                  "description": "Consultation request ID"
+                }
+              ]
+            },
+            "description": "Send message in consultation (Subscriber, Provider, Admin)"
+          }
+        }
+      ]
+    }
+  ]
+}

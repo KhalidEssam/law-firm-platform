@@ -1,0 +1,72 @@
+{
+  "info": {
+    "name": "Exoln LEX - Roles API",
+    "description": "API collection for Role management including listing roles and assigning roles to users.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Role Management",
+      "description": "Endpoints for managing roles",
+      "item": [
+        {
+          "name": "List All Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles"]
+            },
+            "description": "List all available roles in the system"
+          }
+        },
+        {
+          "name": "Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-uuid\",\n  \"role\": \"provider\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "assign"]
+            },
+            "description": "Assign a role to a user. Available roles: user, subscriber, partner, provider, provider_admin, platform, platform_admin, system_admin"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,410 @@
+{
+  "info": {
+    "name": "Exoln LEX - Users API",
+    "description": "API collection for User management endpoints including registration, profile management, and admin operations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Public Endpoints",
+      "description": "Public endpoints accessible without authentication",
+      "item": [
+        {
+          "name": "Create User (Register)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"auth0Id\": \"auth0|123456789\",\n  \"email\": \"user@example.com\",\n  \"username\": \"johndoe\",\n  \"fullName\": \"John Doe\",\n  \"gender\": \"male\",\n  \"city\": \"Riyadh\",\n  \"nationality\": \"Saudi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "Create a new user account (Public endpoint)"
+          }
+        },
+        {
+          "name": "Check Email Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/check-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "check-email"]
+            },
+            "description": "Check if email is available for registration"
+          }
+        },
+        {
+          "name": "Check Username Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"johndoe\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/check-username",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "check-username"]
+            },
+            "description": "Check if username is available for registration"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Current User",
+      "description": "Endpoints for managing the authenticated user's own profile",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Get the current authenticated user's profile. Syncs with Auth0 data."
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Updated Doe\",\n  \"gender\": \"male\",\n  \"city\": \"Jeddah\",\n  \"biography\": \"Software engineer with 10 years of experience\",\n  \"profession\": \"Software Engineer\",\n  \"ageGroup\": \"30-40\",\n  \"nationality\": \"Saudi\",\n  \"employmentSector\": \"technology\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Update the current authenticated user's profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Operations",
+      "description": "Admin endpoints for user management (System Admin only)",
+      "item": [
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of users to return"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number of users to skip"
+                },
+                {
+                  "key": "emailVerified",
+                  "value": "true",
+                  "description": "Filter by email verification status",
+                  "disabled": true
+                },
+                {
+                  "key": "mobileVerified",
+                  "value": "true",
+                  "description": "Filter by mobile verification status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List all users with optional filters (System Admin only)"
+          }
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/search?query=john&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "search"],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "john",
+                  "description": "Search query (searches in name, email, username)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of results to return"
+                }
+              ]
+            },
+            "description": "Search users by name, email, or username (System Admin, Platform)"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Get user by ID (System Admin, Platform)"
+          }
+        },
+        {
+          "name": "Get User by Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/email/:email",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "email", ":email"],
+              "variable": [
+                {
+                  "key": "email",
+                  "value": "user@example.com",
+                  "description": "User email address"
+                }
+              ]
+            },
+            "description": "Get user by email address (System Admin only)"
+          }
+        },
+        {
+          "name": "Get User by Username",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/username/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "username", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "johndoe",
+                  "description": "Username"
+                }
+              ]
+            },
+            "description": "Get user by username (System Admin only)"
+          }
+        },
+        {
+          "name": "Update User by ID",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Name\",\n  \"city\": \"Dammam\",\n  \"biography\": \"Updated biography\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Update user profile by ID (System Admin only)"
+          }
+        },
+        {
+          "name": "Verify User Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:id/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id", "verify-email"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Verify user's email address (System Admin only)"
+          }
+        },
+        {
+          "name": "Verify User Mobile",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:id/verify-mobile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id", "verify-mobile"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Verify user's mobile number (System Admin only)"
+          }
+        },
+        {
+          "name": "Update User Profile Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id", "status"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Update user profile status (active, suspended, etc.) - System Admin only"
+          }
+        },
+        {
+          "name": "Soft Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Soft delete user (System Admin only)"
+          }
+        },
+        {
+          "name": "Restore User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:id/restore",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id", "restore"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Restore soft-deleted user (System Admin only)"
+          }
+        }
+      ]
+    }
+  ]
+}

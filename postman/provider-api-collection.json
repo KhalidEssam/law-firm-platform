@@ -1,0 +1,626 @@
+{
+  "info": {
+    "name": "Exoln LEX - Provider API",
+    "description": "API collection for Provider management including profiles, users, services, and schedules.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Provider Profiles",
+      "description": "Provider profile management endpoints",
+      "item": [
+        {
+          "name": "List Provider Profiles (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-profiles?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-profiles"],
+              "query": [
+                {
+                  "key": "verificationStatus",
+                  "value": "approved",
+                  "description": "Filter by status: pending, approved, rejected, suspended",
+                  "disabled": true
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "description": "Filter by active status",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of results to return"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number of results to skip"
+                }
+              ]
+            },
+            "description": "List all provider profiles (Public endpoint)"
+          }
+        },
+        {
+          "name": "Get Provider Profile by ID (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-profiles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-profiles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-profile-uuid",
+                  "description": "Provider profile ID"
+                }
+              ]
+            },
+            "description": "Get provider profile details (Public endpoint)"
+          }
+        },
+        {
+          "name": "Create Provider Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-uuid\",\n  \"organizationName\": \"Legal Experts LLC\",\n  \"organizationNameAr\": \"خبراء القانون المحدودة\",\n  \"licenseNumber\": \"LIC-2024-12345\",\n  \"description\": \"Leading legal services provider\",\n  \"descriptionAr\": \"مزود خدمات قانونية رائد\",\n  \"businessEmail\": \"contact@legalexperts.com\",\n  \"businessPhone\": \"+966501234567\",\n  \"website\": \"https://legalexperts.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-profiles"]
+            },
+            "description": "Create a new provider profile (User, Provider roles)"
+          }
+        },
+        {
+          "name": "Update Provider Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description\",\n  \"descriptionAr\": \"وصف محدث\",\n  \"businessEmail\": \"new-email@legalexperts.com\",\n  \"businessPhone\": \"+966509876543\",\n  \"website\": \"https://new-website.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-profiles/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-profiles", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-profile-uuid",
+                  "description": "Provider profile ID"
+                }
+              ]
+            },
+            "description": "Update provider profile (Provider role)"
+          }
+        },
+        {
+          "name": "Delete Provider Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-profiles/:id?soft=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-profiles", ":id"],
+              "query": [
+                {
+                  "key": "soft",
+                  "value": "true",
+                  "description": "Soft delete (true) or hard delete (false)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-profile-uuid",
+                  "description": "Provider profile ID"
+                }
+              ]
+            },
+            "description": "Delete provider profile (Provider role)"
+          }
+        },
+        {
+          "name": "Approve Provider Profile (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-profiles/:id/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-profiles", ":id", "approve"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-profile-uuid",
+                  "description": "Provider profile ID"
+                }
+              ]
+            },
+            "description": "Approve provider profile (System Admin, Platform Admin)"
+          }
+        },
+        {
+          "name": "Reject Provider Profile (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-profiles/:id/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-profiles", ":id", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-profile-uuid",
+                  "description": "Provider profile ID"
+                }
+              ]
+            },
+            "description": "Reject provider profile (System Admin, Platform Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Provider Users",
+      "description": "Provider staff/user management endpoints",
+      "item": [
+        {
+          "name": "Get Provider User (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-user-uuid",
+                  "description": "Provider user ID"
+                }
+              ]
+            },
+            "description": "Get provider user details (Public)"
+          }
+        },
+        {
+          "name": "List Users by Provider (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-users/provider/:providerId?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-users", "provider", ":providerId"],
+              "query": [
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "description": "Filter by active status",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of results"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number to skip"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "providerId",
+                  "value": "provider-uuid",
+                  "description": "Provider ID"
+                }
+              ]
+            },
+            "description": "List all users for a provider (Public)"
+          }
+        },
+        {
+          "name": "Create Provider User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": \"provider-uuid\",\n  \"userId\": \"user-uuid\",\n  \"role\": \"lawyer\",\n  \"specializations\": [\"corporate_law\", \"contract_law\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-users",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-users"]
+            },
+            "description": "Add user to provider organization (Provider Admin)"
+          }
+        },
+        {
+          "name": "Update Provider User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"specializations\": [\"corporate_law\", \"contract_law\", \"real_estate_law\"],\n  \"canAcceptRequests\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-user-uuid",
+                  "description": "Provider user ID"
+                }
+              ]
+            },
+            "description": "Update provider user (Provider Admin)"
+          }
+        },
+        {
+          "name": "Delete Provider User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-users/:id?soft=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-users", ":id"],
+              "query": [
+                {
+                  "key": "soft",
+                  "value": "true",
+                  "description": "Soft delete (true) or hard delete (false)"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "provider-user-uuid",
+                  "description": "Provider user ID"
+                }
+              ]
+            },
+            "description": "Remove user from provider organization (Provider Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Provider Services",
+      "description": "Provider service offerings management",
+      "item": [
+        {
+          "name": "Get Service Details (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-services/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-uuid",
+                  "description": "Service ID"
+                }
+              ]
+            },
+            "description": "Get service details (Public)"
+          }
+        },
+        {
+          "name": "List Services by Provider (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-services/provider/:providerId?limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-services", "provider", ":providerId"],
+              "query": [
+                {
+                  "key": "serviceType",
+                  "value": "consultation",
+                  "description": "Filter by type: consultation, legal_opinion, litigation, specific_service",
+                  "disabled": true
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "description": "Filter by active status",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of results"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number to skip"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "providerId",
+                  "value": "provider-uuid",
+                  "description": "Provider ID"
+                }
+              ]
+            },
+            "description": "List all services offered by a provider (Public)"
+          }
+        },
+        {
+          "name": "Create Provider Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": \"provider-uuid\",\n  \"serviceType\": \"consultation\",\n  \"category\": \"corporate_law\",\n  \"pricing\": {\n    \"basePrice\": 500,\n    \"currency\": \"SAR\",\n    \"pricingModel\": \"hourly\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-services",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-services"]
+            },
+            "description": "Create a new service offering (Provider, Provider Admin)"
+          }
+        },
+        {
+          "name": "Update Provider Service",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pricing\": {\n    \"basePrice\": 600,\n    \"currency\": \"SAR\",\n    \"pricingModel\": \"hourly\"\n  },\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-services/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-uuid",
+                  "description": "Service ID"
+                }
+              ]
+            },
+            "description": "Update service offering (Provider, Provider Admin)"
+          }
+        },
+        {
+          "name": "Delete Provider Service",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-services/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-services", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "service-uuid",
+                  "description": "Service ID"
+                }
+              ]
+            },
+            "description": "Delete service offering (Provider, Provider Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Provider Schedules",
+      "description": "Provider availability schedule management",
+      "item": [
+        {
+          "name": "Get Schedule (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-schedules/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-schedules", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "schedule-uuid",
+                  "description": "Schedule ID"
+                }
+              ]
+            },
+            "description": "Get schedule details (Public)"
+          }
+        },
+        {
+          "name": "List Schedules by Provider (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-schedules/provider/:providerId",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-schedules", "provider", ":providerId"],
+              "query": [
+                {
+                  "key": "dayOfWeek",
+                  "value": "1",
+                  "description": "Filter by day (0=Sunday, 6=Saturday)",
+                  "disabled": true
+                },
+                {
+                  "key": "isAvailable",
+                  "value": "true",
+                  "description": "Filter by availability",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "providerId",
+                  "value": "provider-uuid",
+                  "description": "Provider ID"
+                }
+              ]
+            },
+            "description": "List provider's availability schedule (Public)"
+          }
+        },
+        {
+          "name": "Create Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerId\": \"provider-uuid\",\n  \"dayOfWeek\": 1,\n  \"startTime\": \"09:00\",\n  \"endTime\": \"17:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-schedules",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-schedules"]
+            },
+            "description": "Create availability schedule (Provider, Provider Admin)"
+          }
+        },
+        {
+          "name": "Update Schedule",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startTime\": \"10:00\",\n  \"endTime\": \"18:00\",\n  \"isAvailable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/provider-schedules/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-schedules", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "schedule-uuid",
+                  "description": "Schedule ID"
+                }
+              ]
+            },
+            "description": "Update schedule (Provider, Provider Admin)"
+          }
+        },
+        {
+          "name": "Delete Schedule",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider-schedules/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider-schedules", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "schedule-uuid",
+                  "description": "Schedule ID"
+                }
+              ]
+            },
+            "description": "Delete schedule slot (Provider, Provider Admin)"
+          }
+        }
+      ]
+    }
+  ]
+}

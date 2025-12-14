@@ -1,0 +1,505 @@
+{
+  "info": {
+    "name": "Exoln LEX - Payment Methods API",
+    "description": "API collection for Payment Method management including adding, verifying, and managing payment methods.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "User Endpoints",
+      "description": "Payment method operations for authenticated users",
+      "item": [
+        {
+          "name": "Add Payment Method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"credit_card\",\n  \"details\": {\n    \"cardNumber\": \"**** **** **** 4242\",\n    \"cardholderName\": \"John Doe\",\n    \"expiryMonth\": \"12\",\n    \"expiryYear\": \"2026\",\n    \"cardBrand\": \"visa\"\n  },\n  \"nickname\": \"My Visa Card\",\n  \"setAsDefault\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods"]
+            },
+            "description": "Add a new payment method. Types: credit_card, debit_card, bank_account, wallet"
+          }
+        },
+        {
+          "name": "Update Payment Method",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"Updated Card Name\",\n  \"details\": {\n    \"expiryMonth\": \"06\",\n    \"expiryYear\": \"2027\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Update payment method details"
+          }
+        },
+        {
+          "name": "Set as Default",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/set-default",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "set-default"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Set payment method as default (must be verified)"
+          }
+        },
+        {
+          "name": "Verify Payment Method",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verificationCode\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "verify"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Verify payment method with verification code"
+          }
+        },
+        {
+          "name": "Activate Payment Method",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "activate"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Activate a deactivated payment method"
+          }
+        },
+        {
+          "name": "Deactivate Payment Method",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "deactivate"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Deactivate a payment method"
+          }
+        },
+        {
+          "name": "Reset Failed Attempts",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/reset-failed-attempts",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "reset-failed-attempts"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Reset the failed payment attempts counter"
+          }
+        },
+        {
+          "name": "Delete Payment Method (Soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Soft delete payment method (cannot delete default)"
+          }
+        },
+        {
+          "name": "Restore Payment Method",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/restore",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "restore"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Restore a soft-deleted payment method"
+          }
+        },
+        {
+          "name": "Get My Payment Methods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/my-methods?includeInactive=false&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", "my-methods"],
+              "query": [
+                {
+                  "key": "includeInactive",
+                  "value": "false",
+                  "description": "Include inactive payment methods"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt",
+                  "description": "Sort field",
+                  "disabled": true
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc",
+                  "description": "Sort order (asc/desc)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all payment methods for the authenticated user"
+          }
+        },
+        {
+          "name": "Get My Default Payment Method",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/my-default",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", "my-default"]
+            },
+            "description": "Get the default payment method for the authenticated user"
+          }
+        },
+        {
+          "name": "Get Payment Method by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Get payment method details by ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Endpoints",
+      "description": "Admin operations for payment method management",
+      "item": [
+        {
+          "name": "List All Payment Methods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "userId",
+                  "value": "user-uuid",
+                  "description": "Filter by user ID",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "credit_card",
+                  "description": "Filter by type (credit_card, debit_card, bank_account, wallet)",
+                  "disabled": true
+                },
+                {
+                  "key": "isDefault",
+                  "value": "true",
+                  "description": "Filter by default status",
+                  "disabled": true
+                },
+                {
+                  "key": "isVerified",
+                  "value": "true",
+                  "description": "Filter by verification status",
+                  "disabled": true
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "description": "Filter by active status",
+                  "disabled": true
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "visa",
+                  "description": "Search term",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List all payment methods with filters (Platform, Admin only)"
+          }
+        },
+        {
+          "name": "Get Expiring Payment Methods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/expiring/soon?days=30&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", "expiring", "soon"],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30",
+                  "description": "Number of days until expiration"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Get payment methods expiring within specified days (Admin only)"
+          }
+        },
+        {
+          "name": "Get Payment Method Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/statistics/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", "statistics", "overview"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "user-uuid",
+                  "description": "Filter statistics by user ID",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get payment method statistics (Admin only)"
+          }
+        },
+        {
+          "name": "Permanently Delete Payment Method",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/permanent",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "permanent"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Permanently delete payment method (Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Internal Endpoints",
+      "description": "Internal system endpoints for payment processing",
+      "item": [
+        {
+          "name": "Mark as Used",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/mark-as-used",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "mark-as-used"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Mark payment method as used (updates lastUsedAt) - Internal use"
+          }
+        },
+        {
+          "name": "Record Failed Attempt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Card declined - insufficient funds\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payment-methods/:id/record-failed-attempt",
+              "host": ["{{baseUrl}}"],
+              "path": ["payment-methods", ":id", "record-failed-attempt"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "payment-method-uuid",
+                  "description": "Payment method ID"
+                }
+              ]
+            },
+            "description": "Record a failed payment attempt - Internal use"
+          }
+        }
+      ]
+    }
+  ]
+}
