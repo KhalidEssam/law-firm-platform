@@ -264,7 +264,7 @@ export class GetTotalRefundedAmountUseCase {
         private readonly refundRepository: IRefundRepository,
     ) {}
 
-    async execute(userId: string): Promise<number> {
+    async execute(userId?: string): Promise<number> {
         return await this.refundRepository.getTotalRefundedAmount(userId);
     }
 }
@@ -279,7 +279,7 @@ export class GetPendingRefundAmountUseCase {
         private readonly refundRepository: IRefundRepository,
     ) {}
 
-    async execute(userId: string): Promise<number> {
+    async execute(userId?: string): Promise<number> {
         return await this.refundRepository.getPendingRefundAmount(userId);
     }
 }

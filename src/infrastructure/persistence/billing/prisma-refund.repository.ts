@@ -239,10 +239,10 @@ export class PrismaRefundRepository implements IRefundRepository {
         };
     }
 
-    async getTotalRefundedAmount(userId: string): Promise<number> {
+    async getTotalRefundedAmount(userId?: string): Promise<number> {
         const result = await this.prisma.refund.aggregate({
             where: {
-                userId,
+                ...(userId && { userId }),
                 status: RefundStatusMapper.toPrisma(RefundStatusEnum.PROCESSED),
             },
             _sum: { amount: true },
@@ -250,10 +250,10 @@ export class PrismaRefundRepository implements IRefundRepository {
         return result._sum.amount ?? 0;
     }
 
-    async getPendingRefundAmount(userId: string): Promise<number> {
+    async getPendingRefundAmount(userId?: string): Promise<number> {
         const result = await this.prisma.refund.aggregate({
             where: {
-                userId,
+                ...(userId && { userId }),
                 status: {
                     in: [
                         RefundStatusMapper.toPrisma(RefundStatusEnum.PENDING),
