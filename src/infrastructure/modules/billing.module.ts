@@ -6,6 +6,9 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 
+// Controller
+import { BillingController } from '../../interface/http/billing.controller';
+
 // Repositories
 import {
     PrismaMembershipInvoiceRepository,
@@ -90,6 +93,7 @@ import {
 
 @Module({
     imports: [PrismaModule],
+    controllers: [BillingController],
     providers: [
         // ============================================
         // REPOSITORIES

@@ -19,6 +19,8 @@ import { RolesGuard } from './auth/roles.guard';
 import { PermissionsGuard } from './auth/permissions.guard';
 import { LitigationCaseModule } from './infrastructure/modules/litigation-case.module';
 import { PaymentMethodModule } from './infrastructure/modules/payment-method.module';
+import { BillingModule } from './infrastructure/modules/billing.module';
+
 @Module({
   imports: [
     ThrottlerModule.forRoot([{
@@ -36,7 +38,8 @@ import { PaymentMethodModule } from './infrastructure/modules/payment-method.mod
     ConsultationRequestModule,
     LegalOpinionRequestModule,
     LitigationCaseModule,
-    PaymentMethodModule
+    PaymentMethodModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [

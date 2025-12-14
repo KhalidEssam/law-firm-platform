@@ -31,6 +31,10 @@ export interface DisputeCountOptions {
     priority?: PriorityEnum;
     resolvedBy?: string;
     escalatedTo?: string;
+    consultationId?: string;
+    legalOpinionId?: string;
+    serviceRequestId?: string;
+    litigationCaseId?: string;
     fromDate?: Date;
     toDate?: Date;
 }
