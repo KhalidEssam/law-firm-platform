@@ -71,6 +71,6 @@ export interface IRefundRepository {
     findApprovedButNotProcessed(): Promise<Refund[]>;
     findByReviewer(reviewedBy: string): Promise<Refund[]>;
     getStatistics(fromDate?: Date, toDate?: Date): Promise<RefundStatistics>;
-    getTotalRefundedAmount(userId: string): Promise<number>;
-    getPendingRefundAmount(userId: string): Promise<number>;
+    getTotalRefundedAmount(userId?: string): Promise<number>;
+    getPendingRefundAmount(userId?: string): Promise<number>;
 }
