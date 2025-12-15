@@ -21,6 +21,11 @@ import { RestoreUserUseCase } from 'src/core/application/use-cases/restore-user.
 import { SearchUsersUseCase } from 'src/core/application/use-cases/search-user.use-case';
 import { CheckEmailAvailabilityUseCase } from 'src/core/application/use-cases/check-email-availability.use-case';
 import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases/check-username-availability.use-case';
+import {
+    GetUserIdentitiesUseCase,
+    SetPrimaryIdentityUseCase,
+    UnlinkIdentityUseCase,
+} from 'src/core/application/use-cases/user-identities.use-case';
 @Module({
     controllers: [UserController],
     providers: [
@@ -46,6 +51,11 @@ import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases
         SyncAuth0UserUseCase,
         CheckEmailAvailabilityUseCase,
         CheckUsernameAvailabilityUseCase,
+
+        // Identity Management Use Cases
+        GetUserIdentitiesUseCase,
+        SetPrimaryIdentityUseCase,
+        UnlinkIdentityUseCase,
     ],
     exports: [
         'IUserRepository',

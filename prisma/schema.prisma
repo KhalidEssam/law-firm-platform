@@ -297,6 +297,7 @@ model User {
   walletBalance Float      @default(0)
 
   // Relations
+  identities              UserIdentity[]     // Multiple login methods (Google, Facebook, etc.)
   phoneNumbers            UserPhoneNumber[]
   addresses               UserAddress[]
   membership              Membership?
@@ -369,6 +370,45 @@ model UserAddress {
   deletedAt  DateTime?
 
   @@index([userId, isPrimary])
+}
+
+// ============================================
+// USER IDENTITIES (Account Linking)
+// Supports multiple login methods per user
+// ============================================
+enum AuthProvider {
+  auth0           // Username/password via Auth0
+  google_oauth2   // Google OAuth
+  facebook        // Facebook OAuth
+  apple           // Apple Sign In
+  microsoft       // Microsoft OAuth
+  twitter         // Twitter/X OAuth
+  github          // GitHub OAuth
+  linkedin        // LinkedIn OAuth
+  phone           // Phone/SMS passwordless
+  email           // Email passwordless (magic link)
+}
+
+model UserIdentity {
+  id             String       @id @default(uuid())
+  userId         String
+  provider       AuthProvider
+  providerUserId String       // The sub/ID from the auth provider (e.g., "google-oauth2|123456")
+  email          String?      // Email associated with this identity (if available)
+  displayName    String?      // Name from provider
+  profileData    Json?        // Additional profile data from provider
+  isPrimary      Boolean      @default(false) // Primary login method
+  lastLoginAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])  // Each provider identity is unique
+  @@index([userId])
+  @@index([email])
+  @@index([providerUserId])
 }
 
 // ============================================
