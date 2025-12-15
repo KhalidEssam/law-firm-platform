@@ -106,16 +106,19 @@ export class UserController {
      * Accessible by: user, partner, platform, system admin
      */
     @Get('me')
-    @Roles('user', 'partner', 'platform', 'system admin') 
+    @Roles('user', 'partner', 'platform', 'system admin')
     async getMyProfile(@Req() req: any): Promise<{ user: UserResponseDto }> {
         const auth0User = req.user;
-        console.log(auth0User);
+        console.log('[getMyProfile] Auth0 user:', auth0User);
+
+        // Sync user AND their roles from Auth0 JWT to local database
         const user = await this.syncAuth0User.execute({
             auth0Id: auth0User.sub,
             email: auth0User.email,
             username: auth0User.nickname || auth0User.name || auth0User.email,
             fullName: auth0User.name,
             emailVerified: auth0User.email_verified,
+            roles: auth0User.roles || [],  // Sync roles from Auth0 JWT
         });
         return {
             user: this.mapToResponse(user),
