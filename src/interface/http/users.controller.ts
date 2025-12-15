@@ -15,6 +15,12 @@ import { RestoreUserUseCase } from 'src/core/application/use-cases/restore-user.
 import { SearchUsersUseCase } from 'src/core/application/use-cases/search-user.use-case';
 import { CheckEmailAvailabilityUseCase } from 'src/core/application/use-cases/check-email-availability.use-case';
 import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases/check-username-availability.use-case';
+import {
+    GetUserIdentitiesUseCase,
+    SetPrimaryIdentityUseCase,
+    UnlinkIdentityUseCase,
+    getProviderDisplayName,
+} from 'src/core/application/use-cases/user-identities.use-case';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
@@ -53,6 +59,9 @@ export class UserController {
         private readonly syncAuth0User: SyncAuth0UserUseCase,
         private readonly checkEmailAvailability: CheckEmailAvailabilityUseCase,
         private readonly checkUsernameAvailability: CheckUsernameAvailabilityUseCase,
+        private readonly getUserIdentities: GetUserIdentitiesUseCase,
+        private readonly setPrimaryIdentity: SetPrimaryIdentityUseCase,
+        private readonly unlinkIdentity: UnlinkIdentityUseCase,
     ) { }
 
     // ============================================
@@ -190,6 +199,124 @@ export class UserController {
             user: this.mapToResponse(user),
         };
     }
+
+    // ============================================
+    // IDENTITY MANAGEMENT ENDPOINTS
+    // ============================================
+
+    /**
+     * Get all linked identities for current user
+     * Shows all login methods (Google, Facebook, email/password, etc.)
+     */
+    @Get('me/identities')
+    @Roles('user')
+    async getMyIdentities(@Req() req: any): Promise<{
+        identities: Array<{
+            id: string;
+            provider: string;
+            providerDisplayName: string;
+            email: string | null;
+            displayName: string | null;
+            isPrimary: boolean;
+            lastLoginAt: Date | null;
+            createdAt: Date;
+        }>;
+    }> {
+        const auth0User = req.user;
+
+        // First sync to ensure user exists
+        const user = await this.syncAuth0User.execute({
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            username: auth0User.nickname || auth0User.name || auth0User.email,
+            fullName: auth0User.name,
+            emailVerified: auth0User.email_verified,
+            roles: auth0User.roles || [],
+        });
+
+        const identities = await this.getUserIdentities.execute(user.id);
+
+        return {
+            identities: identities.map(identity => ({
+                id: identity.id,
+                provider: identity.provider,
+                providerDisplayName: getProviderDisplayName(identity.provider),
+                email: identity.email,
+                displayName: identity.displayName,
+                isPrimary: identity.isPrimary,
+                lastLoginAt: identity.lastLoginAt,
+                createdAt: identity.createdAt,
+            })),
+        };
+    }
+
+    /**
+     * Set an identity as primary login method
+     */
+    @Patch('me/identities/:identityId/set-primary')
+    @Roles('user')
+    @HttpCode(HttpStatus.OK)
+    async setMyPrimaryIdentity(
+        @Req() req: any,
+        @Param('identityId') identityId: string,
+    ): Promise<{ success: boolean; message: string }> {
+        const auth0User = req.user;
+
+        // First sync to ensure user exists
+        const user = await this.syncAuth0User.execute({
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            username: auth0User.nickname || auth0User.name || auth0User.email,
+            fullName: auth0User.name,
+            emailVerified: auth0User.email_verified,
+            roles: auth0User.roles || [],
+        });
+
+        try {
+            await this.setPrimaryIdentity.execute(user.id, identityId);
+            return {
+                success: true,
+                message: 'Primary login method updated successfully',
+            };
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
+    }
+
+    /**
+     * Unlink an identity (remove a login method)
+     * Cannot unlink if it's the only identity
+     */
+    @Delete('me/identities/:identityId')
+    @Roles('user')
+    @HttpCode(HttpStatus.OK)
+    async unlinkMyIdentity(
+        @Req() req: any,
+        @Param('identityId') identityId: string,
+    ): Promise<{ success: boolean; message: string }> {
+        const auth0User = req.user;
+
+        // First sync to ensure user exists
+        const user = await this.syncAuth0User.execute({
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            username: auth0User.nickname || auth0User.name || auth0User.email,
+            fullName: auth0User.name,
+            emailVerified: auth0User.email_verified,
+            roles: auth0User.roles || [],
+        });
+
+        try {
+            await this.unlinkIdentity.execute(user.id, identityId);
+            return {
+                success: true,
+                message: 'Login method unlinked successfully',
+            };
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
+    }
+
     // ============================================
     // ADMIN ENDPOINTS (system admin only)
     // ============================================
