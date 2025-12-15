@@ -49,6 +49,26 @@ export interface UserWithRolesDto {
 }
 
 // ============================================
+// HELPER: Role Name Conversion
+// ============================================
+
+/**
+ * Convert local DB role name (underscores) to Auth0 format (spaces)
+ * e.g., "system_admin" → "system admin"
+ */
+function localToAuth0RoleName(localName: string): string {
+    return localName.replace(/_/g, ' ');
+}
+
+/**
+ * Convert Auth0 role name (spaces) to local DB format (underscores)
+ * e.g., "system admin" → "system_admin"
+ */
+function auth0ToLocalRoleName(auth0Name: string): string {
+    return auth0Name.toLowerCase().replace(/\s+/g, '_');
+}
+
+// ============================================
 // USE CASE: Assign Role to User
 // ============================================
 
@@ -98,10 +118,17 @@ export class AssignUserRoleUseCase {
         // Sync to Auth0 first (if user has auth0Id and sync is enabled)
         if (syncToAuth0 && user.auth0Id) {
             try {
-                // Find Auth0 role by name
-                const auth0Role = await this.auth0Service.getRoleByName(roleName);
+                // Try to find Auth0 role by name (try both underscore and space formats)
+                let auth0Role = await this.auth0Service.getRoleByName(roleName);
+                if (!auth0Role) {
+                    // Try with spaces instead of underscores (Auth0 format)
+                    const auth0FormatName = localToAuth0RoleName(roleName);
+                    auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
+                }
+
                 if (auth0Role) {
                     await this.auth0Service.assignRole(user.auth0Id, auth0Role.id);
+                    console.log(`[AssignUserRoleUseCase] Synced role '${auth0Role.name}' to Auth0 for user ${user.auth0Id}`);
                 } else {
                     console.warn(`[AssignUserRoleUseCase] Auth0 role not found: ${roleName}, skipping Auth0 sync`);
                 }
@@ -199,9 +226,16 @@ export class RemoveUserRoleUseCase {
         // Sync to Auth0 first (if user has auth0Id and sync is enabled)
         if (syncToAuth0 && user.auth0Id) {
             try {
-                const auth0Role = await this.auth0Service.getRoleByName(roleName);
+                // Try to find Auth0 role by name (try both underscore and space formats)
+                let auth0Role = await this.auth0Service.getRoleByName(roleName);
+                if (!auth0Role) {
+                    const auth0FormatName = localToAuth0RoleName(roleName);
+                    auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
+                }
+
                 if (auth0Role) {
                     await this.auth0Service.removeRole(user.auth0Id, auth0Role.id);
+                    console.log(`[RemoveUserRoleUseCase] Removed role '${auth0Role.name}' from Auth0 for user ${user.auth0Id}`);
                 }
             } catch (error) {
                 console.error('[RemoveUserRoleUseCase] Failed to remove role from Auth0:', error);

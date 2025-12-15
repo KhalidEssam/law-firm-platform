@@ -82,6 +82,14 @@ export class SyncAuth0UserUseCase {
     }
 
     /**
+     * Normalize Auth0 role name to local DB format
+     * Auth0 uses spaces (e.g., "system admin"), local DB uses underscores ("system_admin")
+     */
+    private normalizeRoleName(auth0RoleName: string): string {
+        return auth0RoleName.toLowerCase().replace(/\s+/g, '_');
+    }
+
+    /**
      * Sync roles from Auth0 (via JWT) to local database
      * This ensures local DB always reflects Auth0's current role assignments
      */
@@ -89,6 +97,10 @@ export class SyncAuth0UserUseCase {
         userId: string,
         auth0Roles: string[],
     ): Promise<{ updated: boolean; roles: string[] }> {
+        // Normalize Auth0 role names to match local DB format (spaces → underscores)
+        const normalizedAuth0Roles = auth0Roles.map(r => this.normalizeRoleName(r));
+        console.log(`[SyncAuth0UserUseCase] Auth0 roles: ${auth0Roles.join(', ')} → Normalized: ${normalizedAuth0Roles.join(', ')}`);
+
         // Get current local roles for this user
         const currentUserRoles = await this.prisma.userRole.findMany({
             where: { userId, deletedAt: null },
@@ -96,10 +108,10 @@ export class SyncAuth0UserUseCase {
         });
         const currentRoleNames = currentUserRoles.map(ur => ur.role.name);
 
-        // Find roles that exist in our database
+        // Find roles that exist in our database (using normalized names)
         const localRoles = await this.prisma.role.findMany({
             where: {
-                name: { in: auth0Roles },
+                name: { in: normalizedAuth0Roles },
                 deletedAt: null,
             },
         });
