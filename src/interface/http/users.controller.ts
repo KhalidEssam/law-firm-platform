@@ -34,7 +34,6 @@ import { Public } from 'src/auth/decorators/public.decorator';
 // ============================================
 
 @Controller('users')
-// @UseGuards(AuthGuard('jwt'), RolesGuard, PermissionsGuard)
 export class UserController {
     constructor(
         private readonly createUser: CreateUserUseCase,
@@ -107,7 +106,8 @@ export class UserController {
      * Accessible by: user, partner, platform, system admin
      */
     @Get('me')
-    @Roles('user', 'partner', 'platform', 'system admin') async getMyProfile(@Req() req: any): Promise<{ user: UserResponseDto }> {
+    @Roles('user', 'partner', 'platform', 'system admin') 
+    async getMyProfile(@Req() req: any): Promise<{ user: UserResponseDto }> {
         const auth0User = req.user;
         console.log(auth0User);
         const user = await this.syncAuth0User.execute({

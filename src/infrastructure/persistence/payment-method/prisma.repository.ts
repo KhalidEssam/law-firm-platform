@@ -25,7 +25,8 @@ import {
 import {
     PaymentMethod as PrismaPaymentMethod,
     PaymentMethodType as PrismaPaymentMethodType,
-    Prisma, } from '@prisma/client';
+    Prisma,
+} from '@prisma/client';
 
 // ============================================
 // PAYMENT METHOD TYPE MAPPER
@@ -41,7 +42,7 @@ class PaymentMethodTypeMapper {
         [PaymentMethodTypeEnum.MADA]: PrismaPaymentMethodType.wallet,
 
 
-        
+
     };
 
     private static readonly toDomainMap: Record<PrismaPaymentMethodType, PaymentMethodTypeEnum> = {
@@ -179,7 +180,7 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
         };
     }
 
-   async findByType(
+    async findByType(
         type: PaymentMethodType,
         pagination?: PaginationParams,
     ): Promise<PaginatedResult<PaymentMethod>> {
@@ -267,11 +268,11 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
         filters: PaymentMethodFilters,
         pagination: PaginationParams,
     ): Promise<PaginatedResult<PaymentMethod>> {
-        const page = pagination.page || 1;
-        const limit = pagination.limit || 10;
+        const page = Number(pagination.page) || 1;
+        const limit = Number(pagination.limit) || 10;
         const skip = (page - 1) * limit;
         const sortBy = pagination.sortBy || 'createdAt';
-        const sortOrder = pagination.sortOrder || 'desc';
+        const sortOrder = pagination.sortOrder || 'desc'
 
         const where: any = {};
 
