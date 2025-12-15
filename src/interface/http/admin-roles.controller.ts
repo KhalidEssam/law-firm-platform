@@ -10,7 +10,7 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsNumber, Min } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
@@ -36,20 +36,6 @@ export class AssignRoleDto {
     @IsString()
     @IsNotEmpty()
     roleName: string;
-
-    @IsOptional()
-    @IsBoolean()
-    syncToAuth0?: boolean = true;
-}
-
-export class RemoveRoleDto {
-    @IsString()
-    @IsNotEmpty()
-    roleName: string;
-
-    @IsOptional()
-    @IsBoolean()
-    syncToAuth0?: boolean = true;
 }
 
 export class ListPermissionsQueryDto {
@@ -206,10 +192,10 @@ export class AdminRolesController {
     @Roles('admin', 'system_admin', 'platform_admin')
     @Permissions('update:users')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Assign a role to a user' })
+    @ApiOperation({ summary: 'Assign a role to a user (local DB only)' })
     @ApiParam({ name: 'userId', description: 'User ID' })
     @ApiResponse({ status: 200, description: 'Role assigned successfully' })
-    @ApiResponse({ status: 400, description: 'User already has role or Auth0 sync failed' })
+    @ApiResponse({ status: 400, description: 'User already has role' })
     @ApiResponse({ status: 404, description: 'User or role not found' })
     async assignRoleToUser(
         @Param('userId') userId: string,
@@ -218,11 +204,10 @@ export class AdminRolesController {
         const user = await this.assignUserRole.execute({
             userId,
             roleName: dto.roleName,
-            syncToAuth0: dto.syncToAuth0,
         });
         return {
             user,
-            message: `Role '${dto.roleName}' assigned successfully`,
+            message: `Role '${dto.roleName}' assigned successfully (local DB only)`,
         };
     }
 
@@ -230,26 +215,23 @@ export class AdminRolesController {
     @Roles('admin', 'system_admin', 'platform_admin')
     @Permissions('update:users')
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Remove a role from a user' })
+    @ApiOperation({ summary: 'Remove a role from a user (local DB only)' })
     @ApiParam({ name: 'userId', description: 'User ID' })
     @ApiParam({ name: 'roleName', description: 'Role name to remove' })
-    @ApiQuery({ name: 'syncToAuth0', required: false, description: 'Sync to Auth0 (default: true)' })
     @ApiResponse({ status: 200, description: 'Role removed successfully' })
-    @ApiResponse({ status: 400, description: 'User does not have role or Auth0 sync failed' })
+    @ApiResponse({ status: 400, description: 'User does not have role' })
     @ApiResponse({ status: 404, description: 'User or role not found' })
     async removeRoleFromUser(
         @Param('userId') userId: string,
         @Param('roleName') roleName: string,
-        @Query('syncToAuth0') syncToAuth0: string = 'true',
     ): Promise<UserRolesResponseDto> {
         const user = await this.removeUserRole.execute({
             userId,
             roleName,
-            syncToAuth0: syncToAuth0 !== 'false',
         });
         return {
             user,
-            message: `Role '${roleName}' removed successfully`,
+            message: `Role '${roleName}' removed successfully (local DB only)`,
         };
     }
 

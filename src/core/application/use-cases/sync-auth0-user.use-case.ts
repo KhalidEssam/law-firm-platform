@@ -183,24 +183,18 @@ export class SyncAuth0UserUseCase {
             throw new Error('Failed to sync user: user is null after all sync attempts');
         }
 
-        // Sync roles from Auth0 JWT to local database
-        let rolesUpdated = false;
-        let rolesSynced: string[] = [];
-
+        // NOTE: Local DB is the source of truth for roles.
+        // Roles are NOT synced FROM Auth0 on login.
+        // Admin API changes sync TO Auth0 instead (see user-role-management.use-case.ts).
+        // The roles from Auth0 JWT are ignored - local DB roles take precedence.
         if (command.roles && command.roles.length > 0) {
-            const syncResult = await this.syncRolesToLocalDb(user.id, command.roles);
-            rolesUpdated = syncResult.updated;
-            rolesSynced = syncResult.roles;
-
-            if (rolesUpdated) {
-                console.log(`[SyncAuth0UserUseCase] Synced ${rolesSynced.length} roles from Auth0 for user ${user.id}`);
-            }
+            console.log(`[SyncAuth0UserUseCase] Auth0 JWT contains roles: ${command.roles.join(', ')}, but local DB is source of truth - ignoring`);
         }
 
         return {
             user,
-            rolesUpdated,
-            rolesSynced,
+            rolesUpdated: false,
+            rolesSynced: [],
             isNewUser,
             isNewIdentity,
             linkedToExistingAccount,
@@ -230,87 +224,5 @@ export class SyncAuth0UserUseCase {
             },
         });
         console.log(`[SyncAuth0UserUseCase] Created identity: provider=${params.provider}, userId=${params.userId}, isPrimary=${params.isPrimary}`);
-    }
-
-    /**
-     * Normalize Auth0 role name to local DB format
-     * Auth0 uses spaces (e.g., "system admin"), local DB uses underscores ("system_admin")
-     */
-    private normalizeRoleName(auth0RoleName: string): string {
-        return auth0RoleName.toLowerCase().replace(/\s+/g, '_');
-    }
-
-    /**
-     * Sync roles from Auth0 (via JWT) to local database
-     * This ensures local DB always reflects Auth0's current role assignments
-     */
-    private async syncRolesToLocalDb(
-        userId: string,
-        auth0Roles: string[],
-    ): Promise<{ updated: boolean; roles: string[] }> {
-        // Normalize Auth0 role names to match local DB format (spaces → underscores)
-        const normalizedAuth0Roles = auth0Roles.map(r => this.normalizeRoleName(r));
-        console.log(`[SyncAuth0UserUseCase] Auth0 roles: ${auth0Roles.join(', ')} → Normalized: ${normalizedAuth0Roles.join(', ')}`);
-
-        // Get current local roles for this user
-        const currentUserRoles = await this.prisma.userRole.findMany({
-            where: { userId, deletedAt: null },
-            include: { role: true },
-        });
-        const currentRoleNames = currentUserRoles.map(ur => ur.role.name);
-
-        // Find roles that exist in our database (using normalized names)
-        const localRoles = await this.prisma.role.findMany({
-            where: {
-                name: { in: normalizedAuth0Roles },
-                deletedAt: null,
-            },
-        });
-        const validAuth0RoleNames = localRoles.map(r => r.name);
-
-        // Check if roles need updating
-        const rolesToAdd = validAuth0RoleNames.filter(r => !currentRoleNames.includes(r));
-        const rolesToRemove = currentRoleNames.filter(r => !validAuth0RoleNames.includes(r));
-
-        // No changes needed
-        if (rolesToAdd.length === 0 && rolesToRemove.length === 0) {
-            return { updated: false, roles: currentRoleNames };
-        }
-
-        // Perform updates in a transaction
-        await this.prisma.$transaction(async (tx) => {
-            // Remove roles that are no longer in Auth0
-            if (rolesToRemove.length > 0) {
-                const roleIdsToRemove = currentUserRoles
-                    .filter(ur => rolesToRemove.includes(ur.role.name))
-                    .map(ur => ur.roleId);
-
-                await tx.userRole.deleteMany({
-                    where: {
-                        userId,
-                        roleId: { in: roleIdsToRemove },
-                    },
-                });
-                console.log(`[SyncAuth0UserUseCase] Removed roles: ${rolesToRemove.join(', ')}`);
-            }
-
-            // Add new roles from Auth0
-            if (rolesToAdd.length > 0) {
-                const roleIdsToAdd = localRoles
-                    .filter(r => rolesToAdd.includes(r.name))
-                    .map(r => r.id);
-
-                await tx.userRole.createMany({
-                    data: roleIdsToAdd.map(roleId => ({
-                        userId,
-                        roleId,
-                    })),
-                    skipDuplicates: true,
-                });
-                console.log(`[SyncAuth0UserUseCase] Added roles: ${rolesToAdd.join(', ')}`);
-            }
-        });
-
-        return { updated: true, roles: validAuth0RoleNames };
     }
 }
