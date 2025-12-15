@@ -9,11 +9,25 @@ import { Auth0Service } from '../../../infrastructure/persistence/auth0/auth0.se
 export interface AssignRoleCommand {
     userId: string;         // Internal user ID
     roleName: string;       // Role name (e.g., 'admin', 'subscriber')
+    syncToAuth0?: boolean;  // Whether to sync to Auth0 (default: true)
 }
 
 export interface RemoveRoleCommand {
     userId: string;
     roleName: string;
+    syncToAuth0?: boolean;  // Whether to sync to Auth0 (default: true)
+}
+
+// ============================================
+// HELPER: Role Name Conversion
+// ============================================
+
+/**
+ * Convert local DB role name (underscores) to Auth0 format (spaces)
+ * e.g., "system_admin" → "system admin"
+ */
+function localToAuth0RoleName(localName: string): string {
+    return localName.replace(/_/g, ' ');
 }
 
 export interface UserRoleDto {
@@ -48,18 +62,18 @@ export interface UserWithRolesDto {
 
 // ============================================
 // USE CASE: Assign Role to User
-// Note: This only updates the local database.
-// Auth0 roles are synced TO local DB on user login (one-way sync).
+// Local DB is the source of truth - syncs TO Auth0
 // ============================================
 
 @Injectable()
 export class AssignUserRoleUseCase {
     constructor(
         private readonly prisma: PrismaService,
+        private readonly auth0Service: Auth0Service,
     ) {}
 
     async execute(command: AssignRoleCommand): Promise<UserWithRolesDto> {
-        const { userId, roleName } = command;
+        const { userId, roleName, syncToAuth0 = true } = command;
 
         // Find user
         const user = await this.prisma.user.findUnique({
@@ -94,8 +108,7 @@ export class AssignUserRoleUseCase {
             throw new BadRequestException(`User already has role: ${roleName}`);
         }
 
-        // Assign role in local database only
-        // Note: Auth0 is the source of truth - roles sync FROM Auth0 on user login
+        // Assign role in local database first (DB is the source of truth)
         await this.prisma.userRole.create({
             data: {
                 userId: user.id,
@@ -103,7 +116,30 @@ export class AssignUserRoleUseCase {
             },
         });
 
-        console.log(`[AssignUserRoleUseCase] Assigned role '${roleName}' to user ${userId} (local DB only)`);
+        console.log(`[AssignUserRoleUseCase] Assigned role '${roleName}' to user ${userId} in local DB`);
+
+        // Sync TO Auth0 (if user has auth0Id and sync is enabled)
+        if (syncToAuth0 && user.auth0Id) {
+            try {
+                // Try to find Auth0 role by name (try both underscore and space formats)
+                let auth0Role = await this.auth0Service.getRoleByName(roleName);
+                if (!auth0Role) {
+                    const auth0FormatName = localToAuth0RoleName(roleName);
+                    auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
+                }
+
+                if (auth0Role) {
+                    await this.auth0Service.assignRole(user.auth0Id, auth0Role.id);
+                    console.log(`[AssignUserRoleUseCase] Synced role '${auth0Role.name}' TO Auth0 for user ${user.auth0Id}`);
+                } else {
+                    console.warn(`[AssignUserRoleUseCase] Auth0 role not found: ${roleName}, skipping Auth0 sync`);
+                }
+            } catch (error) {
+                console.error('[AssignUserRoleUseCase] Failed to sync role TO Auth0:', error);
+                // Don't throw - local DB is the source of truth, Auth0 sync is secondary
+                console.warn('[AssignUserRoleUseCase] Role assigned locally but Auth0 sync failed');
+            }
+        }
 
         // Return updated user with roles
         const updatedUser = await this.prisma.user.findUnique({
@@ -138,18 +174,18 @@ export class AssignUserRoleUseCase {
 
 // ============================================
 // USE CASE: Remove Role from User
-// Note: This only updates the local database.
-// Auth0 roles are synced TO local DB on user login (one-way sync).
+// Local DB is the source of truth - syncs TO Auth0
 // ============================================
 
 @Injectable()
 export class RemoveUserRoleUseCase {
     constructor(
         private readonly prisma: PrismaService,
+        private readonly auth0Service: Auth0Service,
     ) {}
 
     async execute(command: RemoveRoleCommand): Promise<UserWithRolesDto> {
-        const { userId, roleName } = command;
+        const { userId, roleName, syncToAuth0 = true } = command;
 
         // Find user
         const user = await this.prisma.user.findUnique({
@@ -183,8 +219,7 @@ export class RemoveUserRoleUseCase {
             throw new BadRequestException(`User does not have role: ${roleName}`);
         }
 
-        // Remove role from local database only
-        // Note: Auth0 is the source of truth - roles sync FROM Auth0 on user login
+        // Remove role from local database first (DB is the source of truth)
         await this.prisma.userRole.delete({
             where: {
                 userId_roleId: {
@@ -194,7 +229,28 @@ export class RemoveUserRoleUseCase {
             },
         });
 
-        console.log(`[RemoveUserRoleUseCase] Removed role '${roleName}' from user ${userId} (local DB only)`);
+        console.log(`[RemoveUserRoleUseCase] Removed role '${roleName}' from user ${userId} in local DB`);
+
+        // Sync TO Auth0 (if user has auth0Id and sync is enabled)
+        if (syncToAuth0 && user.auth0Id) {
+            try {
+                // Try to find Auth0 role by name (try both underscore and space formats)
+                let auth0Role = await this.auth0Service.getRoleByName(roleName);
+                if (!auth0Role) {
+                    const auth0FormatName = localToAuth0RoleName(roleName);
+                    auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
+                }
+
+                if (auth0Role) {
+                    await this.auth0Service.removeRole(user.auth0Id, auth0Role.id);
+                    console.log(`[RemoveUserRoleUseCase] Removed role '${auth0Role.name}' FROM Auth0 for user ${user.auth0Id}`);
+                }
+            } catch (error) {
+                console.error('[RemoveUserRoleUseCase] Failed to sync role removal TO Auth0:', error);
+                // Don't throw - local DB is the source of truth, Auth0 sync is secondary
+                console.warn('[RemoveUserRoleUseCase] Role removed locally but Auth0 sync failed');
+            }
+        }
 
         // Return updated user with roles
         const updatedUser = await this.prisma.user.findUnique({
