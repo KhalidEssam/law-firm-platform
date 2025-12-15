@@ -50,9 +50,9 @@ class PaymentMethodTypeMapper {
         [PrismaPaymentMethodType.debit_card]: PaymentMethodTypeEnum.DEBIT_CARD,
         [PrismaPaymentMethodType.wallet]: PaymentMethodTypeEnum.WALLET,
         [PrismaPaymentMethodType.bank_transfer]: PaymentMethodTypeEnum.BANK_TRANSFER,
-        // [PrismaPaymentMethodType.mada]: PaymentMethodTypeEnum.MADA,
-        // [PrismaPaymentMethodType.google_pay]: PaymentMethodTypeEnum.GOOGLE_PAY,
-        // [PrismaPaymentMethodType.apple_pay]: PaymentMethodTypeEnum.APPLE_PAY
+        [PrismaPaymentMethodType.mada]: PaymentMethodTypeEnum.MADA,
+        [PrismaPaymentMethodType.google_pay]: PaymentMethodTypeEnum.GOOGLE_PAY,
+        [PrismaPaymentMethodType.apple_pay]: PaymentMethodTypeEnum.APPLE_PAY,
     };
 
     static toPrisma(type: PaymentMethodType): PrismaPaymentMethodType {
