@@ -137,58 +137,29 @@ export class UserController {
     ): Promise<{ user: UserResponseDto }> {
         console.log('Received body:', dto);
 
-        // Extract Auth0 ID from JWT payload (req.user) or body
-        const auth0Id = req.user?.sub || dto.sub;
+        const auth0User = req.user;
 
-        if (!auth0Id) {
+        if (!auth0User?.sub) {
             throw new BadRequestException('Auth0 ID is required to update user profile');
         }
 
-        console.log('🔍 Looking up user with Auth0 ID:', auth0Id);
+        console.log('🔍 Syncing user with Auth0 ID:', auth0User.sub);
 
+        // Sync user AND their roles from Auth0 JWT to local database
         let user;
         try {
-            user = await this.getUserByAuth0Id.execute(auth0Id);
-            console.log('✅ User found:', user?.id);
+            user = await this.syncAuth0User.execute({
+                auth0Id: auth0User.sub,
+                email: auth0User.email || dto.email,
+                username: auth0User.nickname || auth0User.name || auth0User.email,
+                fullName: auth0User.name,
+                emailVerified: auth0User.email_verified,
+                roles: auth0User.roles || [],  // Sync roles from Auth0 JWT
+            });
+            console.log('✅ User synced:', user?.id);
         } catch (error) {
-            console.log('⚠️ User lookup failed:', error.message);
-            user = null;
-        }
-
-        // If user doesn't exist, create it
-        if (!user) {
-            console.log('⚠️ User not found — creating a new one...');
-
-            // Extract user info from JWT or body
-            const email = req.user?.email || dto.email;
-            const username = req.user?.nickname ||
-                req.user?.preferred_username ||
-                dto.name?.split('@')[0] ||
-                email?.split('@')[0];
-
-            if (!email) {
-                throw new BadRequestException('Email is required to create user');
-            }
-
-            if (!username) {
-                throw new BadRequestException('Username is required to create user');
-            }
-
-            const createUserDto: CreateUserDto = {
-                auth0Id: auth0Id,
-                username: username,
-                email: email,
-            };
-
-            console.log('📝 Creating user with:', createUserDto);
-
-            try {
-                user = await this.createUser.execute(createUserDto);
-                console.log('✅ User created successfully:', user.id);
-            } catch (error) {
-                console.error('❌ Failed to create user:', error);
-                throw new BadRequestException(`Failed to create user: ${error.message}`);
-            }
+            console.error('❌ Failed to sync user:', error);
+            throw new BadRequestException(`Failed to sync user: ${error.message}`);
         }
 
         // Extract only the profile update fields (exclude auth fields)
