@@ -20,6 +20,7 @@ import { PermissionsGuard } from './auth/permissions.guard';
 import { LitigationCaseModule } from './infrastructure/modules/litigation-case.module';
 import { PaymentMethodModule } from './infrastructure/modules/payment-method.module';
 import { BillingModule } from './infrastructure/modules/billing.module';
+import { AdminRolesModule } from './infrastructure/modules/admin-roles.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { BillingModule } from './infrastructure/modules/billing.module';
     LitigationCaseModule,
     PaymentMethodModule,
     BillingModule,
+    AdminRolesModule,
   ],
   controllers: [AppController],
   providers: [

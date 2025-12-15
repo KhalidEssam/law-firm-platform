@@ -1,0 +1,432 @@
+{
+  "info": {
+    "_postman_id": "admin-roles-api-collection",
+    "name": "Admin Roles API",
+    "description": "API endpoints for admin role and permission management with Auth0 sync",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "role_name",
+      "value": "subscriber",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Roles",
+      "description": "Role listing and details endpoints",
+      "item": [
+        {
+          "name": "List All Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles"]
+            },
+            "description": "Get all available roles in the system with permission counts"
+          },
+          "response": []
+        },
+        {
+          "name": "List All Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "permissions"]
+            },
+            "description": "Get all available permissions in the system"
+          },
+          "response": []
+        },
+        {
+          "name": "List Permissions by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/permissions?category=users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "permissions"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "users",
+                  "description": "Filter by category: users, payment-methods, provider, consultation, legal-opinion, litigation, membership, billing"
+                }
+              ]
+            },
+            "description": "Get permissions filtered by category"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_name}}/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_name}}", "permissions"]
+            },
+            "description": "Get all permissions assigned to a specific role"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users by Role",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/{{role_name}}/users?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "{{role_name}}", "users"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Number of users to return"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Offset for pagination"
+                }
+              ]
+            },
+            "description": "Get all users who have a specific role"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Role Management",
+      "description": "Manage roles for specific users",
+      "item": [
+        {
+          "name": "Get User Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}"]
+            },
+            "description": "Get all roles assigned to a specific user"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"subscriber\",\n  \"syncToAuth0\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/assign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "assign"]
+            },
+            "description": "Assign a role to a user. Syncs to Auth0 by default."
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"admin\",\n  \"syncToAuth0\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/assign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "assign"]
+            },
+            "description": "Assign admin role to a user"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role (Provider)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"provider\",\n  \"syncToAuth0\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/assign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "assign"]
+            },
+            "description": "Assign provider role to a user"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role (Lawyer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"lawyer\",\n  \"syncToAuth0\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/assign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "assign"]
+            },
+            "description": "Assign lawyer role to a user"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Role (Skip Auth0 Sync)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"analytics\",\n  \"syncToAuth0\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/assign",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "assign"]
+            },
+            "description": "Assign role without syncing to Auth0 (local DB only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Role from User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/roles/{{role_name}}?syncToAuth0=true",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "roles", "{{role_name}}"],
+              "query": [
+                {
+                  "key": "syncToAuth0",
+                  "value": "true",
+                  "description": "Whether to sync removal to Auth0 (default: true)"
+                }
+              ]
+            },
+            "description": "Remove a role from a user. Syncs to Auth0 by default."
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Role (Skip Auth0 Sync)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/roles/{{role_name}}?syncToAuth0=false",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "roles", "{{role_name}}"],
+              "query": [
+                {
+                  "key": "syncToAuth0",
+                  "value": "false",
+                  "description": "Skip Auth0 sync, only remove from local DB"
+                }
+              ]
+            },
+            "description": "Remove role from local DB without syncing to Auth0"
+          },
+          "response": []
+        },
+        {
+          "name": "Sync User Roles from Auth0",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/users/{{user_id}}/sync",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "users", "{{user_id}}", "sync"]
+            },
+            "description": "Sync user's roles from Auth0 to local database. Useful for reconciliation."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Role Examples",
+      "description": "Example requests for common role assignments",
+      "item": [
+        {
+          "name": "Get Admin Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/admin/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "admin", "permissions"]
+            },
+            "description": "View all permissions for the admin role"
+          },
+          "response": []
+        },
+        {
+          "name": "Get System Admin Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/system_admin/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "system_admin", "permissions"]
+            },
+            "description": "View all permissions for the system_admin role (has all permissions)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Provider Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/provider/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "provider", "permissions"]
+            },
+            "description": "View all permissions for the provider role"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Subscriber Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/subscriber/permissions",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "subscriber", "permissions"]
+            },
+            "description": "View all permissions for the subscriber role"
+          },
+          "response": []
+        },
+        {
+          "name": "List All Admins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "admin", "users"]
+            },
+            "description": "List all users with admin role"
+          },
+          "response": []
+        },
+        {
+          "name": "List All Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/provider/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "provider", "users"]
+            },
+            "description": "List all users with provider role"
+          },
+          "response": []
+        },
+        {
+          "name": "List All Lawyers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/roles/lawyer/users",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "roles", "lawyer", "users"]
+            },
+            "description": "List all users with lawyer role"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
