@@ -1,15 +1,5 @@
 // prisma/seed.ts
 import 'dotenv/config';
-import { PrismaClient, Currency } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
-
-// Initialize PrismaClient with pg adapter (required for Prisma 7.x)
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-});
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 // ============================================
 // ROLES DATA
@@ -350,11 +340,8 @@ const rolePermissions: Record<string, string[]> = {
         'update:disputes',
     ],
 
-    // System Admin - full access
-    system_admin: [
-        // All permissions
-        ...permissions.map(p => p.name),
-    ],
+    // System Admin - full access (will be populated with all permissions)
+    system_admin: [],
 
     // System - background jobs
     system: [
@@ -364,17 +351,20 @@ const rolePermissions: Record<string, string[]> = {
     ],
 };
 
+// Populate system_admin with all permissions
+rolePermissions.system_admin = permissions.map(p => p.name);
+
 // ============================================
-// SERVICES DATA
+// SERVICES DATA (will use Currency enum from dynamic import)
 // ============================================
-const services = [
+const servicesData = [
     {
         code: 'CONSULTATION',
         name: 'Consultation',
         nameAr: 'استشارة',
         category: 'consultation',
         basePrice: 500,
-        currency: Currency.SAR,
+        currency: 'SAR',
         isActive: true,
         sortOrder: 1,
     },
@@ -384,7 +374,7 @@ const services = [
         nameAr: 'رأي قانوني',
         category: 'opinion',
         basePrice: 2000,
-        currency: Currency.SAR,
+        currency: 'SAR',
         isActive: true,
         sortOrder: 2,
     },
@@ -394,7 +384,7 @@ const services = [
         nameAr: 'طلب خدمة',
         category: 'service',
         basePrice: 1500,
-        currency: Currency.SAR,
+        currency: 'SAR',
         isActive: true,
         sortOrder: 3,
     },
@@ -404,7 +394,7 @@ const services = [
         nameAr: 'قضية تقاضي',
         category: 'litigation',
         basePrice: 5000,
-        currency: Currency.SAR,
+        currency: 'SAR',
         isActive: true,
         sortOrder: 4,
     },
@@ -414,120 +404,116 @@ const services = [
         nameAr: 'استشارة هاتفية',
         category: 'call',
         basePrice: 300,
-        currency: Currency.SAR,
+        currency: 'SAR',
         isActive: true,
         sortOrder: 5,
     },
 ];
 
 // ============================================
-// SEED FUNCTIONS
+// MAIN SEED FUNCTION
 // ============================================
-
-async function seedRoles() {
-    console.log('🔄 Seeding roles...');
-
-    for (const role of roles) {
-        await prisma.role.upsert({
-            where: { name: role.name },
-            update: { description: role.description },
-            create: role,
-        });
-    }
-
-    console.log(`✅ ${roles.length} roles seeded successfully`);
-}
-
-async function seedPermissions() {
-    console.log('🔄 Seeding permissions...');
-
-    for (const permission of permissions) {
-        await prisma.permission.upsert({
-            where: { name: permission.name },
-            update: {
-                description: permission.description,
-                category: permission.category,
-            },
-            create: permission,
-        });
-    }
-
-    console.log(`✅ ${permissions.length} permissions seeded successfully`);
-}
-
-async function seedRolePermissions() {
-    console.log('🔄 Seeding role-permission mappings...');
-
-    let totalMappings = 0;
-
-    for (const [roleName, permissionNames] of Object.entries(rolePermissions)) {
-        // Get the role
-        const role = await prisma.role.findUnique({
-            where: { name: roleName },
-        });
-
-        if (!role) {
-            console.warn(`⚠️ Role not found: ${roleName}`);
-            continue;
-        }
-
-        // Clear existing mappings for this role (to handle updates)
-        await prisma.rolePermission.deleteMany({
-            where: { roleId: role.id },
-        });
-
-        // Create new mappings
-        for (const permissionName of permissionNames) {
-            const permission = await prisma.permission.findUnique({
-                where: { name: permissionName },
-            });
-
-            if (!permission) {
-                console.warn(`⚠️ Permission not found: ${permissionName}`);
-                continue;
-            }
-
-            await prisma.rolePermission.create({
-                data: {
-                    roleId: role.id,
-                    permissionId: permission.id,
-                },
-            });
-
-            totalMappings++;
-        }
-    }
-
-    console.log(`✅ ${totalMappings} role-permission mappings seeded successfully`);
-}
-
-async function seedServices() {
-    console.log('🔄 Seeding services...');
-
-    for (const service of services) {
-        await prisma.service.upsert({
-            where: { code: service.code },
-            update: service,
-            create: service,
-        });
-    }
-
-    console.log(`✅ ${services.length} services seeded successfully`);
-}
-
 async function main() {
     console.log('🌱 Starting database seed...\n');
 
-    try {
-        // Seed in order (roles and permissions first, then mappings)
-        await seedRoles();
-        await seedPermissions();
-        await seedRolePermissions();
-        await seedServices();
+    // Dynamic imports to ensure dotenv is loaded first
+    const { PrismaClient, Currency } = await import('@prisma/client');
+    const { PrismaPg } = await import('@prisma/adapter-pg');
+    const { Pool } = await import('pg');
 
-        console.log('\n🎉 Database seeding completed successfully!');
+    // Initialize database connection
+    const pool = new Pool({
+        connectionString: process.env.DATABASE_URL,
+    });
+    const adapter = new PrismaPg(pool);
+    const prisma = new PrismaClient({ adapter });
+
+    try {
+        // Seed Roles
+        console.log('🔄 Seeding roles...');
+        for (const role of roles) {
+            await prisma.role.upsert({
+                where: { name: role.name },
+                update: { description: role.description },
+                create: role,
+            });
+        }
+        console.log(`✅ ${roles.length} roles seeded successfully`);
+
+        // Seed Permissions
+        console.log('🔄 Seeding permissions...');
+        for (const permission of permissions) {
+            await prisma.permission.upsert({
+                where: { name: permission.name },
+                update: {
+                    description: permission.description,
+                    category: permission.category,
+                },
+                create: permission,
+            });
+        }
+        console.log(`✅ ${permissions.length} permissions seeded successfully`);
+
+        // Seed Role-Permission Mappings
+        console.log('🔄 Seeding role-permission mappings...');
+        let totalMappings = 0;
+
+        for (const [roleName, permissionNames] of Object.entries(rolePermissions)) {
+            const role = await prisma.role.findUnique({
+                where: { name: roleName },
+            });
+
+            if (!role) {
+                console.warn(`⚠️ Role not found: ${roleName}`);
+                continue;
+            }
+
+            // Clear existing mappings for this role
+            await prisma.rolePermission.deleteMany({
+                where: { roleId: role.id },
+            });
+
+            // Create new mappings
+            for (const permissionName of permissionNames) {
+                const permission = await prisma.permission.findUnique({
+                    where: { name: permissionName },
+                });
+
+                if (!permission) {
+                    console.warn(`⚠️ Permission not found: ${permissionName}`);
+                    continue;
+                }
+
+                await prisma.rolePermission.create({
+                    data: {
+                        roleId: role.id,
+                        permissionId: permission.id,
+                    },
+                });
+
+                totalMappings++;
+            }
+        }
+        console.log(`✅ ${totalMappings} role-permission mappings seeded successfully`);
+
+        // Seed Services
+        console.log('🔄 Seeding services...');
+        for (const serviceData of servicesData) {
+            const service = {
+                ...serviceData,
+                currency: Currency[serviceData.currency as keyof typeof Currency],
+            };
+            await prisma.service.upsert({
+                where: { code: service.code },
+                update: service,
+                create: service,
+            });
+        }
+        console.log(`✅ ${servicesData.length} services seeded successfully`);
 
         // Print summary
+        console.log('\n🎉 Database seeding completed successfully!');
+
         const roleCount = await prisma.role.count();
         const permissionCount = await prisma.permission.count();
         const mappingCount = await prisma.rolePermission.count();
@@ -538,9 +524,13 @@ async function main() {
         console.log(`   - Permissions: ${permissionCount}`);
         console.log(`   - Role-Permission Mappings: ${mappingCount}`);
         console.log(`   - Services: ${serviceCount}`);
+
     } catch (error) {
         console.error('❌ Seeding failed:', error);
         throw error;
+    } finally {
+        await prisma.$disconnect();
+        await pool.end();
     }
 }
 
@@ -548,8 +538,4 @@ main()
     .catch((e) => {
         console.error(e);
         process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-        await pool.end();
     });
