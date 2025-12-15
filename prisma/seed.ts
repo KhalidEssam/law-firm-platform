@@ -1,7 +1,15 @@
 // prisma/seed.ts
+import 'dotenv/config';
 import { PrismaClient, Currency } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
-const prisma = new PrismaClient();
+// Initialize PrismaClient with pg adapter (required for Prisma 7.x)
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 // ============================================
 // ROLES DATA
@@ -543,4 +551,5 @@ main()
     })
     .finally(async () => {
         await prisma.$disconnect();
+        await pool.end();
     });
