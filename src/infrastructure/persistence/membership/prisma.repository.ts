@@ -19,7 +19,15 @@ import {
     IMembershipCouponRepository,
     IMembershipCouponRedemptionRepository,
     IMembershipQuotaUsageRepository,
+    ITierServiceRepository,
+    IServiceUsageRepository,
+    ServiceUsageFilter,
+    ServiceUsageSummary,
+    IMembershipChangeLogRepository,
 } from '../../../core/application/membership/ports/repository';
+import { TierService } from '../../../core/domain/membership/entities/tier-service.entity';
+import { ServiceUsage } from '../../../core/domain/membership/entities/service-usage.entity';
+import { MembershipChangeLog } from '../../../core/domain/membership/entities/membership-change-log.entity';
 
 // Prisma 7 imports from generated path
 import {
@@ -1217,5 +1225,538 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
                 periodEnd: membership.endDate || new Date(),
             }),
         );
+    }
+}
+
+// ============================================
+// PRISMA TIER SERVICE REPOSITORY
+// ============================================
+
+@Injectable()
+export class PrismaTierServiceRepository implements ITierServiceRepository {
+    constructor(private readonly prisma: PrismaService) {}
+
+    private mapToDomain(data: any): TierService {
+        return TierService.rehydrate({
+            id: data.id,
+            tierId: data.tierId,
+            serviceId: data.serviceId,
+            quotaPerMonth: data.quotaPerMonth,
+            quotaPerYear: data.quotaPerYear,
+            rolloverUnused: data.rolloverUnused,
+            discountPercent: data.discountPercent,
+            isActive: data.isActive,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
+        });
+    }
+
+    async create(tierService: TierService): Promise<TierService> {
+        const created = await this.prisma.tierService.create({
+            data: {
+                id: tierService.id,
+                tierId: tierService.tierId,
+                serviceId: tierService.serviceId,
+                quotaPerMonth: tierService.quotaPerMonth,
+                quotaPerYear: tierService.quotaPerYear,
+                rolloverUnused: tierService.rolloverUnused,
+                discountPercent: tierService.discountPercent,
+                isActive: tierService.isActive,
+                createdAt: tierService.createdAt,
+                updatedAt: tierService.updatedAt,
+            },
+        });
+        return this.mapToDomain(created);
+    }
+
+    async findById(id: string): Promise<TierService | null> {
+        const tierService = await this.prisma.tierService.findUnique({
+            where: { id },
+        });
+        return tierService ? this.mapToDomain(tierService) : null;
+    }
+
+    async findByTierAndService(tierId: number, serviceId: string): Promise<TierService | null> {
+        const tierService = await this.prisma.tierService.findUnique({
+            where: {
+                tierId_serviceId: { tierId, serviceId },
+            },
+        });
+        return tierService ? this.mapToDomain(tierService) : null;
+    }
+
+    async findByTierId(tierId: number, options?: { isActive?: boolean }): Promise<TierService[]> {
+        const where: Prisma.TierServiceWhereInput = { tierId };
+        if (options?.isActive !== undefined) {
+            where.isActive = options.isActive;
+        }
+
+        const tierServices = await this.prisma.tierService.findMany({
+            where,
+            orderBy: { createdAt: 'asc' },
+        });
+        return tierServices.map((ts) => this.mapToDomain(ts));
+    }
+
+    async findByServiceId(serviceId: string, options?: { isActive?: boolean }): Promise<TierService[]> {
+        const where: Prisma.TierServiceWhereInput = { serviceId };
+        if (options?.isActive !== undefined) {
+            where.isActive = options.isActive;
+        }
+
+        const tierServices = await this.prisma.tierService.findMany({
+            where,
+            orderBy: { tierId: 'asc' },
+        });
+        return tierServices.map((ts) => this.mapToDomain(ts));
+    }
+
+    async update(tierService: TierService): Promise<TierService> {
+        const updated = await this.prisma.tierService.update({
+            where: { id: tierService.id },
+            data: {
+                quotaPerMonth: tierService.quotaPerMonth,
+                quotaPerYear: tierService.quotaPerYear,
+                rolloverUnused: tierService.rolloverUnused,
+                discountPercent: tierService.discountPercent,
+                isActive: tierService.isActive,
+                updatedAt: new Date(),
+            },
+        });
+        return this.mapToDomain(updated);
+    }
+
+    async delete(id: string): Promise<void> {
+        await this.prisma.tierService.delete({
+            where: { id },
+        });
+    }
+
+    async createMany(tierServices: TierService[]): Promise<TierService[]> {
+        await this.prisma.tierService.createMany({
+            data: tierServices.map((ts) => ({
+                id: ts.id,
+                tierId: ts.tierId,
+                serviceId: ts.serviceId,
+                quotaPerMonth: ts.quotaPerMonth,
+                quotaPerYear: ts.quotaPerYear,
+                rolloverUnused: ts.rolloverUnused,
+                discountPercent: ts.discountPercent,
+                isActive: ts.isActive,
+                createdAt: ts.createdAt,
+                updatedAt: ts.updatedAt,
+            })),
+        });
+
+        // Fetch the created records
+        const ids = tierServices.map((ts) => ts.id);
+        const created = await this.prisma.tierService.findMany({
+            where: { id: { in: ids } },
+        });
+        return created.map((ts) => this.mapToDomain(ts));
+    }
+
+    async deleteByTierId(tierId: number): Promise<void> {
+        await this.prisma.tierService.deleteMany({
+            where: { tierId },
+        });
+    }
+
+    async tierHasService(tierId: number, serviceId: string): Promise<boolean> {
+        const count = await this.prisma.tierService.count({
+            where: { tierId, serviceId, isActive: true },
+        });
+        return count > 0;
+    }
+
+    async getQuota(tierId: number, serviceId: string): Promise<{
+        quotaPerMonth: number | null;
+        quotaPerYear: number | null;
+        rolloverUnused: boolean;
+    } | null> {
+        const tierService = await this.findByTierAndService(tierId, serviceId);
+        if (!tierService || !tierService.isActive) {
+            return null;
+        }
+
+        return {
+            quotaPerMonth: tierService.quotaPerMonth,
+            quotaPerYear: tierService.quotaPerYear,
+            rolloverUnused: tierService.rolloverUnused,
+        };
+    }
+}
+
+// ============================================
+// PRISMA SERVICE USAGE REPOSITORY
+// ============================================
+
+@Injectable()
+export class PrismaServiceUsageRepository implements IServiceUsageRepository {
+    constructor(private readonly prisma: PrismaService) {}
+
+    private mapToDomain(data: any): ServiceUsage {
+        return ServiceUsage.rehydrate({
+            id: data.id,
+            membershipId: data.membershipId,
+            serviceId: data.serviceId,
+            consultationId: data.consultationId,
+            legalOpinionId: data.legalOpinionId,
+            serviceRequestId: data.serviceRequestId,
+            litigationCaseId: data.litigationCaseId,
+            callRequestId: data.callRequestId,
+            usedAt: data.usedAt,
+            periodStart: data.periodStart,
+            periodEnd: data.periodEnd,
+            chargedAmount: data.chargedAmount,
+            currency: CurrencyMapper.toDomain(data.currency),
+            isBilled: data.isBilled,
+        });
+    }
+
+    async create(serviceUsage: ServiceUsage): Promise<ServiceUsage> {
+        const created = await this.prisma.serviceUsage.create({
+            data: {
+                id: serviceUsage.id,
+                membershipId: serviceUsage.membershipId,
+                serviceId: serviceUsage.serviceId,
+                consultationId: serviceUsage.consultationId,
+                legalOpinionId: serviceUsage.legalOpinionId,
+                serviceRequestId: serviceUsage.serviceRequestId,
+                litigationCaseId: serviceUsage.litigationCaseId,
+                callRequestId: serviceUsage.callRequestId,
+                usedAt: serviceUsage.usedAt,
+                periodStart: serviceUsage.periodStart,
+                periodEnd: serviceUsage.periodEnd,
+                chargedAmount: serviceUsage.chargedAmount,
+                currency: CurrencyMapper.toPrisma(serviceUsage.currency),
+                isBilled: serviceUsage.isBilled,
+            },
+        });
+        return this.mapToDomain(created);
+    }
+
+    async findById(id: string): Promise<ServiceUsage | null> {
+        const usage = await this.prisma.serviceUsage.findUnique({
+            where: { id },
+        });
+        return usage ? this.mapToDomain(usage) : null;
+    }
+
+    async findByMembershipId(
+        membershipId: string,
+        options?: {
+            serviceId?: string;
+            periodStart?: Date;
+            periodEnd?: Date;
+            limit?: number;
+            offset?: number;
+        }
+    ): Promise<ServiceUsage[]> {
+        const where: Prisma.ServiceUsageWhereInput = { membershipId };
+
+        if (options?.serviceId) {
+            where.serviceId = options.serviceId;
+        }
+        if (options?.periodStart) {
+            where.usedAt = { ...where.usedAt as any, gte: options.periodStart };
+        }
+        if (options?.periodEnd) {
+            where.usedAt = { ...where.usedAt as any, lte: options.periodEnd };
+        }
+
+        const usages = await this.prisma.serviceUsage.findMany({
+            where,
+            take: options?.limit || 50,
+            skip: options?.offset || 0,
+            orderBy: { usedAt: 'desc' },
+        });
+
+        return usages.map((u) => this.mapToDomain(u));
+    }
+
+    async findByFilter(filter: ServiceUsageFilter): Promise<ServiceUsage[]> {
+        const where: Prisma.ServiceUsageWhereInput = {};
+
+        if (filter.membershipId) where.membershipId = filter.membershipId;
+        if (filter.serviceId) where.serviceId = filter.serviceId;
+        if (filter.isBilled !== undefined) where.isBilled = filter.isBilled;
+        if (filter.periodStart) where.usedAt = { gte: filter.periodStart };
+        if (filter.periodEnd) where.usedAt = { ...where.usedAt as any, lte: filter.periodEnd };
+
+        if (filter.requestType) {
+            switch (filter.requestType) {
+                case 'consultation':
+                    where.consultationId = { not: null };
+                    break;
+                case 'legal_opinion':
+                    where.legalOpinionId = { not: null };
+                    break;
+                case 'service':
+                    where.serviceRequestId = { not: null };
+                    break;
+                case 'litigation':
+                    where.litigationCaseId = { not: null };
+                    break;
+                case 'call':
+                    where.callRequestId = { not: null };
+                    break;
+            }
+        }
+
+        const usages = await this.prisma.serviceUsage.findMany({
+            where,
+            orderBy: { usedAt: 'desc' },
+        });
+
+        return usages.map((u) => this.mapToDomain(u));
+    }
+
+    async countUsageInPeriod(
+        membershipId: string,
+        serviceId: string,
+        periodStart: Date,
+        periodEnd: Date
+    ): Promise<number> {
+        return await this.prisma.serviceUsage.count({
+            where: {
+                membershipId,
+                serviceId,
+                usedAt: {
+                    gte: periodStart,
+                    lte: periodEnd,
+                },
+            },
+        });
+    }
+
+    async getUsageSummaryByService(
+        membershipId: string,
+        periodStart?: Date,
+        periodEnd?: Date
+    ): Promise<ServiceUsageSummary[]> {
+        const where: Prisma.ServiceUsageWhereInput = { membershipId };
+        if (periodStart) where.usedAt = { gte: periodStart };
+        if (periodEnd) where.usedAt = { ...where.usedAt as any, lte: periodEnd };
+
+        const result = await this.prisma.serviceUsage.groupBy({
+            by: ['serviceId'],
+            where,
+            _count: { id: true },
+            _sum: { chargedAmount: true },
+        });
+
+        return result.map((r) => ({
+            serviceId: r.serviceId,
+            totalUsage: r._count.id,
+            billedUsage: 0, // Would need separate query
+            freeUsage: 0,
+            totalChargedAmount: Number(r._sum.chargedAmount) || 0,
+            currency: 'SAR',
+        }));
+    }
+
+    async getTotalUsageCount(
+        membershipId: string,
+        periodStart: Date,
+        periodEnd: Date
+    ): Promise<number> {
+        return await this.prisma.serviceUsage.count({
+            where: {
+                membershipId,
+                usedAt: {
+                    gte: periodStart,
+                    lte: periodEnd,
+                },
+            },
+        });
+    }
+
+    async markAsBilled(id: string, amount: number, currency: string): Promise<ServiceUsage> {
+        const updated = await this.prisma.serviceUsage.update({
+            where: { id },
+            data: {
+                chargedAmount: amount,
+                currency: CurrencyMapper.toPrisma(currency),
+                isBilled: true,
+            },
+        });
+        return this.mapToDomain(updated);
+    }
+
+    async getUnbilledUsage(membershipId: string): Promise<ServiceUsage[]> {
+        const usages = await this.prisma.serviceUsage.findMany({
+            where: {
+                membershipId,
+                isBilled: false,
+            },
+            orderBy: { usedAt: 'asc' },
+        });
+        return usages.map((u) => this.mapToDomain(u));
+    }
+
+    async delete(id: string): Promise<void> {
+        await this.prisma.serviceUsage.delete({
+            where: { id },
+        });
+    }
+
+    async hasUsageForRequest(
+        requestType: 'consultation' | 'legal_opinion' | 'service' | 'litigation' | 'call',
+        requestId: string
+    ): Promise<boolean> {
+        const where: Prisma.ServiceUsageWhereInput = {};
+
+        switch (requestType) {
+            case 'consultation':
+                where.consultationId = requestId;
+                break;
+            case 'legal_opinion':
+                where.legalOpinionId = requestId;
+                break;
+            case 'service':
+                where.serviceRequestId = requestId;
+                break;
+            case 'litigation':
+                where.litigationCaseId = requestId;
+                break;
+            case 'call':
+                where.callRequestId = requestId;
+                break;
+        }
+
+        const count = await this.prisma.serviceUsage.count({ where });
+        return count > 0;
+    }
+}
+
+// ============================================
+// PRISMA MEMBERSHIP CHANGE LOG REPOSITORY
+// ============================================
+
+@Injectable()
+export class PrismaMembershipChangeLogRepository implements IMembershipChangeLogRepository {
+    constructor(private readonly prisma: PrismaService) {}
+
+    private mapToDomain(data: any): MembershipChangeLog {
+        return MembershipChangeLog.rehydrate({
+            id: data.id,
+            membershipId: data.membershipId,
+            oldTierId: data.oldTierId,
+            newTierId: data.newTierId,
+            reason: data.reason,
+            changedAt: data.changedAt,
+        });
+    }
+
+    async create(changeLog: MembershipChangeLog): Promise<MembershipChangeLog> {
+        const created = await this.prisma.membershipChangeLog.create({
+            data: {
+                id: changeLog.id,
+                membershipId: changeLog.membershipId,
+                oldTierId: changeLog.oldTierId,
+                newTierId: changeLog.newTierId,
+                reason: changeLog.reason,
+                changedAt: changeLog.changedAt,
+            },
+        });
+        return this.mapToDomain(created);
+    }
+
+    async findById(id: string): Promise<MembershipChangeLog | null> {
+        const changeLog = await this.prisma.membershipChangeLog.findUnique({
+            where: { id },
+        });
+        return changeLog ? this.mapToDomain(changeLog) : null;
+    }
+
+    async findByMembershipId(
+        membershipId: string,
+        options?: {
+            limit?: number;
+            offset?: number;
+            orderBy?: 'asc' | 'desc';
+        }
+    ): Promise<MembershipChangeLog[]> {
+        const changeLogs = await this.prisma.membershipChangeLog.findMany({
+            where: { membershipId },
+            take: options?.limit || 50,
+            skip: options?.offset || 0,
+            orderBy: { changedAt: options?.orderBy || 'desc' },
+        });
+        return changeLogs.map((cl) => this.mapToDomain(cl));
+    }
+
+    async findByDateRange(
+        startDate: Date,
+        endDate: Date,
+        options?: {
+            membershipId?: string;
+            reason?: string;
+        }
+    ): Promise<MembershipChangeLog[]> {
+        const where: Prisma.MembershipChangeLogWhereInput = {
+            changedAt: {
+                gte: startDate,
+                lte: endDate,
+            },
+        };
+
+        if (options?.membershipId) where.membershipId = options.membershipId;
+        if (options?.reason) where.reason = options.reason;
+
+        const changeLogs = await this.prisma.membershipChangeLog.findMany({
+            where,
+            orderBy: { changedAt: 'desc' },
+        });
+        return changeLogs.map((cl) => this.mapToDomain(cl));
+    }
+
+    async getLatestChange(membershipId: string): Promise<MembershipChangeLog | null> {
+        const changeLog = await this.prisma.membershipChangeLog.findFirst({
+            where: { membershipId },
+            orderBy: { changedAt: 'desc' },
+        });
+        return changeLog ? this.mapToDomain(changeLog) : null;
+    }
+
+    async countByMembershipId(membershipId: string): Promise<number> {
+        return await this.prisma.membershipChangeLog.count({
+            where: { membershipId },
+        });
+    }
+
+    async getTierChangeStats(
+        startDate: Date,
+        endDate: Date
+    ): Promise<{
+        upgrades: number;
+        downgrades: number;
+        cancellations: number;
+        reactivations: number;
+    }> {
+        const where: Prisma.MembershipChangeLogWhereInput = {
+            changedAt: {
+                gte: startDate,
+                lte: endDate,
+            },
+        };
+
+        const [upgrades, downgrades, cancellations, reactivations] = await Promise.all([
+            this.prisma.membershipChangeLog.count({
+                where: { ...where, reason: 'upgrade' },
+            }),
+            this.prisma.membershipChangeLog.count({
+                where: { ...where, reason: 'downgrade' },
+            }),
+            this.prisma.membershipChangeLog.count({
+                where: { ...where, reason: 'cancellation' },
+            }),
+            this.prisma.membershipChangeLog.count({
+                where: { ...where, reason: 'reactivation' },
+            }),
+        ]);
+
+        return { upgrades, downgrades, cancellations, reactivations };
     }
 }

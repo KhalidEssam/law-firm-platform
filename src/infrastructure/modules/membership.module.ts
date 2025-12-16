@@ -4,7 +4,7 @@
 // ============================================
 
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '../../prisma/prisma.module'; // 👈 Import PrismaModule instead of PrismaService
+import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipController } from '../../interface/http/membership.controller';
 
 // Repositories
@@ -15,9 +15,12 @@ import {
     PrismaMembershipCouponRepository,
     PrismaMembershipCouponRedemptionRepository,
     PrismaMembershipQuotaUsageRepository,
+    PrismaTierServiceRepository,
+    PrismaServiceUsageRepository,
+    PrismaMembershipChangeLogRepository,
 } from '../persistence/membership/prisma.repository';
 
-// Use Cases
+// Core Use Cases
 import {
     CreateMembershipUseCase,
     GetMembershipByIdUseCase,
@@ -37,9 +40,60 @@ import {
     GetMembershipTierByIdUseCase,
 } from '../../core/application/membership/use-cases/membership.use-cases';
 
+// Tier Service Use Cases
+import {
+    CreateTierServiceUseCase,
+    GetTierServiceByIdUseCase,
+    GetTierServicesByTierIdUseCase,
+    UpdateTierServiceUseCase,
+    DeleteTierServiceUseCase,
+    BulkCreateTierServicesUseCase,
+    CheckServiceQuotaUseCase,
+} from '../../core/application/membership/use-cases/tier-service.use-cases';
+
+// Service Usage Use Cases
+import {
+    RecordServiceUsageUseCase,
+    GetServiceUsageHistoryUseCase,
+    GetServiceUsageByIdUseCase,
+    GetServiceUsageSummaryUseCase,
+    GetTotalUsageCountUseCase,
+    MarkUsageAsBilledUseCase,
+    GetUnbilledUsageUseCase,
+    CheckRemainingServiceQuotaUseCase,
+} from '../../core/application/membership/use-cases/service-usage.use-cases';
+
+// Tier Change Use Cases
+import {
+    ChangeMembershipTierUseCase,
+    UpgradeMembershipUseCase,
+    DowngradeMembershipUseCase,
+    GetMembershipChangeHistoryUseCase,
+    GetLatestMembershipChangeUseCase,
+    GetTierChangeStatisticsUseCase,
+} from '../../core/application/membership/use-cases/tier-change.use-cases';
+
+// Lifecycle Use Cases
+import {
+    PauseMembershipUseCase,
+    ResumeMembershipUseCase,
+    ExpireMembershipsUseCase,
+    GetExpiringMembershipsUseCase,
+    ReactivateMembershipUseCase,
+    CheckMembershipStatusUseCase,
+} from '../../core/application/membership/use-cases/membership-lifecycle.use-cases';
+
+// Admin Use Cases
+import {
+    ListMembershipsUseCase,
+    GetMembershipStatisticsUseCase,
+    GetMembershipActivitySummaryUseCase,
+    GetTierDistributionUseCase,
+} from '../../core/application/membership/use-cases/membership-admin.use-cases';
+
 @Module({
     imports: [
-        PrismaModule, // 👈 Import PrismaModule to get PrismaService
+        PrismaModule,
     ],
     controllers: [MembershipController],
     providers: [
@@ -69,6 +123,18 @@ import {
         {
             provide: 'IMembershipQuotaUsageRepository',
             useClass: PrismaMembershipQuotaUsageRepository,
+        },
+        {
+            provide: 'ITierServiceRepository',
+            useClass: PrismaTierServiceRepository,
+        },
+        {
+            provide: 'IServiceUsageRepository',
+            useClass: PrismaServiceUsageRepository,
+        },
+        {
+            provide: 'IMembershipChangeLogRepository',
+            useClass: PrismaMembershipChangeLogRepository,
         },
 
         // ============================================
@@ -106,18 +172,72 @@ import {
         // ============================================
         CreatePaymentUseCase,
         CompletePaymentUseCase,
+
+        // ============================================
+        // TIER SERVICE USE CASES
+        // ============================================
+        CreateTierServiceUseCase,
+        GetTierServiceByIdUseCase,
+        GetTierServicesByTierIdUseCase,
+        UpdateTierServiceUseCase,
+        DeleteTierServiceUseCase,
+        BulkCreateTierServicesUseCase,
+        CheckServiceQuotaUseCase,
+
+        // ============================================
+        // SERVICE USAGE USE CASES
+        // ============================================
+        RecordServiceUsageUseCase,
+        GetServiceUsageHistoryUseCase,
+        GetServiceUsageByIdUseCase,
+        GetServiceUsageSummaryUseCase,
+        GetTotalUsageCountUseCase,
+        MarkUsageAsBilledUseCase,
+        GetUnbilledUsageUseCase,
+        CheckRemainingServiceQuotaUseCase,
+
+        // ============================================
+        // TIER CHANGE USE CASES
+        // ============================================
+        ChangeMembershipTierUseCase,
+        UpgradeMembershipUseCase,
+        DowngradeMembershipUseCase,
+        GetMembershipChangeHistoryUseCase,
+        GetLatestMembershipChangeUseCase,
+        GetTierChangeStatisticsUseCase,
+
+        // ============================================
+        // LIFECYCLE USE CASES
+        // ============================================
+        PauseMembershipUseCase,
+        ResumeMembershipUseCase,
+        ExpireMembershipsUseCase,
+        GetExpiringMembershipsUseCase,
+        ReactivateMembershipUseCase,
+        CheckMembershipStatusUseCase,
+
+        // ============================================
+        // ADMIN USE CASES
+        // ============================================
+        ListMembershipsUseCase,
+        GetMembershipStatisticsUseCase,
+        GetMembershipActivitySummaryUseCase,
+        GetTierDistributionUseCase,
     ],
     exports: [
         // Export repositories for other modules to use
         'IMembershipRepository',
         'IMembershipTierRepository',
         'IMembershipQuotaUsageRepository',
-        'IMembershipPaymentRepository', // 👈 Added
-        'IMembershipCouponRepository', // 👈 Added
+        'IMembershipPaymentRepository',
+        'IMembershipCouponRepository',
+        'ITierServiceRepository',
+        'IServiceUsageRepository',
+        'IMembershipChangeLogRepository',
 
         // Export commonly used use cases
         GetActiveMembershipByUserUseCase,
-        GetMembershipByIdUseCase, // 👈 Added
+        GetMembershipByIdUseCase,
         CheckQuotaUseCase,
         ConsumeQuotaUseCase,
 
@@ -127,6 +247,26 @@ import {
         DeleteMembershipTierUseCase,
         GetMembershipTierByIdUseCase,
         ListMembershipTiersUseCase,
+
+        // Export tier service use cases
+        CheckServiceQuotaUseCase,
+        GetTierServicesByTierIdUseCase,
+
+        // Export service usage use cases
+        RecordServiceUsageUseCase,
+        CheckRemainingServiceQuotaUseCase,
+
+        // Export tier change use cases
+        ChangeMembershipTierUseCase,
+        GetMembershipChangeHistoryUseCase,
+
+        // Export lifecycle use cases
+        CheckMembershipStatusUseCase,
+        GetExpiringMembershipsUseCase,
+        ExpireMembershipsUseCase,
+
+        // Export admin use cases
+        GetMembershipStatisticsUseCase,
     ],
 })
 export class MembershipModule { }
