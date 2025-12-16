@@ -4,6 +4,7 @@
 // ============================================
 
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MessageTemplate } from '../../../core/domain/notification/entities/message-template.entity';
 import {
@@ -33,7 +34,7 @@ export class PrismaMessageTemplateRepository implements IMessageTemplateReposito
                 subjectAr: template.subjectAr,
                 body: template.body,
                 bodyAr: template.bodyAr,
-                variables: template.variables.toJSON(),
+                variables: template.variables.toJSON() as Prisma.InputJsonValue,
                 isActive: template.isActive,
                 createdAt: template.createdAt,
                 updatedAt: template.updatedAt,
@@ -119,7 +120,7 @@ export class PrismaMessageTemplateRepository implements IMessageTemplateReposito
                 subjectAr: template.subjectAr,
                 body: template.body,
                 bodyAr: template.bodyAr,
-                variables: template.variables.toJSON(),
+                variables: template.variables.toJSON() as Prisma.InputJsonValue,
                 isActive: template.isActive,
                 updatedAt: template.updatedAt,
             },
