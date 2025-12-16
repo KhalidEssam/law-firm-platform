@@ -171,8 +171,9 @@ export class MembershipIntegrationService {
         };
 
         const quotaKey = resourceMap[quotaResource];
-        const quotaLimit = tier.getQuotaLimit(quotaKey);
-        const isUnlimited = quotaLimit === null || quotaLimit === undefined;
+        const quotaLimitValue = tier.getQuotaLimit(quotaKey);
+        const quotaLimit = quotaLimitValue ?? null;
+        const isUnlimited = quotaLimit === null;
 
         // 4. Get current usage
         const quotaUsage = await this.quotaUsageRepo.findCurrentByMembership(membership.id);
@@ -296,16 +297,22 @@ export class MembershipIntegrationService {
         const quotaUsage = await this.quotaUsageRepo.findCurrentByMembership(membership.id);
         const quotaUsed = quotaUsage?.getUsage(quotaResource) || 0;
 
-        const resourceMap: Record<QuotaResource, keyof typeof tier.quota> = {
-            [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
-            [QuotaResource.OPINIONS]: 'opinionsPerMonth',
-            [QuotaResource.SERVICES]: 'servicesPerMonth',
-            [QuotaResource.CASES]: 'casesPerMonth',
-            [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
-        };
+        let quotaLimit: number | null = null;
+        let quotaRemaining: number | null = null;
 
-        const quotaLimit = tier?.getQuotaLimit(resourceMap[quotaResource]) || null;
-        const quotaRemaining = quotaLimit !== null ? Math.max(0, quotaLimit - quotaUsed) : null;
+        if (tier) {
+            const resourceMap: Record<QuotaResource, keyof typeof tier.quota> = {
+                [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
+                [QuotaResource.OPINIONS]: 'opinionsPerMonth',
+                [QuotaResource.SERVICES]: 'servicesPerMonth',
+                [QuotaResource.CASES]: 'casesPerMonth',
+                [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
+            };
+
+            const limitValue = tier.getQuotaLimit(resourceMap[quotaResource]);
+            quotaLimit = limitValue ?? null;
+            quotaRemaining = quotaLimit !== null ? Math.max(0, quotaLimit - quotaUsed) : null;
+        }
 
         return {
             serviceUsageId: savedUsage.id,
@@ -351,8 +358,8 @@ export class MembershipIntegrationService {
             hasMembership: true,
             isActive: membership.isActive && (!membership.endDate || membership.endDate > now),
             membershipId: membership.id,
-            tierName: tier?.name || null,
-            expiresAt: membership.endDate,
+            tierName: tier?.name ?? null,
+            expiresAt: membership.endDate ?? null,
             daysUntilExpiry,
         };
     }
@@ -402,10 +409,11 @@ export class MembershipIntegrationService {
 
         for (const [serviceType, quotaResource] of Object.entries(SERVICE_TO_QUOTA)) {
             const quotaKey = resourceMap[quotaResource];
-            const limit = tier.getQuotaLimit(quotaKey);
+            const limitValue = tier.getQuotaLimit(quotaKey);
+            const limit = limitValue ?? null;
             const used = quotaUsage?.getUsage(quotaResource) || 0;
-            const isUnlimited = limit === null || limit === undefined;
-            const remaining = isUnlimited ? null : Math.max(0, (limit || 0) - used);
+            const isUnlimited = limit === null;
+            const remaining = isUnlimited ? null : Math.max(0, limit - used);
 
             quotas.push({
                 serviceType: serviceType as ServiceType,
