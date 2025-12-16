@@ -3,7 +3,7 @@
 // Wraps litigation use cases with membership validation
 // ============================================
 
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import {
     MembershipIntegrationService,
     ServiceType,
@@ -13,7 +13,6 @@ import {
     CreateLitigationCaseCommand,
     CloseCaseUseCase,
 } from './litigation-case.use-cases';
-import { type ILitigationCaseRepository } from '../../../domain/litigation-case/port/litigation-case.repository';
 
 // ============================================
 // CREATE LITIGATION CASE WITH MEMBERSHIP CHECK
@@ -23,8 +22,7 @@ import { type ILitigationCaseRepository } from '../../../domain/litigation-case/
 export class CreateLitigationWithMembershipUseCase {
     constructor(
         private readonly membershipService: MembershipIntegrationService,
-        @Inject('ILitigationCaseRepository')
-        private readonly repository: ILitigationCaseRepository,
+        private readonly createLitigationUseCase: CreateLitigationCaseUseCase,
     ) {}
 
     async execute(command: CreateLitigationCaseCommand): Promise<any & {
@@ -47,9 +45,8 @@ export class CreateLitigationWithMembershipUseCase {
             );
         }
 
-        // 2. Create the litigation case using original use case
-        const createUseCase = new CreateLitigationCaseUseCase(this.repository);
-        const litigationCase = await createUseCase.execute(command);
+        // 2. Create the litigation case using injected use case
+        const litigationCase = await this.createLitigationUseCase.execute(command);
 
         // 3. Record the service usage
         try {
@@ -122,14 +119,12 @@ export class CheckLitigationQuotaUseCase {
 export class CloseLitigationWithUsageTrackingUseCase {
     constructor(
         private readonly membershipService: MembershipIntegrationService,
-        @Inject('ILitigationCaseRepository')
-        private readonly repository: ILitigationCaseRepository,
+        private readonly closeCaseUseCase: CloseCaseUseCase,
     ) {}
 
     async execute(caseId: string, subscriberId: string, chargedAmount?: number): Promise<any> {
-        // 1. Close the case using original use case
-        const closeUseCase = new CloseCaseUseCase(this.repository);
-        const closedCase = await closeUseCase.execute({ caseId });
+        // 1. Close the case using injected use case
+        const closedCase = await this.closeCaseUseCase.execute({ caseId });
 
         // 2. If there's an overage charge, update the service usage
         if (chargedAmount && chargedAmount > 0) {

@@ -3,7 +3,7 @@
 // Wraps legal opinion use cases with membership validation
 // ============================================
 
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import {
     MembershipIntegrationService,
     ServiceType,
@@ -12,7 +12,6 @@ import {
     CreateOpinionRequestUseCase,
     CreateOpinionRequestCommand,
 } from './create-opinion-request.use-case';
-import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
 
 // ============================================
 // CREATE LEGAL OPINION WITH MEMBERSHIP CHECK
@@ -22,8 +21,7 @@ import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opini
 export class CreateLegalOpinionWithMembershipUseCase {
     constructor(
         private readonly membershipService: MembershipIntegrationService,
-        @Inject('ILegalOpinionRequestRepository')
-        private readonly repository: ILegalOpinionRequestRepository,
+        private readonly createOpinionUseCase: CreateOpinionRequestUseCase,
     ) {}
 
     async execute(command: CreateOpinionRequestCommand): Promise<any & {
@@ -46,9 +44,8 @@ export class CreateLegalOpinionWithMembershipUseCase {
             );
         }
 
-        // 2. Create the legal opinion using original use case
-        const createUseCase = new CreateOpinionRequestUseCase(this.repository);
-        const opinion = await createUseCase.execute(command);
+        // 2. Create the legal opinion using injected use case
+        const opinion = await this.createOpinionUseCase.execute(command);
 
         // 3. Record the service usage
         try {
@@ -121,8 +118,6 @@ export class CheckLegalOpinionQuotaUseCase {
 export class CompleteLegalOpinionWithUsageTrackingUseCase {
     constructor(
         private readonly membershipService: MembershipIntegrationService,
-        @Inject('ILegalOpinionRequestRepository')
-        private readonly repository: ILegalOpinionRequestRepository,
     ) {}
 
     async execute(opinionId: string, clientId: string, chargedAmount?: number): Promise<void> {
