@@ -3,13 +3,21 @@
 // core/domain/membership/repositories/
 // ============================================
 
-import { Membership } from '../../../domain/membership/entities/membership.entity'; // entities/membership.entity';
+import { Membership } from '../../../domain/membership/entities/membership.entity';
 import { MembershipTier } from '../../../domain/membership/entities/membership-tier.entity';
 import { MembershipPayment } from '../../../domain/membership/entities/membership-payment.entity';
 import { MembershipCoupon } from '../../../domain/membership/entities/membership-coupon.entity';
 import { MembershipCouponRedemption } from '../../../domain/membership/entities/membership-coupon-redemption.entity';
 import { MembershipQuotaUsage } from '../../../domain/membership/entities/membership-quota-usage.entity';
 import { QuotaResource } from '../../../domain/membership/value-objects/quota-resource.vo';
+import { TierService } from '../../../domain/membership/entities/tier-service.entity';
+import { ServiceUsage, } from '../../../domain/membership/entities/service-usage.entity';
+import { MembershipChangeLog } from '../../../domain/membership/entities/membership-change-log.entity';
+
+// Re-export from domain repositories
+export { ITierServiceRepository } from '../../../domain/membership/repositories/tier-service.repository';
+export { IServiceUsageRepository, ServiceUsageFilter, ServiceUsageSummary } from '../../../domain/membership/repositories/service-usage.repository';
+export { IMembershipChangeLogRepository } from '../../../domain/membership/repositories/membership-change-log.repository';
 
 // ============================================
 // MEMBERSHIP REPOSITORY
