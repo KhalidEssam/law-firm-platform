@@ -6,9 +6,9 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { MembershipChangeLog, MembershipChangeReason } from '../../../domain/membership/entities/membership-change-log.entity';
 import {
-    IMembershipRepository,
-    IMembershipTierRepository,
-    IMembershipChangeLogRepository,
+    type IMembershipRepository,
+    type IMembershipTierRepository,
+    type IMembershipChangeLogRepository,
 } from '../ports/repository';
 
 // ============================================

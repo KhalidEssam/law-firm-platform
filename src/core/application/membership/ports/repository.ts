@@ -15,9 +15,9 @@ import { ServiceUsage, } from '../../../domain/membership/entities/service-usage
 import { MembershipChangeLog } from '../../../domain/membership/entities/membership-change-log.entity';
 
 // Re-export from domain repositories
-export { ITierServiceRepository } from '../../../domain/membership/repositories/tier-service.repository';
-export { IServiceUsageRepository, ServiceUsageFilter, ServiceUsageSummary } from '../../../domain/membership/repositories/service-usage.repository';
-export { IMembershipChangeLogRepository } from '../../../domain/membership/repositories/membership-change-log.repository';
+export { type ITierServiceRepository } from '../../../domain/membership/repositories/tier-service.repository';
+export { type IServiceUsageRepository, type ServiceUsageFilter, type ServiceUsageSummary } from '../../../domain/membership/repositories/service-usage.repository';
+export { type IMembershipChangeLogRepository } from '../../../domain/membership/repositories/membership-change-log.repository';
 
 // ============================================
 // MEMBERSHIP REPOSITORY

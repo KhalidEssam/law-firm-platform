@@ -6,10 +6,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Membership } from '../../../domain/membership/entities/membership.entity';
 import {
-    IMembershipRepository,
-    IMembershipTierRepository,
-    IMembershipPaymentRepository,
-    IMembershipChangeLogRepository,
+    type IMembershipRepository,
+    type IMembershipTierRepository,
+    type IMembershipPaymentRepository,
+    type IMembershipChangeLogRepository,
 } from '../ports/repository';
 
 // ============================================
