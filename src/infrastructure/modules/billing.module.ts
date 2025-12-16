@@ -3,8 +3,9 @@
 // src/infrastructure/modules/billing.module.ts
 // ============================================
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { MembershipModule } from './membership.module';
 
 // Controller
 import { BillingController } from '../../interface/http/billing.controller';
@@ -91,8 +92,20 @@ import {
     DeleteDisputeUseCase,
 } from '../../core/application/billing/use-cases/dispute.use-cases';
 
+// Service Usage Billing Use Cases
+import {
+    GetUnbilledServiceUsageSummaryUseCase,
+    GenerateServiceUsageInvoiceUseCase,
+    GetBillableUsageByServiceTypeUseCase,
+    ProcessBatchServiceUsageBillingUseCase,
+    GetCombinedBillingSummaryUseCase,
+} from '../../core/application/billing/use-cases/service-usage-billing.use-cases';
+
 @Module({
-    imports: [PrismaModule],
+    imports: [
+        PrismaModule,
+        forwardRef(() => MembershipModule), // Import for service usage billing integration
+    ],
     controllers: [BillingController],
     providers: [
         // ============================================
@@ -188,6 +201,15 @@ import {
         GetDisputesRequiringAttentionUseCase,
         GetDisputeStatisticsUseCase,
         DeleteDisputeUseCase,
+
+        // ============================================
+        // SERVICE USAGE BILLING USE CASES
+        // ============================================
+        GetUnbilledServiceUsageSummaryUseCase,
+        GenerateServiceUsageInvoiceUseCase,
+        GetBillableUsageByServiceTypeUseCase,
+        ProcessBatchServiceUsageBillingUseCase,
+        GetCombinedBillingSummaryUseCase,
     ],
     exports: [
         // Repositories
@@ -225,6 +247,13 @@ import {
         ResolveDisputeUseCase,
         GetActiveDisputesUseCase,
         GetDisputeStatisticsUseCase,
+
+        // Service Usage Billing Use Cases
+        GetUnbilledServiceUsageSummaryUseCase,
+        GenerateServiceUsageInvoiceUseCase,
+        GetBillableUsageByServiceTypeUseCase,
+        ProcessBatchServiceUsageBillingUseCase,
+        GetCombinedBillingSummaryUseCase,
     ],
 })
 export class BillingModule {}

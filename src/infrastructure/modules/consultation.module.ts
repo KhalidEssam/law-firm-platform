@@ -3,8 +3,9 @@
 // Dependency Injection Configuration
 // ============================================
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
+import { MembershipModule } from './membership.module';
 
 // Repository
 import { ConsultationRequestRepository } from '../persistence/consultation/prisma.repository';
@@ -26,12 +27,20 @@ import {
     UpdateSLAStatusesUseCase,
 } from '../../core/application/consultation/use-cases/consultation.use-cases';
 
+// Membership-Aware Use Cases
+import {
+    CreateConsultationWithMembershipUseCase,
+    CompleteConsultationWithUsageTrackingUseCase,
+    CheckConsultationQuotaUseCase,
+} from '../../core/application/consultation/use-cases/membership-aware-consultation.use-cases';
+
 // Controller
 import { ConsultationRequestController } from '../../interface/http/consultation.controller';
 
 @Module({
     imports: [
         PrismaModule, // Import PrismaModule for database access
+        forwardRef(() => MembershipModule), // Import MembershipModule for quota/usage integration
     ],
     controllers: [
         ConsultationRequestController, // REST API endpoints
@@ -84,6 +93,13 @@ import { ConsultationRequestController } from '../../interface/http/consultation
 
         // USE CASE 13: Update SLA statuses (background job)
         UpdateSLAStatusesUseCase,
+
+        // ============================================
+        // MEMBERSHIP-AWARE USE CASES
+        // ============================================
+        CreateConsultationWithMembershipUseCase,
+        CompleteConsultationWithUsageTrackingUseCase,
+        CheckConsultationQuotaUseCase,
     ],
     exports: [
         // Export repository if other modules need it
@@ -96,6 +112,11 @@ import { ConsultationRequestController } from '../../interface/http/consultation
         AssignConsultationToProviderUseCase,
         CompleteConsultationRequestUseCase,
         GetConsultationStatisticsUseCase,
+
+        // Export membership-aware use cases
+        CreateConsultationWithMembershipUseCase,
+        CompleteConsultationWithUsageTrackingUseCase,
+        CheckConsultationQuotaUseCase,
     ],
 })
 export class ConsultationRequestModule { }
