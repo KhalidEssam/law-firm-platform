@@ -91,6 +91,9 @@ import {
     GetTierDistributionUseCase,
 } from '../../core/application/membership/use-cases/membership-admin.use-cases';
 
+// Integration Service (for cross-module integration)
+import { MembershipIntegrationService } from '../../core/application/membership/services/membership-integration.service';
+
 @Module({
     imports: [
         PrismaModule,
@@ -223,6 +226,11 @@ import {
         GetMembershipStatisticsUseCase,
         GetMembershipActivitySummaryUseCase,
         GetTierDistributionUseCase,
+
+        // ============================================
+        // INTEGRATION SERVICE
+        // ============================================
+        MembershipIntegrationService,
     ],
     exports: [
         // Export repositories for other modules to use
@@ -267,6 +275,9 @@ import {
 
         // Export admin use cases
         GetMembershipStatisticsUseCase,
+
+        // Export integration service for cross-module use
+        MembershipIntegrationService,
     ],
 })
 export class MembershipModule { }

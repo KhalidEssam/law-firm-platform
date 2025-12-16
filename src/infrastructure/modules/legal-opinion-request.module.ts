@@ -3,8 +3,10 @@
 // Complete NestJS Module Configuration
 // ============================================
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { MembershipModule } from './membership.module';
+
 // Controller
 import { LegalOpinionRequestController } from 'src/interface/http/legal-opinion-request.controller';
 
@@ -33,6 +35,13 @@ import { GetLawyerOpinionRequestsUseCase } from '../../core/application/legal-op
 import { GetOpinionStatisticsUseCase } from '../../core/application/legal-opinion/use-cases/get-opinion-statistics.use-case';
 import { DeleteOpinionRequestUseCase } from '../../core/application/legal-opinion/use-cases/delete-opinion-request.use-case';
 
+// Membership-Aware Use Cases
+import {
+  CreateLegalOpinionWithMembershipUseCase,
+  CheckLegalOpinionQuotaUseCase,
+  CompleteLegalOpinionWithUsageTrackingUseCase,
+} from '../../core/application/legal-opinion/use-cases/membership-aware-legal-opinion.use-cases';
+
 /**
  * Legal Opinion Request Module
  *
@@ -51,11 +60,13 @@ import { DeleteOpinionRequestUseCase } from '../../core/application/legal-opinio
  *
  * Dependencies:
  * - PrismaModule: For database access
+ * - MembershipModule: For quota/usage integration
  * - AuthModule: For authentication and authorization (imported in app.module)
  */
 @Module({
   imports: [
     PrismaModule, // Database access
+    forwardRef(() => MembershipModule), // Membership quota/usage integration
   ],
   controllers: [
     LegalOpinionRequestController, // HTTP endpoints
@@ -100,6 +111,13 @@ import { DeleteOpinionRequestUseCase } from '../../core/application/legal-opinio
     GetMyOpinionRequestsUseCase,
     GetLawyerOpinionRequestsUseCase,
     GetOpinionStatisticsUseCase,
+
+    // ============================================
+    // MEMBERSHIP-AWARE USE CASES
+    // ============================================
+    CreateLegalOpinionWithMembershipUseCase,
+    CheckLegalOpinionQuotaUseCase,
+    CompleteLegalOpinionWithUsageTrackingUseCase,
   ],
   exports: [
     // Export repository interface for other modules
@@ -109,6 +127,11 @@ import { DeleteOpinionRequestUseCase } from '../../core/application/legal-opinio
     GetOpinionRequestUseCase,
     ListOpinionRequestsUseCase,
     GetOpinionStatisticsUseCase,
+
+    // Export membership-aware use cases
+    CreateLegalOpinionWithMembershipUseCase,
+    CheckLegalOpinionQuotaUseCase,
+    CompleteLegalOpinionWithUsageTrackingUseCase,
   ],
 })
 export class LegalOpinionRequestModule {}
