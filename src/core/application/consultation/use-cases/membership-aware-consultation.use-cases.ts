@@ -16,7 +16,7 @@ import {
     CreateConsultationRequestDTO,
     ConsultationRequestResponseDTO,
 } from '../consultation request.dtos';
-import { IConsultationRequestUnitOfWork } from '../ports/repository';
+import { type IConsultationRequestUnitOfWork } from '../ports/repository';
 
 // ============================================
 // CREATE CONSULTATION WITH MEMBERSHIP CHECK
