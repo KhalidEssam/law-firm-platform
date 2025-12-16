@@ -30,6 +30,41 @@ function localToAuth0RoleName(localName: string): string {
     return localName.replace(/_/g, ' ');
 }
 
+/**
+ * Get all Auth0 IDs for a user (from UserIdentity table + legacy auth0Id field)
+ * This ensures role sync works with account linking (multiple providers)
+ */
+async function getAllUserAuth0Ids(prisma: PrismaService, userId: string): Promise<string[]> {
+    // Get user with their legacy auth0Id
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { auth0Id: true },
+    });
+
+    // Get all identities for this user
+    const identities = await prisma.userIdentity.findMany({
+        where: { userId, deletedAt: null },
+        select: { providerUserId: true },
+    });
+
+    // Collect all unique Auth0 IDs
+    const auth0Ids = new Set<string>();
+
+    // Add legacy auth0Id if exists
+    if (user?.auth0Id) {
+        auth0Ids.add(user.auth0Id);
+    }
+
+    // Add all identity providerUserIds (these are Auth0 IDs like "google-oauth2|123")
+    for (const identity of identities) {
+        if (identity.providerUserId) {
+            auth0Ids.add(identity.providerUserId);
+        }
+    }
+
+    return Array.from(auth0Ids);
+}
+
 export interface UserRoleDto {
     id: number;
     name: string;
@@ -118,26 +153,37 @@ export class AssignUserRoleUseCase {
 
         console.log(`[AssignUserRoleUseCase] Assigned role '${roleName}' to user ${userId} in local DB`);
 
-        // Sync TO Auth0 (if user has auth0Id and sync is enabled)
-        if (syncToAuth0 && user.auth0Id) {
-            try {
-                // Try to find Auth0 role by name (try both underscore and space formats)
-                let auth0Role = await this.auth0Service.getRoleByName(roleName);
-                if (!auth0Role) {
-                    const auth0FormatName = localToAuth0RoleName(roleName);
-                    auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
-                }
+        // Sync TO Auth0 - sync to ALL user identities (account linking support)
+        if (syncToAuth0) {
+            const allAuth0Ids = await getAllUserAuth0Ids(this.prisma, userId);
 
-                if (auth0Role) {
-                    await this.auth0Service.assignRole(user.auth0Id, auth0Role.id);
-                    console.log(`[AssignUserRoleUseCase] Synced role '${auth0Role.name}' TO Auth0 for user ${user.auth0Id}`);
-                } else {
-                    console.warn(`[AssignUserRoleUseCase] Auth0 role not found: ${roleName}, skipping Auth0 sync`);
+            if (allAuth0Ids.length > 0) {
+                try {
+                    // Try to find Auth0 role by name (try both underscore and space formats)
+                    let auth0Role = await this.auth0Service.getRoleByName(roleName);
+                    if (!auth0Role) {
+                        const auth0FormatName = localToAuth0RoleName(roleName);
+                        auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
+                    }
+
+                    if (auth0Role) {
+                        // Sync role to ALL user identities
+                        for (const auth0Id of allAuth0Ids) {
+                            try {
+                                await this.auth0Service.assignRole(auth0Id, auth0Role.id);
+                                console.log(`[AssignUserRoleUseCase] Synced role '${auth0Role.name}' TO Auth0 for identity ${auth0Id}`);
+                            } catch (identityError) {
+                                console.warn(`[AssignUserRoleUseCase] Failed to sync role to identity ${auth0Id}:`, identityError);
+                            }
+                        }
+                    } else {
+                        console.warn(`[AssignUserRoleUseCase] Auth0 role not found: ${roleName}, skipping Auth0 sync`);
+                    }
+                } catch (error) {
+                    console.error('[AssignUserRoleUseCase] Failed to sync role TO Auth0:', error);
+                    // Don't throw - local DB is the source of truth, Auth0 sync is secondary
+                    console.warn('[AssignUserRoleUseCase] Role assigned locally but Auth0 sync failed');
                 }
-            } catch (error) {
-                console.error('[AssignUserRoleUseCase] Failed to sync role TO Auth0:', error);
-                // Don't throw - local DB is the source of truth, Auth0 sync is secondary
-                console.warn('[AssignUserRoleUseCase] Role assigned locally but Auth0 sync failed');
             }
         }
 
@@ -231,24 +277,35 @@ export class RemoveUserRoleUseCase {
 
         console.log(`[RemoveUserRoleUseCase] Removed role '${roleName}' from user ${userId} in local DB`);
 
-        // Sync TO Auth0 (if user has auth0Id and sync is enabled)
-        if (syncToAuth0 && user.auth0Id) {
-            try {
-                // Try to find Auth0 role by name (try both underscore and space formats)
-                let auth0Role = await this.auth0Service.getRoleByName(roleName);
-                if (!auth0Role) {
-                    const auth0FormatName = localToAuth0RoleName(roleName);
-                    auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
-                }
+        // Sync TO Auth0 - sync to ALL user identities (account linking support)
+        if (syncToAuth0) {
+            const allAuth0Ids = await getAllUserAuth0Ids(this.prisma, userId);
 
-                if (auth0Role) {
-                    await this.auth0Service.removeRole(user.auth0Id, auth0Role.id);
-                    console.log(`[RemoveUserRoleUseCase] Removed role '${auth0Role.name}' FROM Auth0 for user ${user.auth0Id}`);
+            if (allAuth0Ids.length > 0) {
+                try {
+                    // Try to find Auth0 role by name (try both underscore and space formats)
+                    let auth0Role = await this.auth0Service.getRoleByName(roleName);
+                    if (!auth0Role) {
+                        const auth0FormatName = localToAuth0RoleName(roleName);
+                        auth0Role = await this.auth0Service.getRoleByName(auth0FormatName);
+                    }
+
+                    if (auth0Role) {
+                        // Remove role from ALL user identities
+                        for (const auth0Id of allAuth0Ids) {
+                            try {
+                                await this.auth0Service.removeRole(auth0Id, auth0Role.id);
+                                console.log(`[RemoveUserRoleUseCase] Removed role '${auth0Role.name}' FROM Auth0 for identity ${auth0Id}`);
+                            } catch (identityError) {
+                                console.warn(`[RemoveUserRoleUseCase] Failed to remove role from identity ${auth0Id}:`, identityError);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('[RemoveUserRoleUseCase] Failed to sync role removal TO Auth0:', error);
+                    // Don't throw - local DB is the source of truth, Auth0 sync is secondary
+                    console.warn('[RemoveUserRoleUseCase] Role removed locally but Auth0 sync failed');
                 }
-            } catch (error) {
-                console.error('[RemoveUserRoleUseCase] Failed to sync role removal TO Auth0:', error);
-                // Don't throw - local DB is the source of truth, Auth0 sync is secondary
-                console.warn('[RemoveUserRoleUseCase] Role removed locally but Auth0 sync failed');
             }
         }
 
