@@ -16,7 +16,6 @@ import {
     CreateConsultationRequestDTO,
     ConsultationRequestResponseDTO,
 } from '../consultation request.dtos';
-import { type IConsultationRequestUnitOfWork } from '../ports/repository';
 
 // ============================================
 // CREATE CONSULTATION WITH MEMBERSHIP CHECK
@@ -26,7 +25,7 @@ import { type IConsultationRequestUnitOfWork } from '../ports/repository';
 export class CreateConsultationWithMembershipUseCase {
     constructor(
         private readonly membershipService: MembershipIntegrationService,
-        private readonly unitOfWork: IConsultationRequestUnitOfWork,
+        private readonly createConsultationUseCase: CreateConsultationRequestUseCase,
     ) {}
 
     async execute(dto: CreateConsultationRequestDTO): Promise<ConsultationRequestResponseDTO & {
@@ -49,9 +48,8 @@ export class CreateConsultationWithMembershipUseCase {
             );
         }
 
-        // 2. Create the consultation using original use case
-        const createUseCase = new CreateConsultationRequestUseCase(this.unitOfWork);
-        const consultation = await createUseCase.execute(dto);
+        // 2. Create the consultation using injected use case
+        const consultation = await this.createConsultationUseCase.execute(dto);
 
         // 3. Record the service usage
         try {
@@ -88,13 +86,12 @@ export class CreateConsultationWithMembershipUseCase {
 export class CompleteConsultationWithUsageTrackingUseCase {
     constructor(
         private readonly membershipService: MembershipIntegrationService,
-        private readonly unitOfWork: IConsultationRequestUnitOfWork,
+        private readonly completeConsultationUseCase: CompleteConsultationRequestUseCase,
     ) {}
 
     async execute(consultationId: string, chargedAmount?: number): Promise<ConsultationRequestResponseDTO> {
-        // 1. Complete the consultation using original use case
-        const completeUseCase = new CompleteConsultationRequestUseCase(this.unitOfWork);
-        const consultation = await completeUseCase.execute(consultationId);
+        // 1. Complete the consultation using injected use case
+        const consultation = await this.completeConsultationUseCase.execute(consultationId);
 
         // 2. If there's an overage charge, update the service usage
         if (chargedAmount && chargedAmount > 0) {
