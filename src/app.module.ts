@@ -21,6 +21,7 @@ import { LitigationCaseModule } from './infrastructure/modules/litigation-case.m
 import { PaymentMethodModule } from './infrastructure/modules/payment-method.module';
 import { BillingModule } from './infrastructure/modules/billing.module';
 import { AdminRolesModule } from './infrastructure/modules/admin-roles.module';
+import { SupportTicketModule } from './infrastructure/modules/support-ticket.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { AdminRolesModule } from './infrastructure/modules/admin-roles.module';
     PaymentMethodModule,
     BillingModule,
     AdminRolesModule,
+    SupportTicketModule,
   ],
   controllers: [AppController],
   providers: [
