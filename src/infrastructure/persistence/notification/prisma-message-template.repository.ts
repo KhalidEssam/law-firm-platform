@@ -15,6 +15,7 @@ import {
     NotificationChannelMapper,
 } from '../../../core/domain/notification/value-objects/notification-channel.enum';
 
+
 @Injectable()
 export class PrismaMessageTemplateRepository implements IMessageTemplateRepository {
     constructor(private readonly prisma: PrismaService) {}
@@ -33,7 +34,7 @@ export class PrismaMessageTemplateRepository implements IMessageTemplateReposito
                 subjectAr: template.subjectAr,
                 body: template.body,
                 bodyAr: template.bodyAr,
-                variables: template.variables.toJSON(),
+                variables: JSON.parse(JSON.stringify(template.variables.toJSON())),
                 isActive: template.isActive,
                 createdAt: template.createdAt,
                 updatedAt: template.updatedAt,
@@ -119,7 +120,7 @@ export class PrismaMessageTemplateRepository implements IMessageTemplateReposito
                 subjectAr: template.subjectAr,
                 body: template.body,
                 bodyAr: template.bodyAr,
-                variables: template.variables.toJSON(),
+                variables: JSON.parse(JSON.stringify(template.variables.toJSON())),
                 isActive: template.isActive,
                 updatedAt: template.updatedAt,
             },
