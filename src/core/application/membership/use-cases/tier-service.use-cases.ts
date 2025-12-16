@@ -5,7 +5,7 @@
 
 import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { TierService } from '../../../domain/membership/entities/tier-service.entity';
-import { ITierServiceRepository } from '../ports/repository';
+import { type ITierServiceRepository } from '../ports/repository';
 
 // ============================================
 // DTOs

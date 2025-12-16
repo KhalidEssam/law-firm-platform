@@ -7,8 +7,8 @@ import { Injectable, Inject, NotFoundException, BadRequestException } from '@nes
 import { Membership } from '../../../domain/membership/entities/membership.entity';
 import { MembershipChangeLog, MembershipChangeReason } from '../../../domain/membership/entities/membership-change-log.entity';
 import {
-    IMembershipRepository,
-    IMembershipChangeLogRepository,
+    type IMembershipRepository,
+    type IMembershipChangeLogRepository,
 } from '../ports/repository';
 
 // ============================================
