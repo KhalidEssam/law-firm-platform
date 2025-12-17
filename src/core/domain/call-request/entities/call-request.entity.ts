@@ -61,7 +61,7 @@ export class CallRequest {
         private _completedAt: Date | null,
         public readonly createdAt: Date,
         private _updatedAt: Date,
-    ) {}
+    ) { }
 
     // ============================================
     // FACTORY METHODS
@@ -455,7 +455,29 @@ export class CallRequest {
     // SERIALIZATION
     // ============================================
 
-    toObject(): CallRequestProps & { status: CallStatus } {
+    toObject(): {
+        id: string;
+        requestNumber: string;
+        subscriberId: string;
+        assignedProviderId: string | null;
+        consultationType: string | null;
+        purpose: string;
+        preferredDate: Date | null;
+        preferredTime: string | null;
+        status: CallStatus;
+        scheduledAt: Date | null;
+        scheduledDuration: number | null;
+        actualDuration: number | null;
+        callStartedAt: Date | null;
+        callEndedAt: Date | null;
+        recordingUrl: string | null;
+        callPlatform: string | null;
+        callLink: string | null;
+        submittedAt: Date;
+        completedAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+    } {
         return {
             id: this.id,
             requestNumber: this.requestNumber,

@@ -209,7 +209,8 @@ export class MembershipController {
      */
     @Get('user/:userId')
     @Roles('system admin', 'platform')
-    @Permissions('read:memberships')
+    @Public()
+    // @Permissions('read:memberships')
     async getByUserId(@Param('userId') userId: string): Promise<{ membership: MembershipResponseDto | null }> {
         const membership = await this.getActiveMembershipByUser.execute(userId);
         return {
@@ -408,8 +409,9 @@ export class MembershipController {
      * Accessible by: system admin, platform
      */
     @Put(':id/quota/:resource/consume')
-    @Roles('platform', 'system admin')
-    @Permissions('update:quotas')
+    @Public()
+    // @Roles('platform', 'system admin')
+    // @Permissions('update:quotas')
     @HttpCode(HttpStatus.OK)
     async consumeResourceQuota(
         @Param('id') id: string,

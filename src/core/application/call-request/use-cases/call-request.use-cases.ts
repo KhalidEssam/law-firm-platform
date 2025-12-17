@@ -5,7 +5,7 @@ import { CallRequest } from '../../../domain/call-request/entities/call-request.
 import { CallStatus } from '../../../domain/call-request/value-objects/call-status.vo';
 import { CallPlatformType } from '../../../domain/call-request/value-objects/call-platform.vo';
 import {
-    ICallRequestRepository,
+    type ICallRequestRepository,
     CallRequestFilter,
     PaginationOptions,
     PaginatedResult,
