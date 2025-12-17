@@ -292,6 +292,26 @@ export class CheckQuotaUseCase {
         private readonly quotaRepo: IMembershipQuotaUsageRepository,
     ) { }
 
+    // Map user-friendly names to internal QuotaResource values
+    private normalizeResource(resource: string): QuotaResource {
+        const friendlyNameMap: Record<string, QuotaResource> = {
+            'consultations': QuotaResource.CONSULTATIONS,
+            'opinions': QuotaResource.OPINIONS,
+            'legalOpinions': QuotaResource.OPINIONS,
+            'services': QuotaResource.SERVICES,
+            'cases': QuotaResource.CASES,
+            'litigationCases': QuotaResource.CASES,
+            'callMinutes': QuotaResource.CALL_MINUTES,
+            // Also support full enum values
+            [QuotaResource.CONSULTATIONS]: QuotaResource.CONSULTATIONS,
+            [QuotaResource.OPINIONS]: QuotaResource.OPINIONS,
+            [QuotaResource.SERVICES]: QuotaResource.SERVICES,
+            [QuotaResource.CASES]: QuotaResource.CASES,
+            [QuotaResource.CALL_MINUTES]: QuotaResource.CALL_MINUTES,
+        };
+        return friendlyNameMap[resource] || resource as QuotaResource;
+    }
+
     async execute(membershipId: string, resource: QuotaResource): Promise<{
         used: number;
         limit: number | null; // null = unlimited
@@ -307,10 +327,13 @@ export class CheckQuotaUseCase {
             throw new NotFoundException('Membership tier not found');
         }
 
-        const quotaUsage = await this.quotaRepo.findCurrentByMembership(membershipId);
-        const used = quotaUsage?.getUsage(resource) || 0;
+        // Normalize the resource name to handle user-friendly names
+        const normalizedResource = this.normalizeResource(resource as string);
 
-        const resourceMap: Record<QuotaResource, keyof typeof tier.quota> = {
+        const quotaUsage = await this.quotaRepo.findCurrentByMembership(membershipId);
+        const used = quotaUsage?.getUsage(normalizedResource) || 0;
+
+        const resourceToQuotaField: Record<QuotaResource, keyof typeof tier.quota> = {
             [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
             [QuotaResource.OPINIONS]: 'opinionsPerMonth',
             [QuotaResource.SERVICES]: 'servicesPerMonth',
@@ -318,7 +341,8 @@ export class CheckQuotaUseCase {
             [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
         };
 
-        const limit = tier.getQuotaLimit(resourceMap[resource]) || null;
+        const quotaField = resourceToQuotaField[normalizedResource];
+        const limit = quotaField ? (tier.getQuotaLimit(quotaField) ?? null) : null;
         const remaining = limit !== null ? Math.max(0, limit - used) : null;
 
         return { used, limit, remaining };
@@ -340,6 +364,26 @@ export class ConsumeQuotaUseCase {
         private readonly quotaRepo: IMembershipQuotaUsageRepository,
     ) { }
 
+    // Map user-friendly names to internal QuotaResource values
+    private normalizeResource(resource: string): QuotaResource {
+        const friendlyNameMap: Record<string, QuotaResource> = {
+            'consultations': QuotaResource.CONSULTATIONS,
+            'opinions': QuotaResource.OPINIONS,
+            'legalOpinions': QuotaResource.OPINIONS,
+            'services': QuotaResource.SERVICES,
+            'cases': QuotaResource.CASES,
+            'litigationCases': QuotaResource.CASES,
+            'callMinutes': QuotaResource.CALL_MINUTES,
+            // Also support full enum values
+            [QuotaResource.CONSULTATIONS]: QuotaResource.CONSULTATIONS,
+            [QuotaResource.OPINIONS]: QuotaResource.OPINIONS,
+            [QuotaResource.SERVICES]: QuotaResource.SERVICES,
+            [QuotaResource.CASES]: QuotaResource.CASES,
+            [QuotaResource.CALL_MINUTES]: QuotaResource.CALL_MINUTES,
+        };
+        return friendlyNameMap[resource] || resource as QuotaResource;
+    }
+
     async execute(membershipId: string, resource: QuotaResource, amount: number): Promise<void> {
         const membership = await this.membershipRepo.findById(membershipId);
         if (!membership) {
@@ -355,8 +399,11 @@ export class ConsumeQuotaUseCase {
             throw new NotFoundException('Membership tier not found');
         }
 
+        // Normalize the resource name to handle user-friendly names
+        const normalizedResource = this.normalizeResource(resource as string);
+
         // Get tier limit
-        const resourceMap: Record<QuotaResource, keyof typeof tier.quota> = {
+        const resourceToQuotaField: Record<QuotaResource, keyof typeof tier.quota> = {
             [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
             [QuotaResource.OPINIONS]: 'opinionsPerMonth',
             [QuotaResource.SERVICES]: 'servicesPerMonth',
@@ -364,16 +411,17 @@ export class ConsumeQuotaUseCase {
             [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
         };
 
-        const limit = tier.getQuotaLimit(resourceMap[resource]);
+        const quotaField = resourceToQuotaField[normalizedResource];
+        const limit = quotaField ? tier.getQuotaLimit(quotaField) : undefined;
 
         // Check if has available quota
-        const hasQuota = await this.quotaRepo.hasAvailableQuota(membershipId, resource, amount, limit);
+        const hasQuota = await this.quotaRepo.hasAvailableQuota(membershipId, normalizedResource, amount, limit);
         if (!hasQuota) {
             throw new BadRequestException(`Insufficient quota for ${resource}`);
         }
 
         // Consume quota
-        await this.quotaRepo.incrementUsage(membershipId, resource, amount);
+        await this.quotaRepo.incrementUsage(membershipId, normalizedResource, amount);
     }
 }
 
