@@ -9,7 +9,7 @@ import {
     CreateMessageTemplateInput,
     UpdateMessageTemplateInput,
 } from '../../../domain/notification/entities/message-template.entity';
-import { IMessageTemplateRepository, MessageTemplateListOptions } from '../../../domain/notification/ports/message-template.repository';
+import { type IMessageTemplateRepository, MessageTemplateListOptions } from '../../../domain/notification/ports/message-template.repository';
 import { NotificationChannel } from '../../../domain/notification/value-objects/notification-channel.enum';
 
 // ============================================

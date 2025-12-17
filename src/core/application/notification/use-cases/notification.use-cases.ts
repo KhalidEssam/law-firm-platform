@@ -6,11 +6,11 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { Notification, CreateNotificationInput } from '../../../domain/notification/entities/notification.entity';
 import {
-    INotificationRepository,
+    type INotificationRepository,
     NotificationListOptions,
 } from '../../../domain/notification/ports/notification.repository';
-import { IMessageTemplateRepository } from '../../../domain/notification/ports/message-template.repository';
-import { INotificationPreferenceRepository } from '../../../domain/notification/ports/notification-preference.repository';
+import { type IMessageTemplateRepository } from '../../../domain/notification/ports/message-template.repository';
+import { type INotificationPreferenceRepository } from '../../../domain/notification/ports/notification-preference.repository';
 import { NotificationChannel } from '../../../domain/notification/value-objects/notification-channel.enum';
 import { NotificationType } from '../../../domain/notification/value-objects/notification-type.enum';
 import { NotificationSender } from '../interfaces/notification-sender.interface';

@@ -8,7 +8,7 @@ import {
     NotificationPreference,
     UserNotificationPreferences,
 } from '../../../domain/notification/entities/notification-preference.entity';
-import { INotificationPreferenceRepository } from '../../../domain/notification/ports/notification-preference.repository';
+import { type INotificationPreferenceRepository } from '../../../domain/notification/ports/notification-preference.repository';
 import { NotificationChannel } from '../../../domain/notification/value-objects/notification-channel.enum';
 
 // ============================================

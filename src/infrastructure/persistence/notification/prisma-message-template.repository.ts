@@ -15,6 +15,7 @@ import {
     NotificationChannelMapper,
 } from '../../../core/domain/notification/value-objects/notification-channel.enum';
 
+
 @Injectable()
 export class PrismaMessageTemplateRepository implements IMessageTemplateRepository {
     constructor(private readonly prisma: PrismaService) {}
