@@ -39,6 +39,36 @@ export class MembershipQuotaUsage {
         );
     }
 
+    /** ✅ Rehydrate from persistence (preserves existing ID) */
+    static rehydrate(props: {
+        id: string;
+        membershipId: string;
+        usage?: Partial<Record<QuotaResource, number>>;
+        periodStart: Date;
+        periodEnd: Date;
+        createdAt: Date;
+        updatedAt: Date;
+    }): MembershipQuotaUsage {
+        const initialUsage: Record<QuotaResource, number> = {
+            [QuotaResource.CONSULTATIONS]: 0,
+            [QuotaResource.OPINIONS]: 0,
+            [QuotaResource.SERVICES]: 0,
+            [QuotaResource.CASES]: 0,
+            [QuotaResource.CALL_MINUTES]: 0,
+            ...(props.usage ?? {}),
+        };
+
+        return new MembershipQuotaUsage(
+            props.id,
+            props.membershipId,
+            initialUsage,
+            props.periodStart,
+            props.periodEnd,
+            props.createdAt,
+            props.updatedAt,
+        );
+    }
+
     /** ✅ Returns how much of a specific resource is used */
     getUsage(resource: QuotaResource): number {
         return this.usage[resource] ?? 0;

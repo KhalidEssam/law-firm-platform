@@ -1048,11 +1048,14 @@ export class PrismaMembershipQuotaUsageRepository implements IMembershipQuotaUsa
             usage[QuotaResource.CALL_MINUTES] = data.callMinutesUsed;
         }
 
-        return MembershipQuotaUsage.create({
+        return MembershipQuotaUsage.rehydrate({
+            id: data.id,
             membershipId: data.membershipId,
             usage,
             periodStart: data.periodStart,
             periodEnd: data.periodEnd,
+            createdAt: data.createdAt,
+            updatedAt: data.updatedAt,
         });
     }
 
