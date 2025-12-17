@@ -6,7 +6,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { Membership } from '../../../core/domain/membership/entities/membership.entity';
-import { MembershipTier } from '../../../core/domain/membership/entities/membership-tier.entity';
+import { MembershipTier, TierQuota } from '../../../core/domain/membership/entities/membership-tier.entity';
 import { MembershipPayment, PaymentStatus, PaymentProvider } from '../../../core/domain/membership/entities/membership-payment.entity';
 import { MembershipCoupon } from '../../../core/domain/membership/entities/membership-coupon.entity';
 import { MembershipCouponRedemption } from '../../../core/domain/membership/entities/membership-coupon-redemption.entity';
@@ -376,7 +376,7 @@ export class PrismaMembershipRepository implements IMembershipRepository {
 export class PrismaMembershipTierRepository implements IMembershipTierRepository {
     constructor(private readonly prisma: PrismaService) {}
 
-    private mapToDomain(data: any): MembershipTier {
+    private mapToDomain(data: any, quota?: TierQuota): MembershipTier {
         return MembershipTier.rehydrate({
             id: data.id,
             name: data.name,
@@ -386,11 +386,31 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
             price: data.price,
             currency: CurrencyMapper.toDomain(data.currency),
             billingCycle: BillingCycleMapper.toDomain(data.billingCycle),
+            quota: quota,
             benefits: data.benefits,
             isActive: data.isActive,
             createdAt: data.createdAt,
             updatedAt: data.updatedAt,
         });
+    }
+
+    // Load quota from TierService table
+    private async loadQuotaForTier(tierId: number): Promise<TierQuota> {
+        const tierServices = await this.prisma.tierService.findMany({
+            where: { tierId, isActive: true },
+            include: { service: { select: { code: true } } },
+        });
+
+        const quota: TierQuota = {};
+        for (const ts of tierServices) {
+            const code = ts.service?.code;
+            if (code === 'CONSULTATION') quota.consultationsPerMonth = ts.quotaPerMonth ?? undefined;
+            else if (code === 'LEGAL_OPINION') quota.opinionsPerMonth = ts.quotaPerMonth ?? undefined;
+            else if (code === 'SERVICE_REQUEST') quota.servicesPerMonth = ts.quotaPerMonth ?? undefined;
+            else if (code === 'LITIGATION') quota.casesPerMonth = ts.quotaPerMonth ?? undefined;
+            else if (code === 'CALL_REQUEST') quota.callMinutesPerMonth = ts.quotaPerMonth ?? undefined;
+        }
+        return quota;
     }
 
     async hasActiveMemberships(tierId: number): Promise<boolean> {
@@ -408,21 +428,28 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
             where: { isActive },
             orderBy: { price: 'asc' },
         });
-        return tiers.map((t) => this.mapToDomain(t));
+        return Promise.all(tiers.map(async (t) => {
+            const quota = await this.loadQuotaForTier(t.id);
+            return this.mapToDomain(t, quota);
+        }));
     }
 
     async findById(id: number): Promise<MembershipTier | null> {
         const tier = await this.prisma.membershipTier.findUnique({
             where: { id },
         });
-        return tier ? this.mapToDomain(tier) : null;
+        if (!tier) return null;
+        const quota = await this.loadQuotaForTier(tier.id);
+        return this.mapToDomain(tier, quota);
     }
 
     async findByName(name: string): Promise<MembershipTier | null> {
         const tier = await this.prisma.membershipTier.findUnique({
             where: { name },
         });
-        return tier ? this.mapToDomain(tier) : null;
+        if (!tier) return null;
+        const quota = await this.loadQuotaForTier(tier.id);
+        return this.mapToDomain(tier, quota);
     }
 
     async findAll(options?: { isActive?: boolean }): Promise<MembershipTier[]> {
@@ -436,7 +463,10 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
             orderBy: { price: 'asc' },
         });
 
-        return tiers.map((t) => this.mapToDomain(t));
+        return Promise.all(tiers.map(async (t) => {
+            const quota = await this.loadQuotaForTier(t.id);
+            return this.mapToDomain(t, quota);
+        }));
     }
 
     async findActive(): Promise<MembershipTier[]> {
@@ -461,11 +491,12 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
         });
 
         // Create tier services with quotas if provided
-        if (tier.quota) {
+        if (tier.quota && Object.keys(tier.quota).length > 0) {
             await this.createTierServices(created.id, tier.quota);
         }
 
-        return this.mapToDomain(created);
+        const quota = await this.loadQuotaForTier(created.id);
+        return this.mapToDomain(created, quota);
     }
 
     async update(tier: MembershipTier): Promise<MembershipTier> {
@@ -486,14 +517,15 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
         });
 
         // Update tier services
-        if (tier.quota) {
+        if (tier.quota && Object.keys(tier.quota).length > 0) {
             await this.prisma.tierService.deleteMany({
                 where: { tierId: tier.id },
             });
             await this.createTierServices(tier.id, tier.quota);
         }
 
-        return this.mapToDomain(updated);
+        const quota = await this.loadQuotaForTier(updated.id);
+        return this.mapToDomain(updated, quota);
     }
 
     // Helper method to create tier services
@@ -573,7 +605,8 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
             where: { id: tierId },
             data: { isActive: true, updatedAt: new Date() },
         });
-        return this.mapToDomain(updated);
+        const quota = await this.loadQuotaForTier(tierId);
+        return this.mapToDomain(updated, quota);
     }
 
     async deactivate(tierId: number): Promise<MembershipTier> {
@@ -581,7 +614,8 @@ export class PrismaMembershipTierRepository implements IMembershipTierRepository
             where: { id: tierId },
             data: { isActive: false, updatedAt: new Date() },
         });
-        return this.mapToDomain(updated);
+        const quota = await this.loadQuotaForTier(tierId);
+        return this.mapToDomain(updated, quota);
     }
 
     async delete(id: number): Promise<void> {
