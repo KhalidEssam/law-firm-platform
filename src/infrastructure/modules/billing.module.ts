@@ -6,6 +6,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipModule } from './membership.module';
+import { NotificationModule } from '../../interface/notification/notification.module';
 
 // Controller
 import { BillingController } from '../../interface/http/billing.controller';
@@ -105,6 +106,7 @@ import {
     imports: [
         PrismaModule,
         forwardRef(() => MembershipModule), // Import for service usage billing integration
+        forwardRef(() => NotificationModule), // Notification integration
     ],
     controllers: [BillingController],
     providers: [

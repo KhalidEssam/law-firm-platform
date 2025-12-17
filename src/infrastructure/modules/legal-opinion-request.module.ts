@@ -6,6 +6,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { MembershipModule } from './membership.module';
+import { NotificationModule } from '../../interface/notification/notification.module';
 
 // Controller
 import { LegalOpinionRequestController } from 'src/interface/http/legal-opinion-request.controller';
@@ -67,6 +68,7 @@ import {
   imports: [
     PrismaModule, // Database access
     forwardRef(() => MembershipModule), // Membership quota/usage integration
+    NotificationModule, // Notification integration
   ],
   controllers: [
     LegalOpinionRequestController, // HTTP endpoints

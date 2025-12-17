@@ -49,6 +49,9 @@ import {
     DeleteNotificationPreferencesUseCase,
 } from '../../core/application/notification/use-cases/notification-preference.use-cases';
 
+// Integration Service
+import { NotificationIntegrationService } from '../../core/application/notification/notification-integration.service';
+
 // Repository tokens
 const NOTIFICATION_REPOSITORY = 'INotificationRepository';
 const MESSAGE_TEMPLATE_REPOSITORY = 'IMessageTemplateRepository';
@@ -186,6 +189,18 @@ const NOTIFICATION_PREFERENCE_REPOSITORY = 'INotificationPreferenceRepository';
             useFactory: (repo: INotificationPreferenceRepository) => new DeleteNotificationPreferencesUseCase(repo),
             inject: [NOTIFICATION_PREFERENCE_REPOSITORY],
         },
+
+        // ============================================
+        // INTEGRATION SERVICE
+        // ============================================
+        {
+            provide: NotificationIntegrationService,
+            useFactory: (
+                sendNotificationUseCase: SendNotificationUseCase,
+                sendTemplatedNotificationUseCase: SendTemplatedNotificationUseCase,
+            ) => new NotificationIntegrationService(sendNotificationUseCase, sendTemplatedNotificationUseCase),
+            inject: [SendNotificationUseCase, SendTemplatedNotificationUseCase],
+        },
     ],
     exports: [
         // Export use cases for other modules
@@ -209,6 +224,8 @@ const NOTIFICATION_PREFERENCE_REPOSITORY = 'INotificationPreferenceRepository';
         NOTIFICATION_REPOSITORY,
         MESSAGE_TEMPLATE_REPOSITORY,
         NOTIFICATION_PREFERENCE_REPOSITORY,
+        // Export integration service for other modules
+        NotificationIntegrationService,
     ],
 })
 export class NotificationModule {}

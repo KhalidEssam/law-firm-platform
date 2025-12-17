@@ -6,6 +6,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipModule } from './membership.module';
+import { NotificationModule } from '../../interface/notification/notification.module';
 
 // Repository
 import { ConsultationRequestRepository } from '../persistence/consultation/prisma.repository';
@@ -41,6 +42,7 @@ import { ConsultationRequestController } from '../../interface/http/consultation
     imports: [
         PrismaModule, // Import PrismaModule for database access
         forwardRef(() => MembershipModule), // Import MembershipModule for quota/usage integration
+        NotificationModule, // Import NotificationModule for sending notifications
     ],
     controllers: [
         ConsultationRequestController, // REST API endpoints
