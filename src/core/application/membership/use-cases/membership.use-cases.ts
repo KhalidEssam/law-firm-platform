@@ -43,9 +43,15 @@ export class CreateMembershipUseCase {
     ) { }
 
     async execute(command: CreateMembershipCommand): Promise<Membership> {
-        // Check if user already has active membership
-        const existing = await this.membershipRepo.findActiveByUserId(command.userId);
-        if (existing) {
+        // Check if user already has ANY membership (userId is unique in schema)
+        const existingAny = await this.membershipRepo.findByUserId(command.userId);
+        if (existingAny) {
+            // If membership exists but is inactive/expired, suggest reactivation
+            if (!existingAny.isActive) {
+                throw new ConflictException(
+                    'User has an inactive membership. Please use the reactivate endpoint instead: POST /memberships/{id}/reactivate'
+                );
+            }
             throw new ConflictException('User already has an active membership');
         }
 
