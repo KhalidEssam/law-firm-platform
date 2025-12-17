@@ -1,51 +1,101 @@
-# Postman Test Scenario: Subscription, Billing, Invoice, Notification & Quota Flow
+# Postman Test Scenario: Complete Subscription & Service Flow
 
-This document provides a step-by-step testing scenario for the complete subscription lifecycle including membership creation, billing, invoices, notifications, and quota consumption.
+This document provides step-by-step testing scenarios for the complete subscription lifecycle including membership creation, billing, invoices, notifications, quota consumption, and call requests.
 
 ## Prerequisites
 
 - Server running on `http://localhost:3000`
 - Valid JWT token for authentication (if auth is enabled)
 - Database with Prisma migrations applied
+- Seed data for services (CONSULTATION, LEGAL_OPINION, etc.)
 
 ## Base URL
 ```
 {{BASE_URL}} = http://localhost:3000
 ```
 
----
-
-## Test Scenario Flow
-
-```
-1. Create Membership Tier (Admin)
-        ↓
-2. Create Membership for User
-        ↓
-3. Create Billing Invoice
-        ↓
-4. Process Payment
-        ↓
-5. Consume Quota (Service Usage)
-        ↓
-6. Check Notifications
-        ↓
-7. Check Quota Status
+## Environment Variables
+```json
+{
+    "BASE_URL": "http://localhost:3000",
+    "USER_ID": "",
+    "TIER_ID": "",
+    "MEMBERSHIP_ID": "",
+    "INVOICE_ID": "",
+    "PAYMENT_ID": "",
+    "CALL_REQUEST_ID": "",
+    "PROVIDER_ID": ""
+}
 ```
 
 ---
 
-## Step 1: Create Membership Tier (Admin Setup)
+# SCENARIO 1: Complete Membership & Quota Flow
 
-First, we need a membership tier that users can subscribe to.
+## Flow Diagram
+```
+1. Create User (if needed)
+        ↓
+2. Create Membership Tier with Quota
+        ↓
+3. Create Membership for User
+        ↓
+4. Create Invoice
+        ↓
+5. Process Payment
+        ↓
+6. Check Quota Status
+        ↓
+7. Consume Quota
+        ↓
+8. Verify Quota Updated
+        ↓
+9. Check Notifications
+```
+
+---
+
+## Step 1: Create User (If Needed)
 
 ### Request
-```
-POST {{BASE_URL}}/memberships/tiers
+```http
+POST {{BASE_URL}}/users
 Content-Type: application/json
 ```
 
 ### Body
+```json
+{
+    "email": "testuser@example.com",
+    "username": "testuser",
+    "fullName": "Test User"
+}
+```
+
+### Expected Response
+```json
+{
+    "user": {
+        "id": "f48e0ddc-3679-4580-a81e-a88667223cdf",
+        "email": "testuser@example.com",
+        "username": "testuser"
+    }
+}
+```
+
+**Save `user.id` as `{{USER_ID}}`**
+
+---
+
+## Step 2: Create Membership Tier with Quota
+
+### Request
+```http
+POST {{BASE_URL}}/memberships/tiers
+Content-Type: application/json
+```
+
+### Body (Use correct field names!)
 ```json
 {
     "name": "Premium Plan",
@@ -56,19 +106,25 @@ Content-Type: application/json
     "currency": "SAR",
     "billingCycle": "monthly",
     "quota": {
-        "consultations": 10,
-        "legalOpinions": 5,
-        "litigationCases": 2,
-        "storage": 5120
+        "consultationsPerMonth": 10,
+        "opinionsPerMonth": 5,
+        "casesPerMonth": 2,
+        "callMinutesPerMonth": 60
     },
     "benefits": [
-        "Unlimited consultations",
         "Priority support",
-        "Document storage"
+        "Document storage",
+        "Video consultations"
     ],
     "isActive": true
 }
 ```
+
+> **Note:** You can also use user-friendly names:
+> - `consultations` → `consultationsPerMonth`
+> - `legalOpinions` → `opinionsPerMonth`
+> - `litigationCases` → `casesPerMonth`
+> - `callMinutes` → `callMinutesPerMonth`
 
 ### Expected Response
 ```json
@@ -76,39 +132,35 @@ Content-Type: application/json
     "tier": {
         "id": 1,
         "name": "Premium Plan",
-        "nameAr": "الخطة المميزة",
-        "description": "Premium membership with full access to legal services",
-        "price": 500,
-        "currency": "SAR",
-        "billingCycle": "monthly",
-        "isActive": true
+        "quota": {
+            "consultationsPerMonth": 10,
+            "opinionsPerMonth": 5,
+            "casesPerMonth": 2,
+            "callMinutesPerMonth": 60
+        }
     }
 }
 ```
 
-**Save the `tier.id` for the next step!**
+**Save `tier.id` as `{{TIER_ID}}`**
 
 ---
 
-## Step 2: Create Membership for User
-
-Create a subscription/membership for a user using the tier created above.
+## Step 3: Create Membership for User
 
 ### Request
-```
+```http
 POST {{BASE_URL}}/memberships
 Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Body
 ```json
 {
-    "userId": "user-123-uuid",
-    "tierId": 1,
+    "userId": "{{USER_ID}}",
+    "tierId": {{TIER_ID}},
     "durationInMonths": 12,
-    "autoRenew": true,
-    "couponCode": null
+    "autoRenew": true
 }
 ```
 
@@ -116,32 +168,27 @@ Authorization: Bearer {{JWT_TOKEN}}
 ```json
 {
     "membership": {
-        "id": "membership-uuid-here",
-        "userId": "user-123-uuid",
+        "id": "abc123-def456-...",
+        "userId": "{{USER_ID}}",
         "tierId": 1,
-        "startDate": "2025-12-17T00:00:00.000Z",
-        "endDate": "2026-12-17T00:00:00.000Z",
         "isActive": true,
         "autoRenew": true,
-        "createdAt": "2025-12-17T...",
-        "updatedAt": "2025-12-17T..."
+        "startDate": "2025-12-17T...",
+        "endDate": "2026-12-17T..."
     }
 }
 ```
 
-**Save the `membership.id` for later steps!**
+**Save `membership.id` as `{{MEMBERSHIP_ID}}`**
 
 ---
 
-## Step 3: Create Billing Invoice
-
-Create an invoice for the membership subscription.
+## Step 4: Create Invoice for Membership
 
 ### Request
-```
+```http
 POST {{BASE_URL}}/billing/invoices
 Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Body
@@ -150,16 +197,8 @@ Authorization: Bearer {{JWT_TOKEN}}
     "membershipId": "{{MEMBERSHIP_ID}}",
     "amount": 500,
     "currency": "SAR",
-    "dueDate": "2025-12-24T00:00:00.000Z",
-    "description": "Premium Membership - Monthly Subscription",
-    "items": [
-        {
-            "description": "Premium Plan - Monthly",
-            "quantity": 1,
-            "unitPrice": 500,
-            "total": 500
-        }
-    ]
+    "dueDate": "2025-12-31",
+    "description": "Monthly subscription - Premium Plan"
 }
 ```
 
@@ -167,36 +206,25 @@ Authorization: Bearer {{JWT_TOKEN}}
 ```json
 {
     "invoice": {
-        "id": "invoice-uuid-here",
-        "membershipId": "membership-uuid-here",
-        "invoiceNumber": "INV-2025-001",
+        "id": "inv-123...",
+        "membershipId": "{{MEMBERSHIP_ID}}",
         "amount": 500,
         "currency": "SAR",
-        "dueDate": "2025-12-24T00:00:00.000Z",
-        "status": "PENDING",
-        "isOverdue": false,
-        "daysUntilDue": 7,
-        "createdAt": "2025-12-17T...",
-        "updatedAt": "2025-12-17T..."
+        "status": "pending"
     }
 }
 ```
 
-**Save the `invoice.id` for payment processing!**
-
-**A notification should be triggered for the user about the new invoice!**
+**Save `invoice.id` as `{{INVOICE_ID}}`**
 
 ---
 
-## Step 4: Create Payment Transaction
-
-Create a payment for the invoice.
+## Step 5: Process Payment
 
 ### Request
-```
+```http
 POST {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/payments
 Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Body
@@ -205,11 +233,7 @@ Authorization: Bearer {{JWT_TOKEN}}
     "invoiceId": "{{INVOICE_ID}}",
     "provider": "stripe",
     "amount": 500,
-    "currency": "SAR",
-    "metadata": {
-        "source": "web",
-        "paymentMethod": "card"
-    }
+    "currency": "SAR"
 }
 ```
 
@@ -217,121 +241,57 @@ Authorization: Bearer {{JWT_TOKEN}}
 ```json
 {
     "payment": {
-        "id": "payment-uuid-here",
-        "invoiceId": "invoice-uuid-here",
-        "provider": "stripe",
-        "providerTxnId": null,
-        "amount": 500,
-        "currency": "SAR",
-        "status": "PENDING",
-        "createdAt": "2025-12-17T...",
-        "updatedAt": "2025-12-17T..."
+        "id": "pay-123...",
+        "invoiceId": "{{INVOICE_ID}}",
+        "status": "pending",
+        "provider": "stripe"
     }
 }
 ```
 
-**Save the `payment.id` for completing the payment!**
+**Save `payment.id` as `{{PAYMENT_ID}}`**
 
----
-
-## Step 5: Complete Payment (Webhook Simulation)
-
-Simulate a payment webhook callback to complete the payment.
-
-### Request
-```
+### Complete Payment (Webhook Simulation)
+```http
 POST {{BASE_URL}}/memberships/payments/{{PAYMENT_ID}}/complete
 Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Body
 ```json
 {
-    "providerTxnId": "stripe_txn_12345abcde"
-}
-```
-
-### Expected Response
-```json
-{
-    "payment": {
-        "id": "payment-uuid-here",
-        "invoiceId": "invoice-uuid-here",
-        "provider": "stripe",
-        "providerTxnId": "stripe_txn_12345abcde",
-        "amount": 500,
-        "currency": "SAR",
-        "status": "COMPLETED",
-        "createdAt": "2025-12-17T...",
-        "updatedAt": "2025-12-17T..."
-    }
+    "providerTxnId": "txn_stripe_123456"
 }
 ```
 
 ---
 
-## Step 6: Mark Invoice as Paid
-
-After payment is complete, mark the invoice as paid.
+## Step 6: Check Quota Status (Before Consumption)
 
 ### Request
-```
-PATCH {{BASE_URL}}/billing/invoices/{{INVOICE_ID}}/paid
-Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
-```
-
-### Expected Response
-```json
-{
-    "invoice": {
-        "id": "invoice-uuid-here",
-        "invoiceNumber": "INV-2025-001",
-        "status": "PAID",
-        ...
-    }
-}
-```
-
-**A notification should be triggered for the user about the successful payment!**
-
----
-
-## Step 7: Check Quota (Before Consumption)
-
-Check the user's current quota status.
-
-### Request
-```
+```http
 GET {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Expected Response
 ```json
 {
     "quota": {
-        "resource": "consultations",
-        "limit": 10,
         "used": 0,
-        "remaining": 10,
-        "percentUsed": 0
+        "limit": 10,
+        "remaining": 10
     }
 }
 ```
 
 ---
 
-## Step 8: Consume Quota (Service Usage)
-
-Simulate consumption of quota when user uses a service.
+## Step 7: Consume Quota
 
 ### Request
-```
+```http
 PUT {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations/consume
 Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Body
@@ -350,98 +310,43 @@ Authorization: Bearer {{JWT_TOKEN}}
 
 ---
 
-## Step 9: Check Quota (After Consumption)
-
-Verify quota was consumed.
+## Step 8: Verify Quota Updated
 
 ### Request
-```
+```http
 GET {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Expected Response
 ```json
 {
     "quota": {
-        "resource": "consultations",
-        "limit": 10,
         "used": 1,
-        "remaining": 9,
-        "percentUsed": 10
+        "limit": 10,
+        "remaining": 9
     }
 }
 ```
 
 ---
 
-## Step 10: Consume More Quota (Near Limit - Should Trigger Warning)
-
-Consume more quota to approach the limit (e.g., 80% threshold).
+## Step 9: Check Notifications
 
 ### Request
-```
-PUT {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations/consume
-Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
-```
-
-### Body
-```json
-{
-    "amount": 7
-}
-```
-
-**When quota reaches 80% (8 out of 10), a QUOTA_WARNING notification should be triggered!**
-
----
-
-## Step 11: Check Notifications for User
-
-View all notifications triggered during the flow.
-
-### Request
-```
+```http
 GET {{BASE_URL}}/notifications/user/{{USER_ID}}
-Authorization: Bearer {{JWT_TOKEN}}
 ```
 
 ### Expected Response
 ```json
 {
-    "success": true,
-    "data": [
+    "notifications": [
         {
-            "id": "notif-1",
-            "userId": "user-123-uuid",
-            "type": "INVOICE_CREATED",
-            "title": "New Invoice",
-            "titleAr": "فاتورة جديدة",
-            "message": "Invoice #INV-2025-001 has been created for SAR 500.00...",
-            "messageAr": "تم إنشاء الفاتورة #INV-2025-001...",
-            "isRead": false,
-            "createdAt": "2025-12-17T..."
-        },
-        {
-            "id": "notif-2",
-            "userId": "user-123-uuid",
+            "id": "...",
             "type": "PAYMENT_RECEIVED",
             "title": "Payment Successful",
-            "titleAr": "تم الدفع بنجاح",
-            "message": "Your payment of SAR 500.00 has been processed...",
-            "isRead": false,
-            "createdAt": "2025-12-17T..."
-        },
-        {
-            "id": "notif-3",
-            "userId": "user-123-uuid",
-            "type": "QUOTA_WARNING",
-            "title": "Quota Warning",
-            "titleAr": "تحذير الحصة",
-            "message": "You have used 80% of your consultations quota...",
-            "isRead": false,
-            "createdAt": "2025-12-17T..."
+            "message": "Your payment of 500 SAR has been received",
+            "isRead": false
         }
     ]
 }
@@ -449,69 +354,283 @@ Authorization: Bearer {{JWT_TOKEN}}
 
 ---
 
-## Step 12: Get Unread Notification Count
+# SCENARIO 2: Complete Call Request Flow
+
+## Flow Diagram
+```
+1. Create Call Request
+        ↓
+2. Assign Provider
+        ↓
+3. Schedule Call
+        ↓
+4. Start Call
+        ↓
+5. End Call
+        ↓
+6. Verify Call Minutes Consumed
+```
+
+---
+
+## Step 1: Create Call Request
 
 ### Request
+```http
+POST {{BASE_URL}}/call-requests
+Content-Type: application/json
 ```
-GET {{BASE_URL}}/notifications/user/{{USER_ID}}/unread/count
-Authorization: Bearer {{JWT_TOKEN}}
+
+### Body
+```json
+{
+    "subscriberId": "{{USER_ID}}",
+    "purpose": "Legal consultation regarding property dispute",
+    "consultationType": "legal_advice",
+    "preferredDate": "2025-12-20",
+    "preferredTime": "14:00"
+}
 ```
 
 ### Expected Response
 ```json
 {
-    "success": true,
-    "data": {
-        "unreadCount": 3
+    "callRequest": {
+        "id": "call-123...",
+        "requestNumber": "CALL-ABC123-XYZ",
+        "subscriberId": "{{USER_ID}}",
+        "status": "pending",
+        "purpose": "Legal consultation regarding property dispute"
+    }
+}
+```
+
+**Save `callRequest.id` as `{{CALL_REQUEST_ID}}`**
+
+---
+
+## Step 2: Assign Provider to Call
+
+### Request
+```http
+POST {{BASE_URL}}/call-requests/{{CALL_REQUEST_ID}}/assign
+Content-Type: application/json
+```
+
+### Body
+```json
+{
+    "providerId": "{{PROVIDER_ID}}"
+}
+```
+
+### Expected Response
+```json
+{
+    "callRequest": {
+        "id": "{{CALL_REQUEST_ID}}",
+        "assignedProviderId": "{{PROVIDER_ID}}",
+        "status": "assigned"
     }
 }
 ```
 
 ---
 
-## Step 13: Mark Notification as Read
+## Step 3: Schedule the Call
 
 ### Request
+```http
+POST {{BASE_URL}}/call-requests/{{CALL_REQUEST_ID}}/schedule
+Content-Type: application/json
 ```
-PATCH {{BASE_URL}}/notifications/{{NOTIFICATION_ID}}/read
-Authorization: Bearer {{JWT_TOKEN}}
+
+### Body
+```json
+{
+    "scheduledAt": "2025-12-20T14:00:00Z",
+    "durationMinutes": 30,
+    "platform": "zoom",
+    "callLink": "https://zoom.us/j/123456789"
+}
 ```
 
 ### Expected Response
 ```json
 {
-    "success": true,
-    "data": {
-        "id": "notif-1",
-        "isRead": true,
-        "readAt": "2025-12-17T..."
+    "callRequest": {
+        "id": "{{CALL_REQUEST_ID}}",
+        "status": "scheduled",
+        "scheduledAt": "2025-12-20T14:00:00.000Z",
+        "scheduledDuration": 30,
+        "callPlatform": "zoom",
+        "callLink": "https://zoom.us/j/123456789"
     }
 }
 ```
 
 ---
 
-## Step 14: Check Membership Status
+## Step 4: Start the Call
 
 ### Request
-```
-GET {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/status
-Authorization: Bearer {{JWT_TOKEN}}
+```http
+POST {{BASE_URL}}/call-requests/{{CALL_REQUEST_ID}}/start
 ```
 
 ### Expected Response
 ```json
 {
-    "status": {
-        "isActive": true,
-        "currentTier": "Premium Plan",
-        "daysRemaining": 365,
-        "willExpire": false,
-        "isExpiring": false,
-        "autoRenew": true,
-        "quotaUsage": {
-            "consultations": { "used": 8, "limit": 10, "remaining": 2 },
-            "legalOpinions": { "used": 0, "limit": 5, "remaining": 5 }
+    "callRequest": {
+        "id": "{{CALL_REQUEST_ID}}",
+        "status": "in_progress",
+        "callStartedAt": "2025-12-20T14:00:00.000Z"
+    }
+}
+```
+
+---
+
+## Step 5: End the Call
+
+### Request
+```http
+POST {{BASE_URL}}/call-requests/{{CALL_REQUEST_ID}}/end
+Content-Type: application/json
+```
+
+### Body
+```json
+{
+    "recordingUrl": "https://storage.example.com/recordings/call-123.mp4"
+}
+```
+
+### Expected Response
+```json
+{
+    "callRequest": {
+        "id": "{{CALL_REQUEST_ID}}",
+        "status": "completed",
+        "callStartedAt": "2025-12-20T14:00:00.000Z",
+        "callEndedAt": "2025-12-20T14:25:00.000Z",
+        "actualDuration": 25,
+        "recordingUrl": "https://storage.example.com/recordings/call-123.mp4"
+    }
+}
+```
+
+---
+
+## Step 6: Verify Call Minutes Consumed
+
+### Request
+```http
+GET {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/quota/callMinutes
+```
+
+### Expected Response
+```json
+{
+    "quota": {
+        "used": 25,
+        "limit": 60,
+        "remaining": 35
+    }
+}
+```
+
+---
+
+# SCENARIO 3: Membership Upgrade Flow
+
+## Flow Diagram
+```
+1. Get Current Membership
+        ↓
+2. View Available Tiers
+        ↓
+3. Upgrade Membership
+        ↓
+4. Verify New Quota Limits
+```
+
+---
+
+## Step 1: Get Current Membership
+
+### Request
+```http
+GET {{BASE_URL}}/memberships/user/{{USER_ID}}
+```
+
+### Expected Response
+```json
+{
+    "membership": {
+        "id": "{{MEMBERSHIP_ID}}",
+        "tierId": 1,
+        "isActive": true
+    }
+}
+```
+
+---
+
+## Step 2: View Available Tiers
+
+### Request
+```http
+GET {{BASE_URL}}/memberships/tiers
+```
+
+### Expected Response
+```json
+{
+    "tiers": [
+        {
+            "id": 1,
+            "name": "Premium Plan",
+            "price": 500
+        },
+        {
+            "id": 2,
+            "name": "Enterprise Plan",
+            "price": 1000
+        }
+    ]
+}
+```
+
+---
+
+## Step 3: Upgrade Membership to Enterprise
+
+### Request
+```http
+POST {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/upgrade
+Content-Type: application/json
+```
+
+### Body
+```json
+{
+    "newTierId": 2
+}
+```
+
+### Expected Response
+```json
+{
+    "result": {
+        "membership": {
+            "id": "{{MEMBERSHIP_ID}}",
+            "tierId": 2
+        },
+        "changeLog": {
+            "oldTierId": 1,
+            "newTierId": 2,
+            "changeType": "upgrade"
         }
     }
 }
@@ -519,187 +638,110 @@ Authorization: Bearer {{JWT_TOKEN}}
 
 ---
 
-## Additional Test Scenarios
+## Step 4: Verify New Quota Limits
 
-### A. Test Role Assignment Notification
-
+### Request
+```http
+GET {{BASE_URL}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations
 ```
-POST {{BASE_URL}}/admin/roles/users/{{USER_ID}}/assign
-Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
 
+### Expected Response
+```json
 {
-    "roleName": "premium_member"
+    "quota": {
+        "used": 1,
+        "limit": 20,
+        "remaining": 19
+    }
 }
 ```
 
-**This will trigger a ROLE_ASSIGNED notification to the user!**
+---
+
+# Additional Endpoints Reference
+
+## Call Request Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/call-requests` | Create call request |
+| GET | `/call-requests` | List all (with filters) |
+| GET | `/call-requests/:id` | Get by ID |
+| DELETE | `/call-requests/:id` | Cancel call |
+| POST | `/call-requests/:id/assign` | Assign provider |
+| POST | `/call-requests/:id/schedule` | Schedule call |
+| POST | `/call-requests/:id/reschedule` | Reschedule |
+| PATCH | `/call-requests/:id/call-link` | Update call link |
+| POST | `/call-requests/:id/start` | Start call |
+| POST | `/call-requests/:id/end` | End call |
+| POST | `/call-requests/:id/no-show` | Mark no-show |
+| GET | `/call-requests/subscriber/:id` | Subscriber's calls |
+| GET | `/call-requests/subscriber/:id/minutes` | Minutes summary |
+| GET | `/call-requests/provider/:id` | Provider's calls |
+| GET | `/call-requests/provider/:id/upcoming` | Upcoming calls |
+| GET | `/call-requests/provider/:id/availability` | Check availability |
+| GET | `/call-requests/admin/overdue` | Overdue calls |
+| GET | `/call-requests/admin/scheduled` | Scheduled calls |
+
+## Membership Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/memberships` | Create membership |
+| GET | `/memberships/me` | Get my membership |
+| GET | `/memberships/:id` | Get by ID |
+| DELETE | `/memberships/:id` | Cancel |
+| POST | `/memberships/:id/renew` | Renew |
+| PATCH | `/memberships/:id/auto-renew` | Toggle auto-renew |
+| GET | `/memberships/:id/quota/:resource` | Check quota |
+| PUT | `/memberships/:id/quota/:resource/consume` | Consume quota |
+| POST | `/memberships/:id/upgrade` | Upgrade tier |
+| POST | `/memberships/:id/downgrade` | Downgrade tier |
+| POST | `/memberships/:id/pause` | Pause |
+| POST | `/memberships/:id/resume` | Resume |
+| GET | `/memberships/:id/status` | Check status |
+| GET | `/memberships/:id/change-history` | Change history |
+
+## Tier Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/memberships/tiers` | List all tiers |
+| GET | `/memberships/tiers/:id` | Get tier by ID |
+| POST | `/memberships/tiers` | Create tier |
+| PUT | `/memberships/tiers/:id` | Update tier |
+| DELETE | `/memberships/tiers/:id` | Delete tier |
+
+## Quota Resource Names
+
+Use these in the URL parameter `:resource`:
+- `consultations` or `consultationsPerMonth`
+- `opinions` or `legalOpinions` or `opinionsPerMonth`
+- `services` or `servicesPerMonth`
+- `cases` or `litigationCases` or `casesPerMonth`
+- `callMinutes` or `callMinutesPerMonth`
 
 ---
 
-### B. Test Consultation Assignment Notification
+# Troubleshooting
 
-```
-PUT {{BASE_URL}}/consultation-requests/{{CONSULTATION_ID}}/assign
-Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
+## Common Errors
 
-{
-    "providerId": "provider-uuid"
-}
-```
+### "User already has an active membership"
+- User already has a membership. Use upgrade instead of create, or cancel existing first.
 
-**This will trigger notifications to both subscriber and provider!**
+### "Membership not found"
+- Check the membership ID is correct
+- Ensure the membership wasn't deleted
 
----
+### "Quota limit is null"
+- The tier doesn't have quota configured
+- Create tier with proper quota fields (use `consultationsPerMonth`, not `consultations`)
 
-### C. Test Legal Opinion Completion Notification
+### "Provider not available"
+- Provider has conflicting calls at the requested time
+- Use `/call-requests/provider/:id/availability` to check availability first
 
-```
-POST {{BASE_URL}}/legal-opinion-requests/{{OPINION_ID}}/complete
-Content-Type: application/json
-Authorization: Bearer {{JWT_TOKEN}}
-```
-
-**This will trigger a LEGAL_OPINION_COMPLETED notification to the client!**
-
----
-
-## Postman Collection Variables
-
-Create these variables in your Postman collection:
-
-| Variable | Example Value | Description |
-|----------|--------------|-------------|
-| `BASE_URL` | `http://localhost:3000` | Server base URL |
-| `JWT_TOKEN` | `eyJhbGc...` | Valid JWT token |
-| `USER_ID` | `user-123-uuid` | Test user ID |
-| `MEMBERSHIP_ID` | `mem-456-uuid` | Created membership ID |
-| `INVOICE_ID` | `inv-789-uuid` | Created invoice ID |
-| `PAYMENT_ID` | `pay-012-uuid` | Created payment ID |
-| `TIER_ID` | `1` | Created tier ID |
-| `NOTIFICATION_ID` | `notif-345-uuid` | Notification ID |
-
----
-
-## Environment Setup Script (Pre-request)
-
-```javascript
-// Pre-request script to set timestamp
-pm.environment.set("timestamp", new Date().toISOString());
-
-// Generate random UUID for testing
-pm.environment.set("randomUUID", pm.variables.replaceIn("{{$randomUUID}}"));
-```
-
----
-
-## Test Script Examples
-
-### Test for successful membership creation
-```javascript
-pm.test("Membership created successfully", function() {
-    pm.response.to.have.status(201);
-    var jsonData = pm.response.json();
-    pm.expect(jsonData.membership).to.have.property('id');
-    pm.expect(jsonData.membership.isActive).to.be.true;
-
-    // Save membership ID for later tests
-    pm.environment.set("MEMBERSHIP_ID", jsonData.membership.id);
-});
-```
-
-### Test for notification creation
-```javascript
-pm.test("Notification exists for user", function() {
-    pm.response.to.have.status(200);
-    var jsonData = pm.response.json();
-    pm.expect(jsonData.success).to.be.true;
-    pm.expect(jsonData.data).to.be.an('array');
-    pm.expect(jsonData.data.length).to.be.greaterThan(0);
-});
-```
-
-### Test for quota consumption
-```javascript
-pm.test("Quota consumed successfully", function() {
-    pm.response.to.have.status(200);
-    var jsonData = pm.response.json();
-    pm.expect(jsonData.message).to.include("Successfully consumed");
-});
-```
-
----
-
-## Quick Test Sequence (Copy-Paste Ready)
-
-```bash
-# 1. Create Tier
-curl -X POST http://localhost:3000/memberships/tiers \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Plan","nameAr":"خطة اختبار","price":100,"currency":"SAR","billingCycle":"monthly","quota":{"consultations":5},"benefits":["Test"],"isActive":true}'
-
-# 2. Create Membership
-curl -X POST http://localhost:3000/memberships \
-  -H "Content-Type: application/json" \
-  -d '{"userId":"test-user-id","tierId":1,"durationInMonths":1,"autoRenew":false}'
-
-# 3. Check Quota
-curl http://localhost:3000/memberships/{MEMBERSHIP_ID}/quota/consultations
-
-# 4. Consume Quota
-curl -X PUT http://localhost:3000/memberships/{MEMBERSHIP_ID}/quota/consultations/consume \
-  -H "Content-Type: application/json" \
-  -d '{"amount":1}'
-
-# 5. Check Notifications
-curl http://localhost:3000/notifications/user/test-user-id
-```
-
----
-
-## Notification Types That Will Be Triggered
-
-| Action | Notification Type | Recipients |
-|--------|------------------|------------|
-| Invoice Created | `INVOICE_CREATED` | User |
-| Invoice Paid | `INVOICE_PAID` | User |
-| Invoice Overdue | `INVOICE_OVERDUE` | User |
-| Payment Success | `PAYMENT_RECEIVED` | User |
-| Payment Failed | `PAYMENT_FAILED` | User |
-| Quota at 80% | `QUOTA_WARNING` | User |
-| Quota Exceeded | `QUOTA_EXCEEDED` | User |
-| Role Assigned | `ROLE_ASSIGNED` | User |
-| Role Removed | `ROLE_REMOVED` | User |
-| Consultation Assigned | `CONSULTATION_ASSIGNED` | Subscriber |
-| Consultation Assigned | `NEW_CONSULTATION_REQUEST` | Provider |
-| Consultation Completed | `CONSULTATION_COMPLETED` | Subscriber |
-| Legal Opinion Assigned | `LEGAL_OPINION_ASSIGNED` | Client |
-| Legal Opinion Assigned | `NEW_LEGAL_OPINION_REQUEST` | Lawyer |
-| Legal Opinion Completed | `LEGAL_OPINION_COMPLETED` | Client |
-| Membership Expiring | `MEMBERSHIP_EXPIRING` | User |
-| Membership Expired | `MEMBERSHIP_EXPIRED` | User |
-
----
-
-## Troubleshooting
-
-### No notifications showing?
-1. Check if NotificationModule is imported in AppModule
-2. Verify NotificationIntegrationService is injected in controllers
-3. Check server logs for notification errors
-4. Verify database connection for notification table
-
-### 404 errors?
-1. Ensure all modules are registered in `app.module.ts`
-2. Check if routes are correctly prefixed
-3. Verify JWT authentication is properly configured
-
-### Quota not updating?
-1. Check if membership is active
-2. Verify tier has the correct quota limits
-3. Ensure the resource type matches exactly (e.g., "consultations")
-
----
-
-**Happy Testing!**
+### "Cannot start call - not scheduled"
+- Call must be in "scheduled" status before starting
+- Ensure the call has been scheduled first

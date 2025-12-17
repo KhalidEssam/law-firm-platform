@@ -1,9 +1,9 @@
 {
     "info": {
         "name": "Legal Platform API",
-        "description": "Complete API collection for the Legal Platform with account management, profiles, plans, payments, consultations, and requests",
+        "description": "Complete API collection for the Legal Platform with account management, profiles, plans, payments, consultations, requests, memberships, billing, notifications, and call requests",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-        "version": "1.0.0"
+        "version": "2.0.0"
     },
     "auth": {
         "type": "bearer",
@@ -18,16 +18,1587 @@
     "variable": [
         {
             "key": "base_url",
-            "value": "https://api.legalplatform.com",
+            "value": "http://localhost:3000",
             "type": "string"
         },
         {
             "key": "auth_token",
             "value": "",
             "type": "string"
+        },
+        {
+            "key": "USER_ID",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "TIER_ID",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "MEMBERSHIP_ID",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "INVOICE_ID",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "PAYMENT_ID",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "CALL_REQUEST_ID",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "PROVIDER_ID",
+            "value": "",
+            "type": "string"
         }
     ],
     "item": [
+        {
+            "name": "Test Scenarios",
+            "description": "Sequential test scenarios for complete flows",
+            "item": [
+                {
+                    "name": "Scenario 1: Membership & Quota Flow",
+                    "description": "Complete membership lifecycle with quota consumption",
+                    "item": [
+                        {
+                            "name": "1. Create User",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "if (jsonData.user && jsonData.user.id) {",
+                                            "    pm.environment.set('USER_ID', jsonData.user.id);",
+                                            "    pm.test('User created successfully', function() {",
+                                            "        pm.expect(jsonData.user.id).to.be.a('string');",
+                                            "    });",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"email\": \"testuser@example.com\",\n    \"username\": \"testuser\",\n    \"fullName\": \"Test User\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/users",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["users"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "2. Create Membership Tier",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "if (jsonData.tier && jsonData.tier.id) {",
+                                            "    pm.environment.set('TIER_ID', jsonData.tier.id);",
+                                            "    pm.test('Tier created with quota', function() {",
+                                            "        pm.expect(jsonData.tier.quota).to.be.an('object');",
+                                            "    });",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Premium Plan\",\n    \"nameAr\": \"الخطة المميزة\",\n    \"description\": \"Premium membership with full access to legal services\",\n    \"descriptionAr\": \"عضوية مميزة مع وصول كامل للخدمات القانونية\",\n    \"price\": 500,\n    \"currency\": \"SAR\",\n    \"billingCycle\": \"monthly\",\n    \"quota\": {\n        \"consultationsPerMonth\": 10,\n        \"opinionsPerMonth\": 5,\n        \"casesPerMonth\": 2,\n        \"callMinutesPerMonth\": 60\n    },\n    \"benefits\": [\n        \"Priority support\",\n        \"Document storage\",\n        \"Video consultations\"\n    ],\n    \"isActive\": true\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/tiers",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "tiers"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "3. Create Membership",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "if (jsonData.membership && jsonData.membership.id) {",
+                                            "    pm.environment.set('MEMBERSHIP_ID', jsonData.membership.id);",
+                                            "    pm.test('Membership created', function() {",
+                                            "        pm.expect(jsonData.membership.isActive).to.equal(true);",
+                                            "    });",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"userId\": \"{{USER_ID}}\",\n    \"tierId\": {{TIER_ID}},\n    \"durationInMonths\": 12,\n    \"autoRenew\": true\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/memberships",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "4. Create Invoice",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "if (jsonData.invoice && jsonData.invoice.id) {",
+                                            "    pm.environment.set('INVOICE_ID', jsonData.invoice.id);",
+                                            "    pm.test('Invoice created with pending status', function() {",
+                                            "        pm.expect(jsonData.invoice.status).to.equal('pending');",
+                                            "    });",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"membershipId\": \"{{MEMBERSHIP_ID}}\",\n    \"amount\": 500,\n    \"currency\": \"SAR\",\n    \"dueDate\": \"2025-12-31\",\n    \"description\": \"Monthly subscription - Premium Plan\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/billing/invoices",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["billing", "invoices"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "5. Process Payment",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "if (jsonData.payment && jsonData.payment.id) {",
+                                            "    pm.environment.set('PAYMENT_ID', jsonData.payment.id);",
+                                            "    pm.test('Payment initiated', function() {",
+                                            "        pm.expect(jsonData.payment.status).to.equal('pending');",
+                                            "    });",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"invoiceId\": \"{{INVOICE_ID}}\",\n    \"provider\": \"stripe\",\n    \"amount\": 500,\n    \"currency\": \"SAR\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/payments",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "{{MEMBERSHIP_ID}}", "payments"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "6. Complete Payment",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"providerTxnId\": \"txn_stripe_123456\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/payments/{{PAYMENT_ID}}/complete",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "payments", "{{PAYMENT_ID}}", "complete"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "7. Check Quota (Before)",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.test('Quota has correct initial values', function() {",
+                                            "    pm.expect(jsonData.quota.used).to.equal(0);",
+                                            "    pm.expect(jsonData.quota.limit).to.equal(10);",
+                                            "    pm.expect(jsonData.quota.remaining).to.equal(10);",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "consultations"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "8. Consume Quota",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "pm.test('Quota consumed successfully', function() {",
+                                            "    pm.expect(pm.response.code).to.equal(200);",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"amount\": 1\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations/consume",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "consultations", "consume"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "9. Check Quota (After)",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.test('Quota updated after consumption', function() {",
+                                            "    pm.expect(jsonData.quota.used).to.equal(1);",
+                                            "    pm.expect(jsonData.quota.remaining).to.equal(9);",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "consultations"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "10. Check Notifications",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/notifications/user/{{USER_ID}}",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["notifications", "user", "{{USER_ID}}"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Scenario 2: Call Request Flow",
+                    "description": "Complete call request lifecycle from creation to completion",
+                    "item": [
+                        {
+                            "name": "1. Create Call Request",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "if (jsonData.callRequest && jsonData.callRequest.id) {",
+                                            "    pm.environment.set('CALL_REQUEST_ID', jsonData.callRequest.id);",
+                                            "    pm.test('Call request created with pending status', function() {",
+                                            "        pm.expect(jsonData.callRequest.status).to.equal('pending');",
+                                            "    });",
+                                            "}"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"subscriberId\": \"{{USER_ID}}\",\n    \"purpose\": \"Legal consultation regarding property dispute\",\n    \"consultationType\": \"legal_advice\",\n    \"preferredDate\": \"2025-12-20\",\n    \"preferredTime\": \"14:00\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "2. Assign Provider",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.test('Provider assigned', function() {",
+                                            "    pm.expect(jsonData.callRequest.status).to.equal('assigned');",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"providerId\": \"{{PROVIDER_ID}}\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/assign",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "assign"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "3. Schedule Call",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.test('Call scheduled', function() {",
+                                            "    pm.expect(jsonData.callRequest.status).to.equal('scheduled');",
+                                            "    pm.expect(jsonData.callRequest.callLink).to.be.a('string');",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"scheduledAt\": \"2025-12-20T14:00:00Z\",\n    \"durationMinutes\": 30,\n    \"platform\": \"zoom\",\n    \"callLink\": \"https://zoom.us/j/123456789\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/schedule",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "schedule"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "4. Start Call",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.test('Call started', function() {",
+                                            "    pm.expect(jsonData.callRequest.status).to.equal('in_progress');",
+                                            "    pm.expect(jsonData.callRequest.callStartedAt).to.be.a('string');",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/start",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "start"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "5. End Call",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.test('Call completed', function() {",
+                                            "    pm.expect(jsonData.callRequest.status).to.equal('completed');",
+                                            "    pm.expect(jsonData.callRequest.actualDuration).to.be.a('number');",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"recordingUrl\": \"https://storage.example.com/recordings/call-123.mp4\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/end",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "end"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "6. Check Call Minutes",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/callMinutes",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "callMinutes"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Scenario 3: Membership Upgrade Flow",
+                    "description": "Upgrade membership tier and verify quota changes",
+                    "item": [
+                        {
+                            "name": "1. Get Current Membership",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/user/{{USER_ID}}",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "user", "{{USER_ID}}"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "2. View Available Tiers",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/tiers",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "tiers"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "3. Upgrade Membership",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "exec": [
+                                            "var jsonData = pm.response.json();",
+                                            "pm.test('Membership upgraded', function() {",
+                                            "    pm.expect(jsonData.result.changeLog.changeType).to.equal('upgrade');",
+                                            "});"
+                                        ],
+                                        "type": "text/javascript"
+                                    }
+                                }
+                            ],
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"newTierId\": 2\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/upgrade",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "{{MEMBERSHIP_ID}}", "upgrade"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "4. Verify New Quota",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "consultations"]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Membership Tiers",
+            "description": "Manage membership tiers",
+            "item": [
+                {
+                    "name": "List All Tiers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/tiers",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "tiers"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Tier by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/tiers/{{TIER_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "tiers", "{{TIER_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Tier",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Enterprise Plan\",\n    \"nameAr\": \"خطة المؤسسات\",\n    \"description\": \"Enterprise membership for businesses\",\n    \"descriptionAr\": \"عضوية المؤسسات للشركات\",\n    \"price\": 1000,\n    \"currency\": \"SAR\",\n    \"billingCycle\": \"monthly\",\n    \"quota\": {\n        \"consultationsPerMonth\": 20,\n        \"opinionsPerMonth\": 10,\n        \"casesPerMonth\": 5,\n        \"callMinutesPerMonth\": 120\n    },\n    \"benefits\": [\n        \"Dedicated account manager\",\n        \"Priority support 24/7\",\n        \"Unlimited document storage\"\n    ],\n    \"isActive\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/tiers",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "tiers"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Tier",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Enterprise Plan Updated\",\n    \"price\": 1200,\n    \"quota\": {\n        \"consultationsPerMonth\": 25\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/tiers/{{TIER_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "tiers", "{{TIER_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Tier",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/tiers/{{TIER_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "tiers", "{{TIER_ID}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Memberships",
+            "description": "Manage user memberships",
+            "item": [
+                {
+                    "name": "Create Membership",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"{{USER_ID}}\",\n    \"tierId\": {{TIER_ID}},\n    \"durationInMonths\": 12,\n    \"autoRenew\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Membership",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/me",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "me"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Membership by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User Membership",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/user/{{USER_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "user", "{{USER_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Cancel Membership",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Renew Membership",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"durationInMonths\": 12\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/renew",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "renew"]
+                        }
+                    }
+                },
+                {
+                    "name": "Toggle Auto-Renew",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"autoRenew\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/auto-renew",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "auto-renew"]
+                        }
+                    }
+                },
+                {
+                    "name": "Upgrade Membership",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"newTierId\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/upgrade",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "upgrade"]
+                        }
+                    }
+                },
+                {
+                    "name": "Downgrade Membership",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"newTierId\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/downgrade",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "downgrade"]
+                        }
+                    }
+                },
+                {
+                    "name": "Pause Membership",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/pause",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "pause"]
+                        }
+                    }
+                },
+                {
+                    "name": "Resume Membership",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/resume",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "resume"]
+                        }
+                    }
+                },
+                {
+                    "name": "Check Membership Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/status",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "status"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Change History",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/change-history",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "change-history"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Membership Quota",
+            "description": "Manage and consume quota",
+            "item": [
+                {
+                    "name": "Check Consultations Quota",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "consultations"]
+                        }
+                    }
+                },
+                {
+                    "name": "Check Legal Opinions Quota",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/opinions",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "opinions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Check Litigation Cases Quota",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/cases",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "cases"]
+                        }
+                    }
+                },
+                {
+                    "name": "Check Call Minutes Quota",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/callMinutes",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "callMinutes"]
+                        }
+                    }
+                },
+                {
+                    "name": "Consume Consultations",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/consultations/consume",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "consultations", "consume"]
+                        }
+                    }
+                },
+                {
+                    "name": "Consume Legal Opinions",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/opinions/consume",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "opinions", "consume"]
+                        }
+                    }
+                },
+                {
+                    "name": "Consume Call Minutes",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 15\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/quota/callMinutes/consume",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "quota", "callMinutes", "consume"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Billing & Invoices",
+            "description": "Manage billing and invoices",
+            "item": [
+                {
+                    "name": "Create Invoice",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"membershipId\": \"{{MEMBERSHIP_ID}}\",\n    \"amount\": 500,\n    \"currency\": \"SAR\",\n    \"dueDate\": \"2025-12-31\",\n    \"description\": \"Monthly subscription - Premium Plan\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/billing/invoices",
+                            "host": ["{{base_url}}"],
+                            "path": ["billing", "invoices"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Invoice by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/billing/invoices/{{INVOICE_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["billing", "invoices", "{{INVOICE_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "List User Invoices",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/billing/invoices/user/{{USER_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["billing", "invoices", "user", "{{USER_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Process Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"invoiceId\": \"{{INVOICE_ID}}\",\n    \"provider\": \"stripe\",\n    \"amount\": 500,\n    \"currency\": \"SAR\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/{{MEMBERSHIP_ID}}/payments",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "{{MEMBERSHIP_ID}}", "payments"]
+                        }
+                    }
+                },
+                {
+                    "name": "Complete Payment",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"providerTxnId\": \"txn_stripe_123456\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/memberships/payments/{{PAYMENT_ID}}/complete",
+                            "host": ["{{base_url}}"],
+                            "path": ["memberships", "payments", "{{PAYMENT_ID}}", "complete"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Notifications",
+            "description": "Manage user notifications",
+            "item": [
+                {
+                    "name": "Get User Notifications",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/user/{{USER_ID}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", "user", "{{USER_ID}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Unread Notifications",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/user/{{USER_ID}}/unread",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", "user", "{{USER_ID}}", "unread"]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark as Read",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/{{notification_id}}/read",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", "{{notification_id}}", "read"]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark All as Read",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/user/{{USER_ID}}/read-all",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", "user", "{{USER_ID}}", "read-all"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Call Requests",
+            "description": "Manage call requests between subscribers and providers",
+            "item": [
+                {
+                    "name": "CRUD Operations",
+                    "item": [
+                        {
+                            "name": "Create Call Request",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"subscriberId\": \"{{USER_ID}}\",\n    \"purpose\": \"Legal consultation regarding property dispute\",\n    \"consultationType\": \"legal_advice\",\n    \"preferredDate\": \"2025-12-20\",\n    \"preferredTime\": \"14:00\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get All Call Requests",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests?limit=20&offset=0",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests"],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "20"
+                                        },
+                                        {
+                                            "key": "offset",
+                                            "value": "0"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Call Request by ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Cancel Call Request",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"reason\": \"Schedule conflict\",\n    \"cancelledBy\": \"subscriber\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Provider Operations",
+                    "item": [
+                        {
+                            "name": "Assign Provider",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"providerId\": \"{{PROVIDER_ID}}\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/assign",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "assign"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Scheduling",
+                    "item": [
+                        {
+                            "name": "Schedule Call",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"scheduledAt\": \"2025-12-20T14:00:00Z\",\n    \"durationMinutes\": 30,\n    \"platform\": \"zoom\",\n    \"callLink\": \"https://zoom.us/j/123456789\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/schedule",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "schedule"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Reschedule Call",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"newScheduledAt\": \"2025-12-21T15:00:00Z\",\n    \"reason\": \"Provider unavailable\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/reschedule",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "reschedule"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update Call Link",
+                            "request": {
+                                "method": "PATCH",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"callLink\": \"https://zoom.us/j/987654321\",\n    \"platform\": \"zoom\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/call-link",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "call-link"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Call Session",
+                    "item": [
+                        {
+                            "name": "Start Call",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/start",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "start"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "End Call",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"recordingUrl\": \"https://storage.example.com/recordings/call-123.mp4\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/end",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "end"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Mark No-Show",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/{{CALL_REQUEST_ID}}/no-show",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "{{CALL_REQUEST_ID}}", "no-show"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Subscriber Queries",
+                    "item": [
+                        {
+                            "name": "Get Subscriber Calls",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/subscriber/{{USER_ID}}?limit=20&offset=0",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "subscriber", "{{USER_ID}}"],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "20"
+                                        },
+                                        {
+                                            "key": "offset",
+                                            "value": "0"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Call Minutes Summary",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/subscriber/{{USER_ID}}/minutes?startDate=2025-01-01&endDate=2025-12-31",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "subscriber", "{{USER_ID}}", "minutes"],
+                                    "query": [
+                                        {
+                                            "key": "startDate",
+                                            "value": "2025-01-01"
+                                        },
+                                        {
+                                            "key": "endDate",
+                                            "value": "2025-12-31"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Provider Queries",
+                    "item": [
+                        {
+                            "name": "Get Provider Calls",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/provider/{{PROVIDER_ID}}?limit=20&offset=0",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "provider", "{{PROVIDER_ID}}"],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "20"
+                                        },
+                                        {
+                                            "key": "offset",
+                                            "value": "0"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Provider Upcoming Calls",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/provider/{{PROVIDER_ID}}/upcoming?limit=10",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "provider", "{{PROVIDER_ID}}", "upcoming"],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "10"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Check Provider Availability",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/provider/{{PROVIDER_ID}}/availability?scheduledAt=2025-12-20T14:00:00Z&durationMinutes=30",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "provider", "{{PROVIDER_ID}}", "availability"],
+                                    "query": [
+                                        {
+                                            "key": "scheduledAt",
+                                            "value": "2025-12-20T14:00:00Z"
+                                        },
+                                        {
+                                            "key": "durationMinutes",
+                                            "value": "30"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Admin Queries",
+                    "item": [
+                        {
+                            "name": "Get Overdue Calls",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/admin/overdue",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "admin", "overdue"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Scheduled Calls",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{base_url}}/call-requests/admin/scheduled?startDate=2025-12-01&endDate=2025-12-31&providerId={{PROVIDER_ID}}",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["call-requests", "admin", "scheduled"],
+                                    "query": [
+                                        {
+                                            "key": "startDate",
+                                            "value": "2025-12-01"
+                                        },
+                                        {
+                                            "key": "endDate",
+                                            "value": "2025-12-31"
+                                        },
+                                        {
+                                            "key": "providerId",
+                                            "value": "{{PROVIDER_ID}}"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
         {
             "name": "Account",
             "item": [
@@ -47,13 +1618,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/account/register",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "account",
-                                "register"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["account", "register"]
                         }
                     }
                 },
@@ -73,13 +1639,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/account/login",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "account",
-                                "login"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["account", "login"]
                         }
                     }
                 },
@@ -99,13 +1660,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/account/reset-password",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "account",
-                                "reset-password"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["account", "reset-password"]
                         }
                     }
                 },
@@ -125,13 +1681,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/account/verify-email",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "account",
-                                "verify-email"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["account", "verify-email"]
                         }
                     }
                 },
@@ -151,13 +1702,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/account/verify-phone",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "account",
-                                "verify-phone"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["account", "verify-phone"]
                         }
                     }
                 },
@@ -168,13 +1714,8 @@
                         "header": [],
                         "url": {
                             "raw": "{{base_url}}/account/logout",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "account",
-                                "logout"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["account", "logout"]
                         }
                     }
                 }
@@ -190,13 +1731,8 @@
                         "header": [],
                         "url": {
                             "raw": "{{base_url}}/profile/me",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "profile",
-                                "me"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["profile", "me"]
                         }
                     }
                 },
@@ -216,13 +1752,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/profile/email",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "profile",
-                                "email"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["profile", "email"]
                         }
                     }
                 },
@@ -242,13 +1773,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/profile/phone",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "profile",
-                                "phone"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["profile", "phone"]
                         }
                     }
                 },
@@ -268,13 +1794,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/profile/address",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "profile",
-                                "address"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["profile", "address"]
                         }
                     }
                 },
@@ -294,417 +1815,8 @@
                         },
                         "url": {
                             "raw": "{{base_url}}/profile/password",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "profile",
-                                "password"
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "Plans",
-            "item": [
-                {
-                    "name": "Browse Plans",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{base_url}}/plans",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "plans"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Choose Plan",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"planId\": \"plan_basic_monthly\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/plans/choose",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "plans",
-                                "choose"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Upgrade Plan",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"planId\": \"plan_premium_monthly\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/plans/upgrade",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "plans",
-                                "upgrade"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Downgrade Plan",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"planId\": \"plan_basic_monthly\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/plans/downgrade",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "plans",
-                                "downgrade"
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "Payments",
-            "item": [
-                {
-                    "name": "Pay Subscription",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"paymentMethod\": \"card\",\n  \"cardToken\": \"tok_visa_12345\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/payments/pay",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "payments",
-                                "pay"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Apply Coupon",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"couponCode\": \"SAVE20\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/payments/coupon",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "payments",
-                                "coupon"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Top Up Wallet",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"amount\": 100.00,\n  \"paymentMethod\": \"card\",\n  \"cardToken\": \"tok_visa_12345\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/payments/topup",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "payments",
-                                "topup"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "View Invoices",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{base_url}}/payments/invoices?page=1&limit=10",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "payments",
-                                "invoices"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "1"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "10"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Request Refund",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"invoiceId\": \"inv_12345\",\n  \"reason\": \"Service not as expected\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/payments/refund",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "payments",
-                                "refund"
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "Consultation",
-            "item": [
-                {
-                    "name": "Request Consultation",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"subject\": \"Contract Review\",\n  \"description\": \"Need legal advice on employment contract\",\n  \"category\": \"employment\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/consultation",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "consultation"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Choose Type",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"consultationType\": \"video\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/consultation/type",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "consultation",
-                                "type"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Submit Request",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"consultationId\": \"cons_12345\",\n  \"preferredDate\": \"2025-10-20\",\n  \"preferredTime\": \"14:00\",\n  \"additionalNotes\": \"Available afternoons only\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/consultation/submit",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "consultation",
-                                "submit"
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "Requests",
-            "item": [
-                {
-                    "name": "View Requests",
-                    "request": {
-                        "method": "GET",
-                        "header": [],
-                        "url": {
-                            "raw": "{{base_url}}/requests?status=pending&page=1&limit=20",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "requests"
-                            ],
-                            "query": [
-                                {
-                                    "key": "status",
-                                    "value": "pending"
-                                },
-                                {
-                                    "key": "page",
-                                    "value": "1"
-                                },
-                                {
-                                    "key": "limit",
-                                    "value": "20"
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Reply Request",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"requestId\": \"req_12345\",\n  \"message\": \"Thank you for your response. I have additional questions.\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/requests/reply",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "requests",
-                                "reply"
-                            ]
-                        }
-                    }
-                },
-                {
-                    "name": "Rate Consultation",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"requestId\": \"req_12345\",\n  \"rating\": 5,\n  \"feedback\": \"Excellent service and very helpful advice\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/requests/rate",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "requests",
-                                "rate"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["profile", "password"]
                         }
                     }
                 }
@@ -720,12 +1832,8 @@
                         "header": [],
                         "url": {
                             "raw": "{{base_url}}/health",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "health"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["health"]
                         }
                     }
                 },
@@ -736,12 +1844,8 @@
                         "header": [],
                         "url": {
                             "raw": "{{base_url}}/version",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "version"
-                            ]
+                            "host": ["{{base_url}}"],
+                            "path": ["version"]
                         }
                     }
                 }
