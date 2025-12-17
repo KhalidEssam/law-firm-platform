@@ -23,6 +23,7 @@ import { Type } from 'class-transformer';
 
 
 export class TierQuotaDto {
+    // Internal field names (full names)
     @IsOptional()
     @IsInt()
     @Min(0)
@@ -47,6 +48,49 @@ export class TierQuotaDto {
     @IsInt()
     @Min(0)
     callMinutesPerMonth?: number;
+
+    // User-friendly aliases (short names)
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    consultations?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    legalOpinions?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    services?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    litigationCases?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    callMinutes?: number;
+
+    // Method to normalize to internal format
+    toInternalFormat(): {
+        consultationsPerMonth?: number;
+        opinionsPerMonth?: number;
+        servicesPerMonth?: number;
+        casesPerMonth?: number;
+        callMinutesPerMonth?: number;
+    } {
+        return {
+            consultationsPerMonth: this.consultationsPerMonth ?? this.consultations,
+            opinionsPerMonth: this.opinionsPerMonth ?? this.legalOpinions,
+            servicesPerMonth: this.servicesPerMonth ?? this.services,
+            casesPerMonth: this.casesPerMonth ?? this.litigationCases,
+            callMinutesPerMonth: this.callMinutesPerMonth ?? this.callMinutes,
+        };
+    }
 }
 
 // ============================================

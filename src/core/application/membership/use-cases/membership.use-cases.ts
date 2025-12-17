@@ -475,6 +475,15 @@ export class CreateMembershipTierUseCase {
             throw new BadRequestException(`Tier with name "${dto.name}" already exists`);
         }
 
+        // Normalize quota field names (support both user-friendly and internal names)
+        const normalizedQuota = dto.quota ? {
+            consultationsPerMonth: (dto.quota as any).consultationsPerMonth ?? (dto.quota as any).consultations,
+            opinionsPerMonth: (dto.quota as any).opinionsPerMonth ?? (dto.quota as any).legalOpinions,
+            servicesPerMonth: (dto.quota as any).servicesPerMonth ?? (dto.quota as any).services,
+            casesPerMonth: (dto.quota as any).casesPerMonth ?? (dto.quota as any).litigationCases,
+            callMinutesPerMonth: (dto.quota as any).callMinutesPerMonth ?? (dto.quota as any).callMinutes,
+        } : {};
+
         // Create tier entity
         const tier = MembershipTier.create({
             name: dto.name,
@@ -486,7 +495,7 @@ export class CreateMembershipTierUseCase {
                 currency: dto.currency || 'SAR',
             }),
             billingCycle: BillingCycle.fromValue(dto.billingCycle),
-            quota: dto.quota || {},
+            quota: normalizedQuota,
             benefits: dto.benefits || [],
             isActive: dto.isActive !== undefined ? dto.isActive : true,
         });
@@ -565,7 +574,14 @@ export class UpdateMembershipTierUseCase {
             existingTier.billingCycle = BillingCycle.fromValue(dto.billingCycle);
         }
         if (dto.quota !== undefined) {
-            existingTier.quota = dto.quota;
+            // Normalize quota field names (support both user-friendly and internal names)
+            existingTier.quota = {
+                consultationsPerMonth: (dto.quota as any).consultationsPerMonth ?? (dto.quota as any).consultations,
+                opinionsPerMonth: (dto.quota as any).opinionsPerMonth ?? (dto.quota as any).legalOpinions,
+                servicesPerMonth: (dto.quota as any).servicesPerMonth ?? (dto.quota as any).services,
+                casesPerMonth: (dto.quota as any).casesPerMonth ?? (dto.quota as any).litigationCases,
+                callMinutesPerMonth: (dto.quota as any).callMinutesPerMonth ?? (dto.quota as any).callMinutes,
+            };
         }
         if (dto.benefits !== undefined) {
             existingTier.benefits = dto.benefits;
