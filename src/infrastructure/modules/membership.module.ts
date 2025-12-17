@@ -3,9 +3,10 @@
 // infrastructure/modules/MembershipModule.ts
 // ============================================
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipController } from '../../interface/http/membership.controller';
+import { NotificationModule } from '../../interface/notification/notification.module';
 
 // Repositories
 import {
@@ -97,6 +98,7 @@ import { MembershipIntegrationService } from '../../core/application/membership/
 @Module({
     imports: [
         PrismaModule,
+        forwardRef(() => NotificationModule), // Notification integration
     ],
     controllers: [MembershipController],
     providers: [

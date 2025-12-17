@@ -12,9 +12,10 @@ import {
     SyncUserRolesFromAuth0UseCase,
     GetUsersByRoleUseCase,
 } from '../../core/application/use-cases/user-role-management.use-case';
+import { NotificationModule } from '../../interface/notification/notification.module';
 
 @Module({
-    imports: [PrismaModule, Auth0Module],
+    imports: [PrismaModule, Auth0Module, NotificationModule],
     controllers: [AdminRolesController],
     providers: [
         // Use Cases

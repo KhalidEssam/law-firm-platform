@@ -27,6 +27,7 @@ import {
     RoleDto,
     PermissionDto,
 } from '../../core/application/use-cases/user-role-management.use-case';
+import { NotificationIntegrationService } from '../../core/application/notification/notification-integration.service';
 
 // ============================================
 // DTOs
@@ -101,6 +102,7 @@ export class AdminRolesController {
         private readonly getRolePermissions: GetRolePermissionsUseCase,
         private readonly syncUserRolesFromAuth0: SyncUserRolesFromAuth0UseCase,
         private readonly getUsersByRole: GetUsersByRoleUseCase,
+        private readonly notificationService: NotificationIntegrationService,
     ) {}
 
     // ============================================
@@ -205,6 +207,14 @@ export class AdminRolesController {
             userId,
             roleName: dto.roleName,
         });
+
+        // Send notification to user about the new role assignment
+        await this.notificationService.notifyRoleAssigned({
+            userId: user.id,
+            userEmail: user.email,
+            roleName: dto.roleName,
+        });
+
         return {
             user,
             message: `Role '${dto.roleName}' assigned successfully (local DB only)`,
@@ -229,6 +239,14 @@ export class AdminRolesController {
             userId,
             roleName,
         });
+
+        // Send notification to user about the role removal
+        await this.notificationService.notifyRoleRemoved({
+            userId: user.id,
+            userEmail: user.email,
+            roleName,
+        });
+
         return {
             user,
             message: `Role '${roleName}' removed successfully (local DB only)`,

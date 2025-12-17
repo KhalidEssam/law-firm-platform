@@ -68,6 +68,9 @@ import {
     ErrorResponseDTO,
 } from '../../core/application/consultation/consultation request.dtos';
 
+// Notification Integration
+import { NotificationIntegrationService } from '../../core/application/notification/notification-integration.service';
+
 @ApiTags('Consultation Requests')
 @Controller('consultation-requests')
 @ApiBearerAuth()
@@ -86,6 +89,7 @@ export class ConsultationRequestController {
         private readonly addRatingUseCase: AddRatingUseCase,
         private readonly statisticsUseCase: GetConsultationStatisticsUseCase,
         private readonly updateSLAUseCase: UpdateSLAStatusesUseCase,
+        private readonly notificationService: NotificationIntegrationService,
     ) { }
 
     // ============================================
@@ -308,7 +312,27 @@ export class ConsultationRequestController {
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: AssignConsultationDTO,
     ): Promise<ConsultationRequestResponseDTO> {
-        return await this.assignUseCase.execute(id, dto.providerId);
+        const result = await this.assignUseCase.execute(id, dto.providerId);
+
+        // Send notifications to both subscriber and provider
+        await Promise.all([
+            this.notificationService.notifyConsultationAssignedToSubscriber({
+                consultationId: result.id,
+                consultationNumber: result.requestNumber,
+                subscriberId: result.subscriberId,
+                providerId: dto.providerId,
+                subject: result.subject,
+            }),
+            this.notificationService.notifyConsultationAssignedToProvider({
+                consultationId: result.id,
+                consultationNumber: result.requestNumber,
+                subscriberId: result.subscriberId,
+                providerId: dto.providerId,
+                subject: result.subject,
+            }),
+        ]);
+
+        return result;
     }
 
     // ============================================
@@ -358,7 +382,17 @@ export class ConsultationRequestController {
     async complete(
         @Param('id', ParseUUIDPipe) id: string,
     ): Promise<ConsultationRequestResponseDTO> {
-        return await this.completeUseCase.execute(id);
+        const result = await this.completeUseCase.execute(id);
+
+        // Notify subscriber that consultation is completed
+        await this.notificationService.notifyConsultationCompleted({
+            consultationId: result.id,
+            consultationNumber: result.requestNumber,
+            subscriberId: result.subscriberId,
+            subject: result.subject,
+        });
+
+        return result;
     }
 
     // ============================================

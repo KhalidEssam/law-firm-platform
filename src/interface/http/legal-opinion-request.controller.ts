@@ -76,6 +76,10 @@ import { GetMyOpinionRequestsUseCase } from '../../core/application/legal-opinio
 import { GetLawyerOpinionRequestsUseCase } from '../../core/application/legal-opinion/use-cases/get-lawyer-opinion-requests.use-case';
 import { GetOpinionStatisticsUseCase } from '../../core/application/legal-opinion/use-cases/get-opinion-statistics.use-case';
 import { DeleteOpinionRequestUseCase } from '../../core/application/legal-opinion/use-cases/delete-opinion-request.use-case';
+
+// Notification Integration
+import { NotificationIntegrationService } from '../../core/application/notification/notification-integration.service';
+
 /**
  * Legal Opinion Request Controller
  *
@@ -116,6 +120,7 @@ export class LegalOpinionRequestController {
     private readonly getLawyerOpinionRequestsUseCase: GetLawyerOpinionRequestsUseCase,
     private readonly getOpinionStatisticsUseCase: GetOpinionStatisticsUseCase,
     private readonly deleteOpinionRequestUseCase: DeleteOpinionRequestUseCase,
+    private readonly notificationService: NotificationIntegrationService,
   ) {}
 
   // ============================================
@@ -417,11 +422,31 @@ export class LegalOpinionRequestController {
     @Body() dto: AssignToLawyerDto,
     @CurrentUser() user: any,
   ): Promise<OpinionRequestResponseDto> {
-    return await this.assignToLawyerUseCase.execute({
+    const result = await this.assignToLawyerUseCase.execute({
       opinionRequestId: id,
       lawyerId: dto.lawyerId,
       assignedBy: user.userId,
     });
+
+    // Send notifications to both client and lawyer
+    await Promise.all([
+      this.notificationService.notifyLegalOpinionAssignedToSubscriber({
+        opinionId: result.id,
+        opinionNumber: result.requestNumber,
+        subscriberId: result.clientId,
+        lawyerId: dto.lawyerId,
+        subject: result.subject,
+      }),
+      this.notificationService.notifyLegalOpinionAssignedToLawyer({
+        opinionId: result.id,
+        opinionNumber: result.requestNumber,
+        subscriberId: result.clientId,
+        lawyerId: dto.lawyerId,
+        subject: result.subject,
+      }),
+    ]);
+
+    return result;
   }
 
   @Post(':id/set-estimated-cost')
@@ -525,10 +550,20 @@ export class LegalOpinionRequestController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ): Promise<OpinionRequestResponseDto> {
-    return await this.completeOpinionUseCase.execute({
+    const result = await this.completeOpinionUseCase.execute({
       opinionRequestId: id,
       completedBy: user.userId,
     });
+
+    // Notify client that the legal opinion is completed
+    await this.notificationService.notifyLegalOpinionCompleted({
+      opinionId: result.id,
+      opinionNumber: result.requestNumber,
+      subscriberId: result.clientId,
+      subject: result.subject,
+    });
+
+    return result;
   }
 
   @Post(':id/reject')
