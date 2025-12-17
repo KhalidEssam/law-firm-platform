@@ -157,7 +157,7 @@ export class SyncAuth0UserUseCase {
                     user = User.create({
                         auth0Id: command.auth0Id,
                         email: Email.create(command.email),
-                        username: Username.create(command.username),
+                        username: Username.create(command.username || command.email),
                         fullName: command.fullName,
                         emailVerified: command.emailVerified || false,
                         mobileVerified: false,
