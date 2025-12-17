@@ -24,6 +24,7 @@ import { AdminRolesModule } from './infrastructure/modules/admin-roles.module';
 import { SupportTicketModule } from './infrastructure/modules/support-ticket.module';
 import { NotificationModule } from './interface/notification/notification.module';
 import { CallRequestModule } from './infrastructure/modules/call-request.module';
+import { RoutingModule } from './infrastructure/modules/routing.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { CallRequestModule } from './infrastructure/modules/call-request.module'
     SupportTicketModule,
     NotificationModule,
     CallRequestModule,
+    RoutingModule,
   ],
   controllers: [AppController],
   providers: [
