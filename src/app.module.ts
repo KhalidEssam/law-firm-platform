@@ -22,6 +22,7 @@ import { PaymentMethodModule } from './infrastructure/modules/payment-method.mod
 import { BillingModule } from './infrastructure/modules/billing.module';
 import { AdminRolesModule } from './infrastructure/modules/admin-roles.module';
 import { SupportTicketModule } from './infrastructure/modules/support-ticket.module';
+import { NotificationModule } from './interface/notification/notification.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { SupportTicketModule } from './infrastructure/modules/support-ticket.mod
     BillingModule,
     AdminRolesModule,
     SupportTicketModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [
