@@ -1,7 +1,7 @@
 // src/infrastructure/modules/routing.module.ts
 
 import { Module } from '@nestjs/common';
-import { PrismaService } from '../persistence/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { PrismaRoutingRuleRepository } from '../persistence/routing/prisma-routing-rule.repository';
 import { ROUTING_RULE_REPOSITORY } from '../../core/application/routing/ports/routing-rule.repository';
 import {
