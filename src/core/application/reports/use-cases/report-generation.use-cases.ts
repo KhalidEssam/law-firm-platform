@@ -211,34 +211,35 @@ export class GenerateFinancialReportUseCase {
     }
 
     private async generateFinancialData(startDate: Date, endDate: Date): Promise<FinancialReportData> {
-        // Get subscription revenue
-        const subscriptions = await this.prisma.subscriptionPlan.findMany({
+        // Get active membership tiers count
+        const activeMemberships = await this.prisma.membership.count({
             where: {
                 isActive: true,
             },
         });
 
-        // Get transaction data
-        const transactions = await this.prisma.transaction.aggregate({
+        // Get transaction data from TransactionLog
+        const transactions = await this.prisma.transactionLog.aggregate({
             where: {
                 createdAt: { gte: startDate, lte: endDate },
-                status: 'completed',
+                status: 'paid',
             },
             _count: { id: true },
             _sum: { amount: true },
             _avg: { amount: true },
         });
 
-        // Get payout data
-        const payouts = await this.prisma.payout.aggregate({
+        // Get membership payments as payout equivalent
+        const payments = await this.prisma.membershipPayment.aggregate({
             where: {
                 createdAt: { gte: startDate, lte: endDate },
+                status: 'paid',
             },
             _count: { id: true },
             _sum: { amount: true },
         });
 
-        const pendingPayouts = await this.prisma.payout.aggregate({
+        const pendingPayments = await this.prisma.membershipPayment.aggregate({
             where: {
                 status: 'pending',
             },
@@ -263,7 +264,7 @@ export class GenerateFinancialReportUseCase {
                 byProvider: {},
             },
             subscriptions: {
-                activeCount: subscriptions.length,
+                activeCount: activeMemberships,
                 newCount: 0,
                 churnedCount: 0,
                 revenue: 0,
@@ -274,9 +275,9 @@ export class GenerateFinancialReportUseCase {
                 averageAmount: transactions._avg.amount || 0,
             },
             payouts: {
-                count: payouts._count.id,
-                totalAmount: payouts._sum.amount || 0,
-                pendingAmount: pendingPayouts._sum.amount || 0,
+                count: payments._count.id,
+                totalAmount: payments._sum.amount || 0,
+                pendingAmount: pendingPayments._sum.amount || 0,
             },
         };
     }
@@ -368,7 +369,7 @@ export class GenerateOperationalReportUseCase {
         // Get active subscribers
         const activeSubscribers = await this.prisma.user.count({
             where: {
-                isActive: true,
+                profileStatus: 'active',
                 roles: { some: { role: { name: 'user' } } },
             },
         });
@@ -617,7 +618,7 @@ export class GenerateComplianceReportUseCase {
         // Get audit log data
         const auditLogs = await this.prisma.auditLog.aggregate({
             where: {
-                timestamp: { gte: startDate, lte: endDate },
+                createdAt: { gte: startDate, lte: endDate },
             },
             _count: { id: true },
         });
@@ -626,7 +627,7 @@ export class GenerateComplianceReportUseCase {
             by: ['action'],
             _count: { id: true },
             where: {
-                timestamp: { gte: startDate, lte: endDate },
+                createdAt: { gte: startDate, lte: endDate },
             },
         });
 
