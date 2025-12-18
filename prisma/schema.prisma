@@ -52,6 +52,8 @@ enum RequestStatus {
   disputed
   cancelled
   closed
+  no_show       // Added for call requests - when participant doesn't join
+  rescheduled   // Added for call requests - when call is rescheduled
 }
 
 enum PaymentStatus {

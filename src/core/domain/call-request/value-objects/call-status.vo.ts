@@ -68,12 +68,15 @@ export function mapPrismaStatusToCallStatus(prismaStatus: string): CallStatus {
         'in_progress': CallStatus.IN_PROGRESS,
         'completed': CallStatus.COMPLETED,
         'cancelled': CallStatus.CANCELLED,
+        'no_show': CallStatus.NO_SHOW,
+        'rescheduled': CallStatus.RESCHEDULED,
     };
     return statusMap[prismaStatus] || CallStatus.PENDING;
 }
 
 /**
  * Maps domain CallStatus to Prisma RequestStatus
+ * Now uses direct 1:1 mapping without data loss
  */
 export function mapCallStatusToPrisma(status: CallStatus): string {
     const statusMap: Record<CallStatus, string> = {
@@ -83,8 +86,8 @@ export function mapCallStatusToPrisma(status: CallStatus): string {
         [CallStatus.IN_PROGRESS]: 'in_progress',
         [CallStatus.COMPLETED]: 'completed',
         [CallStatus.CANCELLED]: 'cancelled',
-        [CallStatus.NO_SHOW]: 'cancelled',
-        [CallStatus.RESCHEDULED]: 'scheduled',
+        [CallStatus.NO_SHOW]: 'no_show',
+        [CallStatus.RESCHEDULED]: 'rescheduled',
     };
     return statusMap[status];
 }
