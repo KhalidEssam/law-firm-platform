@@ -2,7 +2,7 @@
 
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import {
-    IRoutingRuleRepository,
+    type IRoutingRuleRepository,
     ROUTING_RULE_REPOSITORY,
 } from '../ports/routing-rule.repository';
 import { AutoAssignRequestUseCase } from '../use-cases/auto-assign.use-cases';
@@ -39,7 +39,7 @@ export class RoutingIntegrationService {
         @Inject(ROUTING_RULE_REPOSITORY)
         private readonly ruleRepo: IRoutingRuleRepository,
         private readonly autoAssignUseCase: AutoAssignRequestUseCase,
-    ) {}
+    ) { }
 
     /**
      * Attempt to auto-assign a request to a provider

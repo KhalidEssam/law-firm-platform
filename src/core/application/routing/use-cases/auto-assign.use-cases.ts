@@ -1,9 +1,9 @@
 // src/core/application/routing/use-cases/auto-assign.use-cases.ts
 
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../../../infrastructure/persistence/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import {
-    IRoutingRuleRepository,
+    type IRoutingRuleRepository,
     ROUTING_RULE_REPOSITORY,
 } from '../ports/routing-rule.repository';
 import { RoutingRule } from '../../../domain/routing/entities/routing-rule.entity';

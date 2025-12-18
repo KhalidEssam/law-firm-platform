@@ -28,12 +28,12 @@ import {
     GetRoutingStatsUseCase,
 } from '../../core/application/routing/use-cases';
 import {
-    CreateRoutingRuleDto,
-    UpdateRoutingRuleDto,
+    type CreateRoutingRuleDto,
+    type UpdateRoutingRuleDto,
     FilterRoutingRulesDto,
-    TestRoutingRuleDto,
-    AutoAssignRequestDto,
-    ReassignRequestDto,
+    type TestRoutingRuleDto,
+    type AutoAssignRequestDto,
+    type ReassignRequestDto,
 } from '../../core/application/routing/dto/routing-rule.dto';
 import { RequestType, getRequestTypeName } from '../../core/domain/routing/value-objects/request-type.vo';
 import { RoutingStrategy, getStrategyDescription } from '../../core/domain/routing/value-objects/routing-strategy.vo';
