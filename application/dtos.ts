@@ -282,3 +282,51 @@ export class ListUsersResponseDto {
 export class AvailabilityResponseDto {
     available: boolean;
 }
+
+// ============================================
+// MOBILE OTP DTOs
+// ============================================
+
+export class SendMobileOtpDto {
+    @IsString()
+    @IsNotEmpty()
+    @Matches(/^\+?[1-9]\d{9,14}$/, {
+        message: 'Phone number must be in international format (e.g., +966501234567)',
+    })
+    phoneNumber: string;
+}
+
+export class VerifyMobileOtpDto {
+    @IsString()
+    @IsNotEmpty()
+    @Matches(/^\+?[1-9]\d{9,14}$/, {
+        message: 'Phone number must be in international format (e.g., +966501234567)',
+    })
+    phoneNumber: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @MinLength(6)
+    @MaxLength(6)
+    @Matches(/^\d{6}$/, {
+        message: 'OTP must be a 6-digit number',
+    })
+    otpCode: string;
+}
+
+export class SendOtpResponseDto {
+    success: boolean;
+    message: string;
+    expiresAt: Date;
+}
+
+export class VerifyOtpResponseDto {
+    success: boolean;
+    message: string;
+    user: UserResponseDto;
+}
+
+export class WhatsAppStatusResponseDto {
+    connected: boolean;
+    qrCode?: string;
+}

@@ -11,6 +11,7 @@ export enum NotificationChannel {
     SMS = 'sms',
     PUSH = 'push',
     IN_APP = 'in_app',
+    WHATSAPP = 'whatsapp',
 }
 
 /**
@@ -26,6 +27,7 @@ export const NotificationChannelMapper = {
             sms: NotificationChannel.SMS,
             push: NotificationChannel.PUSH,
             in_app: NotificationChannel.IN_APP,
+            whatsapp: NotificationChannel.WHATSAPP,
         };
         return mapping[prismaChannel] ?? NotificationChannel.IN_APP;
     },
