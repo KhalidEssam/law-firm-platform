@@ -44,6 +44,7 @@ enum ProviderUserRole {
 enum RequestStatus {
   pending
   assigned
+  scheduled
   in_progress
   quote_sent
   quote_accepted

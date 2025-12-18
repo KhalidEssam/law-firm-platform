@@ -64,6 +64,7 @@ export function mapPrismaStatusToCallStatus(prismaStatus: string): CallStatus {
     const statusMap: Record<string, CallStatus> = {
         'pending': CallStatus.PENDING,
         'assigned': CallStatus.ASSIGNED,
+        'scheduled': CallStatus.SCHEDULED,
         'in_progress': CallStatus.IN_PROGRESS,
         'completed': CallStatus.COMPLETED,
         'cancelled': CallStatus.CANCELLED,
@@ -78,12 +79,12 @@ export function mapCallStatusToPrisma(status: CallStatus): string {
     const statusMap: Record<CallStatus, string> = {
         [CallStatus.PENDING]: 'pending',
         [CallStatus.ASSIGNED]: 'assigned',
-        [CallStatus.SCHEDULED]: 'assigned', // Prisma doesn't have 'scheduled', map to assigned
+        [CallStatus.SCHEDULED]: 'scheduled',
         [CallStatus.IN_PROGRESS]: 'in_progress',
         [CallStatus.COMPLETED]: 'completed',
         [CallStatus.CANCELLED]: 'cancelled',
         [CallStatus.NO_SHOW]: 'cancelled',
-        [CallStatus.RESCHEDULED]: 'assigned',
+        [CallStatus.RESCHEDULED]: 'scheduled',
     };
     return statusMap[status];
 }
