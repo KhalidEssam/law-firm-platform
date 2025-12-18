@@ -25,6 +25,7 @@ import { SupportTicketModule } from './infrastructure/modules/support-ticket.mod
 import { NotificationModule } from './interface/notification/notification.module';
 import { CallRequestModule } from './infrastructure/modules/call-request.module';
 import { RoutingModule } from './infrastructure/modules/routing.module';
+import { ReportsModule } from './infrastructure/modules/reports.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { RoutingModule } from './infrastructure/modules/routing.module';
     NotificationModule,
     CallRequestModule,
     RoutingModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [
