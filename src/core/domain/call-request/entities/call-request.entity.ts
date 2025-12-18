@@ -61,7 +61,7 @@ export class CallRequest {
         private _completedAt: Date | null,
         public readonly createdAt: Date,
         private _updatedAt: Date,
-    ) {}
+    ) { }
 
     // ============================================
     // FACTORY METHODS

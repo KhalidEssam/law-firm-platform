@@ -4,7 +4,7 @@ import { Injectable, Inject, NotFoundException, BadRequestException } from '@nes
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { RequestStatus, VerificationStatus } from '@prisma/client';
 import {
-    IRoutingRuleRepository,
+    type IRoutingRuleRepository,
     ROUTING_RULE_REPOSITORY,
 } from '../ports/routing-rule.repository';
 import { RoutingRule } from '../../../domain/routing/entities/routing-rule.entity';

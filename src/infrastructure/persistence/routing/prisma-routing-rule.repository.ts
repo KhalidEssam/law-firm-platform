@@ -129,7 +129,7 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
         };
     }
 
-    async findActiveByRequestType(requestType: RequestType | string): Promise<RoutingRule[]> {
+    async findActiveByRequestType(requestType: RequestType ): Promise<RoutingRule[]> {
         const rules = await this.prisma.routingRule.findMany({
             where: {
                 requestType: requestType as PrismaRequestType,
@@ -156,7 +156,7 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
         return rules.map(r => this.mapToDomain(r));
     }
 
-    async countByRequestType(requestType: RequestType | string): Promise<number> {
+    async countByRequestType(requestType: RequestType ): Promise<number> {
         return this.prisma.routingRule.count({
             where: {
                 requestType: requestType as PrismaRequestType,

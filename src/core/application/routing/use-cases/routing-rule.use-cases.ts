@@ -2,7 +2,7 @@
 
 import { Injectable, Inject, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import {
-    IRoutingRuleRepository,
+    type IRoutingRuleRepository,
     ROUTING_RULE_REPOSITORY,
     PaginatedResult,
 } from '../ports/routing-rule.repository';
