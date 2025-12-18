@@ -18,6 +18,7 @@ export class CaseStatusMapper {
     const mapping: Record<CaseStatusEnum, PrismaRequestStatus> = {
       [CaseStatusEnum.PENDING]: PrismaRequestStatus.pending,
       [CaseStatusEnum.QUOTE_SENT]: PrismaRequestStatus.quote_sent,
+      [CaseStatusEnum.SCHEDULED]: PrismaRequestStatus.scheduled,
       [CaseStatusEnum.QUOTE_ACCEPTED]: PrismaRequestStatus.quote_accepted,
       [CaseStatusEnum.ACTIVE]: PrismaRequestStatus.in_progress,
       [CaseStatusEnum.CLOSED]: PrismaRequestStatus.closed,
@@ -30,6 +31,7 @@ export class CaseStatusMapper {
   static toDomain(prismaStatus: PrismaRequestStatus): CaseStatusEnum {
     const mapping: Record<PrismaRequestStatus, CaseStatusEnum> = {
       [PrismaRequestStatus.pending]: CaseStatusEnum.PENDING,
+      [PrismaRequestStatus.scheduled]: CaseStatusEnum.SCHEDULED,
       [PrismaRequestStatus.assigned]: CaseStatusEnum.PENDING,
       [PrismaRequestStatus.in_progress]: CaseStatusEnum.ACTIVE,
       [PrismaRequestStatus.quote_sent]: CaseStatusEnum.QUOTE_SENT,

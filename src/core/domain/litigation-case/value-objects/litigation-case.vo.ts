@@ -135,6 +135,7 @@ import { RequestStatus as PrismaRequestStatus } from '@prisma/client';
 // ============================================
 export enum CaseStatusEnum {
     PENDING = 'pending',
+    SCHEDULED = 'scheduled',
     QUOTE_SENT = 'quote_sent',
     QUOTE_ACCEPTED = 'quote_accepted',
     ACTIVE = 'active',
@@ -162,6 +163,7 @@ export class CaseStatus {
         const mapping: Record<PrismaRequestStatus, CaseStatusEnum> = {
             [PrismaRequestStatus.pending]: CaseStatusEnum.PENDING,
             [PrismaRequestStatus.assigned]: CaseStatusEnum.PENDING,
+            [PrismaRequestStatus.scheduled]: CaseStatusEnum.SCHEDULED,
             [PrismaRequestStatus.in_progress]: CaseStatusEnum.ACTIVE,
             [PrismaRequestStatus.quote_sent]: CaseStatusEnum.QUOTE_SENT,
             [PrismaRequestStatus.quote_accepted]: CaseStatusEnum.QUOTE_ACCEPTED,
@@ -182,6 +184,7 @@ export class CaseStatus {
         const mapping: Record<CaseStatusEnum, PrismaRequestStatus> = {
             [CaseStatusEnum.PENDING]: PrismaRequestStatus.pending,
             [CaseStatusEnum.QUOTE_SENT]: PrismaRequestStatus.quote_sent,
+            [CaseStatusEnum.SCHEDULED]: PrismaRequestStatus.scheduled,
             [CaseStatusEnum.QUOTE_ACCEPTED]: PrismaRequestStatus.quote_accepted,
             [CaseStatusEnum.ACTIVE]: PrismaRequestStatus.in_progress,
             [CaseStatusEnum.CLOSED]: PrismaRequestStatus.closed,
@@ -209,6 +212,7 @@ export class CaseStatus {
     canTransitionTo(newStatus: CaseStatus): boolean {
         const transitions: Record<CaseStatusEnum, CaseStatusEnum[]> = {
             [CaseStatusEnum.PENDING]: [CaseStatusEnum.QUOTE_SENT, CaseStatusEnum.CANCELLED],
+            [CaseStatusEnum.SCHEDULED]: [CaseStatusEnum.QUOTE_SENT, CaseStatusEnum.CANCELLED],
             [CaseStatusEnum.QUOTE_SENT]: [CaseStatusEnum.QUOTE_ACCEPTED, CaseStatusEnum.CANCELLED],
             [CaseStatusEnum.QUOTE_ACCEPTED]: [CaseStatusEnum.ACTIVE, CaseStatusEnum.CANCELLED],
             [CaseStatusEnum.ACTIVE]: [CaseStatusEnum.CLOSED, CaseStatusEnum.CANCELLED],

@@ -71,6 +71,7 @@ class ConsultationStatusMapper {
     private static readonly toDomainMap: Record<PrismaRequestStatus, ConsultationStatus> = {
         [PrismaRequestStatus.pending]: ConsultationStatus.PENDING,
         [PrismaRequestStatus.assigned]: ConsultationStatus.ASSIGNED,
+        [PrismaRequestStatus.scheduled]: ConsultationStatus.IN_PROGRESS,
         [PrismaRequestStatus.in_progress]: ConsultationStatus.IN_PROGRESS,
         [PrismaRequestStatus.quote_sent]: ConsultationStatus.IN_PROGRESS,
         [PrismaRequestStatus.quote_accepted]: ConsultationStatus.ASSIGNED,
