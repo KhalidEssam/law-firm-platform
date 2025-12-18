@@ -15,6 +15,8 @@ import { RestoreUserUseCase } from 'src/core/application/use-cases/restore-user.
 import { SearchUsersUseCase } from 'src/core/application/use-cases/search-user.use-case';
 import { CheckEmailAvailabilityUseCase } from 'src/core/application/use-cases/check-email-availability.use-case';
 import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases/check-username-availability.use-case';
+import { SendMobileOtpUseCase } from '../../core/application/use-cases/send-mobile-otp.use-case';
+import { VerifyMobileOtpUseCase } from '../../core/application/use-cases/verify-mobile-otp.use-case';
 import {
     GetUserIdentitiesUseCase,
     SetPrimaryIdentityUseCase,
@@ -30,6 +32,8 @@ import {
     AvailabilityResponseDto, CheckEmailDto, CheckUsernameDto,
     CreateUserDto, UpdateUserProfileDto, UserResponseDto, ListUsersResponseDto,
     UpdateProfileStatusDto, ListUsersQueryDto, SearchUsersQueryDto,
+    SendMobileOtpDto, VerifyMobileOtpDto, SendOtpResponseDto, VerifyOtpResponseDto,
+    WhatsAppStatusResponseDto,
 } from 'application/dtos';
 import { Public } from 'src/auth/decorators/public.decorator';
 
@@ -62,6 +66,8 @@ export class UserController {
         private readonly getUserIdentities: GetUserIdentitiesUseCase,
         private readonly setPrimaryIdentity: SetPrimaryIdentityUseCase,
         private readonly unlinkIdentity: UnlinkIdentityUseCase,
+        private readonly sendMobileOtp: SendMobileOtpUseCase,
+        private readonly verifyMobileOtp: VerifyMobileOtpUseCase,
     ) { }
 
     // ============================================
@@ -487,6 +493,130 @@ export class UserController {
         const user = await this.restoreUser.execute(id);
         return {
             user: this.mapToResponse(user),
+        };
+    }
+
+    // ============================================
+    // MOBILE OTP VERIFICATION ENDPOINTS
+    // ============================================
+
+    /**
+     * Send OTP to user's WhatsApp
+     * Accessible by: user (own profile) or system admin (any user)
+     */
+    @Post('me/send-mobile-otp')
+    @Roles('user')
+    @HttpCode(HttpStatus.OK)
+    async sendMyMobileOtp(
+        @Req() req: any,
+        @Body() dto: SendMobileOtpDto,
+    ): Promise<SendOtpResponseDto> {
+        const auth0User = req.user;
+
+        // Sync user first
+        const user = await this.syncAuth0User.execute({
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            username: auth0User.nickname || auth0User.name || auth0User.email,
+            fullName: auth0User.name,
+            emailVerified: auth0User.email_verified,
+            roles: auth0User.roles || [],
+        });
+
+        const result = await this.sendMobileOtp.execute({
+            userId: user.id,
+            phoneNumber: dto.phoneNumber,
+        });
+
+        return {
+            success: result.success,
+            message: result.message,
+            expiresAt: result.expiresAt,
+        };
+    }
+
+    /**
+     * Verify OTP sent to user's WhatsApp
+     * Accessible by: user (own profile)
+     */
+    @Post('me/verify-mobile-otp')
+    @Roles('user')
+    @HttpCode(HttpStatus.OK)
+    async verifyMyMobileOtp(
+        @Req() req: any,
+        @Body() dto: VerifyMobileOtpDto,
+    ): Promise<VerifyOtpResponseDto> {
+        const auth0User = req.user;
+
+        // Sync user first
+        const user = await this.syncAuth0User.execute({
+            auth0Id: auth0User.sub,
+            email: auth0User.email,
+            username: auth0User.nickname || auth0User.name || auth0User.email,
+            fullName: auth0User.name,
+            emailVerified: auth0User.email_verified,
+            roles: auth0User.roles || [],
+        });
+
+        const result = await this.verifyMobileOtp.execute({
+            userId: user.id,
+            phoneNumber: dto.phoneNumber,
+            otpCode: dto.otpCode,
+        });
+
+        return {
+            success: result.success,
+            message: result.message,
+            user: this.mapToResponse(result.user),
+        };
+    }
+
+    /**
+     * Send OTP to any user's WhatsApp (Admin)
+     * Accessible by: system admin
+     */
+    @Post(':id/send-mobile-otp')
+    @Roles('system admin')
+    @Permissions('update:users')
+    @HttpCode(HttpStatus.OK)
+    async sendUserMobileOtp(
+        @Param('id') id: string,
+        @Body() dto: SendMobileOtpDto,
+    ): Promise<SendOtpResponseDto> {
+        const result = await this.sendMobileOtp.execute({
+            userId: id,
+            phoneNumber: dto.phoneNumber,
+        });
+
+        return {
+            success: result.success,
+            message: result.message,
+            expiresAt: result.expiresAt,
+        };
+    }
+
+    /**
+     * Verify OTP for any user (Admin)
+     * Accessible by: system admin
+     */
+    @Post(':id/verify-mobile-otp')
+    @Roles('system admin')
+    @Permissions('update:users')
+    @HttpCode(HttpStatus.OK)
+    async verifyUserMobileOtp(
+        @Param('id') id: string,
+        @Body() dto: VerifyMobileOtpDto,
+    ): Promise<VerifyOtpResponseDto> {
+        const result = await this.verifyMobileOtp.execute({
+            userId: id,
+            phoneNumber: dto.phoneNumber,
+            otpCode: dto.otpCode,
+        });
+
+        return {
+            success: result.success,
+            message: result.message,
+            user: this.mapToResponse(result.user),
         };
     }
 

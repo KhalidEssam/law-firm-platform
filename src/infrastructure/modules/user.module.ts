@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PrismaUserRepository } from '../persistence/user/prisma-user.repository';
+import { PrismaOtpRepository } from '../persistence/user/prisma-otp.repository';
 import { Auth0Service } from '../persistence/auth0/auth0.service';
+import { WhatsAppService } from '../services/whatsapp/whatsapp.service';
 import { CreateUserUseCase } from '../../core/application/use-cases/create-user.use-case';
 import { SyncAuth0UserUseCase } from '../../core/application/use-cases/sync-auth0-user.use-case';
 import { UserController } from '../../interface/http/users.controller';
@@ -21,6 +23,8 @@ import { RestoreUserUseCase } from 'src/core/application/use-cases/restore-user.
 import { SearchUsersUseCase } from 'src/core/application/use-cases/search-user.use-case';
 import { CheckEmailAvailabilityUseCase } from 'src/core/application/use-cases/check-email-availability.use-case';
 import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases/check-username-availability.use-case';
+import { SendMobileOtpUseCase } from 'src/core/application/use-cases/send-mobile-otp.use-case';
+import { VerifyMobileOtpUseCase } from 'src/core/application/use-cases/verify-mobile-otp.use-case';
 import {
     GetUserIdentitiesUseCase,
     SetPrimaryIdentityUseCase,
@@ -33,6 +37,8 @@ import {
         PrismaService,
         Auth0Service,
         { provide: 'IUserRepository', useClass: PrismaUserRepository },
+        { provide: 'IOtpRepository', useClass: PrismaOtpRepository },
+        { provide: 'IWhatsAppService', useClass: WhatsAppService },
 
         // Use Cases
         CreateUserUseCase,
@@ -56,9 +62,15 @@ import {
         GetUserIdentitiesUseCase,
         SetPrimaryIdentityUseCase,
         UnlinkIdentityUseCase,
+
+        // Mobile OTP Use Cases
+        SendMobileOtpUseCase,
+        VerifyMobileOtpUseCase,
     ],
     exports: [
         'IUserRepository',
+        'IOtpRepository',
+        'IWhatsAppService',
         GetUserByIdUseCase,
         GetUserByAuth0IdUseCase,
         SyncAuth0UserUseCase,
