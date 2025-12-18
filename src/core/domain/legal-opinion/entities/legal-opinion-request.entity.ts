@@ -7,13 +7,55 @@
  * LegalOpinionRequest represents a formal request for a written legal opinion
  * from a qualified legal professional. This is a more formal and structured
  * service compared to general consultations.
- * 
+ *
  * Key Characteristics:
  * - Requires detailed case information and legal questions
  * - Results in a formal written legal opinion document
  * - Has strict formatting and delivery requirements
  * - Typically more expensive than regular consultations
  * - May require multiple review cycles
+ *
+ * ============================================
+ * SCHEMA MAPPING STRATEGY (Architecture Decision)
+ * ============================================
+ *
+ * This rich domain entity is mapped to the simpler LegalOpinionRequest
+ * Prisma schema using a hybrid approach:
+ *
+ * DIRECT COLUMN MAPPING:
+ * - id → id
+ * - opinionNumber → requestNumber
+ * - clientId → subscriberId
+ * - assignedLawyerId → assignedProviderId
+ * - subject → subject
+ * - legalQuestion → description
+ * - status → status (with enum mapping)
+ * - estimatedCost/finalCost → quoteAmount, quoteCurrency
+ * - isPaid → paymentStatus
+ * - timestamps → corresponding date columns
+ *
+ * JSON STORAGE (caseDetails column):
+ * - opinionType
+ * - backgroundContext
+ * - relevantFacts
+ * - specificIssues
+ * - jurisdiction (nested object)
+ * - priority
+ * - deliveryFormat
+ * - confidentialityLevel
+ * - includeExecutiveSummary
+ * - includeCitations
+ * - includeRecommendations
+ *
+ * STATUS MAPPING (Domain → Database):
+ * - DRAFT, SUBMITTED, UNDER_REVIEW → pending
+ * - ASSIGNED → quote_sent
+ * - RESEARCH_PHASE → quote_accepted
+ * - DRAFTING, INTERNAL_REVIEW, REVISION_REQUESTED, REVISING → in_progress
+ * - COMPLETED → completed
+ * - CANCELLED, REJECTED → cancelled
+ *
+ * See: infrastructure/persistence/legal-opinion/prisma.repository.ts
  */
 
 // import { DomainException } from '../shared/domain-exception';
