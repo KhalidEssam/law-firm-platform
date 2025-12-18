@@ -54,12 +54,12 @@ export class PrismaCallRequestRepository implements ICallRequestRepository {
         const statusMap: Record<CallStatus, RequestStatus> = {
             [CallStatus.PENDING]: RequestStatus.pending,
             [CallStatus.ASSIGNED]: RequestStatus.assigned,
-            [CallStatus.SCHEDULED]: RequestStatus.assigned,
+            [CallStatus.SCHEDULED]: RequestStatus.scheduled,
             [CallStatus.IN_PROGRESS]: RequestStatus.in_progress,
             [CallStatus.COMPLETED]: RequestStatus.completed,
             [CallStatus.CANCELLED]: RequestStatus.cancelled,
             [CallStatus.NO_SHOW]: RequestStatus.cancelled,
-            [CallStatus.RESCHEDULED]: RequestStatus.assigned,
+            [CallStatus.RESCHEDULED]: RequestStatus.scheduled,
         };
         return statusMap[status];
     }
@@ -264,7 +264,7 @@ export class PrismaCallRequestRepository implements ICallRequestRepository {
                 gte: startDate,
                 lte: endDate,
             },
-            status: { in: [RequestStatus.assigned, RequestStatus.in_progress] },
+            status: { in: [RequestStatus.scheduled, RequestStatus.in_progress] },
             deletedAt: null,
         };
 
@@ -373,7 +373,7 @@ export class PrismaCallRequestRepository implements ICallRequestRepository {
         const data = await this.prisma.callRequest.findMany({
             where: {
                 assignedProviderId: providerId,
-                status: { in: [RequestStatus.assigned, RequestStatus.in_progress] },
+                status: { in: [RequestStatus.scheduled, RequestStatus.in_progress] },
                 deletedAt: null,
                 AND: [
                     {
