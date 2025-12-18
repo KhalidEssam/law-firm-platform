@@ -1,7 +1,8 @@
 // src/core/application/routing/use-cases/auto-assign.use-cases.ts
 
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { RequestStatus, VerificationStatus } from '@prisma/client';
 import {
     type IRoutingRuleRepository,
     ROUTING_RULE_REPOSITORY,
@@ -162,7 +163,7 @@ export class AutoAssignRequestUseCase {
                 deletedAt: null,
                 provider: {
                     isActive: true,
-                    verificationStatus: 'approved',
+                    verificationStatus: VerificationStatus.approved,
                 },
             },
             include: {
@@ -221,7 +222,12 @@ export class AutoAssignRequestUseCase {
      * Get the count of active requests for a provider
      */
     private async getProviderActiveRequestCount(providerId: string): Promise<number> {
-        const activeStatuses = ['pending', 'assigned', 'in_progress', 'quote_sent'];
+        const activeStatuses: RequestStatus[] = [
+            RequestStatus.pending,
+            RequestStatus.assigned,
+            RequestStatus.in_progress,
+            RequestStatus.quote_sent,
+        ];
 
         const [consultations, opinions, services, litigations, calls] = await Promise.all([
             this.prisma.consultationRequest.count({
@@ -273,7 +279,7 @@ export class AutoAssignRequestUseCase {
                     data: {
                         assignedProviderId: providerId,
                         assignedAt: now,
-                        status: 'assigned',
+                        status: RequestStatus.assigned,
                     },
                 });
                 break;
@@ -283,7 +289,7 @@ export class AutoAssignRequestUseCase {
                     where: { id: requestId },
                     data: {
                         assignedProviderId: providerId,
-                        status: 'assigned',
+                        status: RequestStatus.assigned,
                     },
                 });
                 break;
@@ -293,7 +299,7 @@ export class AutoAssignRequestUseCase {
                     where: { id: requestId },
                     data: {
                         assignedProviderId: providerId,
-                        status: 'assigned',
+                        status: RequestStatus.assigned,
                     },
                 });
                 break;
@@ -303,7 +309,7 @@ export class AutoAssignRequestUseCase {
                     where: { id: requestId },
                     data: {
                         assignedProviderId: providerId,
-                        status: 'assigned',
+                        status: RequestStatus.assigned,
                     },
                 });
                 break;
@@ -313,7 +319,7 @@ export class AutoAssignRequestUseCase {
                     where: { id: requestId },
                     data: {
                         assignedProviderId: providerId,
-                        status: 'assigned',
+                        status: RequestStatus.assigned,
                     },
                 });
                 break;
@@ -453,8 +459,8 @@ export class GetProviderWorkloadUseCase {
         for (const p of providers) {
             const [active, pending, inProgress, completedToday, rating] = await Promise.all([
                 this.getActiveRequestCount(p.userId),
-                this.getRequestCountByStatus(p.userId, ['pending']),
-                this.getRequestCountByStatus(p.userId, ['in_progress']),
+                this.getRequestCountByStatus(p.userId, [RequestStatus.pending]),
+                this.getRequestCountByStatus(p.userId, [RequestStatus.in_progress]),
                 this.getCompletedTodayCount(p.userId),
                 this.getAverageRating(p.providerId),
             ]);
@@ -476,11 +482,16 @@ export class GetProviderWorkloadUseCase {
     }
 
     private async getActiveRequestCount(providerId: string): Promise<number> {
-        const activeStatuses = ['pending', 'assigned', 'in_progress', 'quote_sent'];
+        const activeStatuses: RequestStatus[] = [
+            RequestStatus.pending,
+            RequestStatus.assigned,
+            RequestStatus.in_progress,
+            RequestStatus.quote_sent,
+        ];
         return this.getRequestCountByStatus(providerId, activeStatuses);
     }
 
-    private async getRequestCountByStatus(providerId: string, statuses: string[]): Promise<number> {
+    private async getRequestCountByStatus(providerId: string, statuses: RequestStatus[]): Promise<number> {
         const [c, o, s, l, call] = await Promise.all([
             this.prisma.consultationRequest.count({
                 where: { assignedProviderId: providerId, status: { in: statuses } },
@@ -509,35 +520,35 @@ export class GetProviderWorkloadUseCase {
             this.prisma.consultationRequest.count({
                 where: {
                     assignedProviderId: providerId,
-                    status: 'completed',
+                    status: RequestStatus.completed,
                     completedAt: { gte: startOfDay },
                 },
             }),
             this.prisma.legalOpinionRequest.count({
                 where: {
                     assignedProviderId: providerId,
-                    status: 'completed',
+                    status: RequestStatus.completed,
                     completedAt: { gte: startOfDay },
                 },
             }),
             this.prisma.serviceRequest.count({
                 where: {
                     assignedProviderId: providerId,
-                    status: 'completed',
+                    status: RequestStatus.completed,
                     completedAt: { gte: startOfDay },
                 },
             }),
             this.prisma.litigationCase.count({
                 where: {
                     assignedProviderId: providerId,
-                    status: 'closed',
+                    status: RequestStatus.closed,
                     closedAt: { gte: startOfDay },
                 },
             }),
             this.prisma.callRequest.count({
                 where: {
                     assignedProviderId: providerId,
-                    status: 'completed',
+                    status: RequestStatus.completed,
                     completedAt: { gte: startOfDay },
                 },
             }),

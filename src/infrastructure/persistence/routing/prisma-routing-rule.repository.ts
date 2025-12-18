@@ -1,7 +1,11 @@
 // src/infrastructure/persistence/routing/prisma-routing-rule.repository.ts
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../prisma/prisma.service';
+import {
+    RequestType as PrismaRequestType,
+    RoutingStrategy as PrismaRoutingStrategy,
+} from '@prisma/client';
 import {
     IRoutingRuleRepository,
     RoutingRuleFilters,
@@ -33,10 +37,10 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
             data: {
                 id: data.id,
                 name: data.name,
-                requestType: data.requestType ,
+                requestType: data.requestType as PrismaRequestType,
                 conditions: data.conditions as any,
                 priority: data.priority,
-                routingStrategy: data.routingStrategy ,
+                routingStrategy: data.routingStrategy as PrismaRoutingStrategy,
                 targetProviders: data.targetProviders as any,
                 isActive: data.isActive,
                 createdAt: data.createdAt,
@@ -54,10 +58,10 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
             where: { id: data.id },
             data: {
                 name: data.name,
-                requestType: data.requestType ,
+                requestType: data.requestType as PrismaRequestType,
                 conditions: data.conditions as any,
                 priority: data.priority,
-                routingStrategy: data.routingStrategy ,
+                routingStrategy: data.routingStrategy as PrismaRoutingStrategy,
                 targetProviders: data.targetProviders as any,
                 isActive: data.isActive,
                 updatedAt: data.updatedAt,
@@ -128,7 +132,7 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
     async findActiveByRequestType(requestType: RequestType ): Promise<RoutingRule[]> {
         const rules = await this.prisma.routingRule.findMany({
             where: {
-                requestType: requestType ,
+                requestType: requestType as PrismaRequestType,
                 isActive: true,
             },
             orderBy: {
@@ -155,7 +159,7 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
     async countByRequestType(requestType: RequestType ): Promise<number> {
         return this.prisma.routingRule.count({
             where: {
-                requestType: requestType ,
+                requestType: requestType as PrismaRequestType,
             },
         });
     }
@@ -198,7 +202,7 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
         const where: any = {};
 
         if (filters.requestType) {
-            where.requestType = filters.requestType;
+            where.requestType = filters.requestType as PrismaRequestType;
         }
 
         if (filters.isActive !== undefined) {
