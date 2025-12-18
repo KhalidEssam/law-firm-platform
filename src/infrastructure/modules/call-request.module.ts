@@ -9,6 +9,12 @@ import { CallRequestController } from '../../interface/http/call-request.control
 // Repository Implementation
 import { PrismaCallRequestRepository } from '../persistence/call-request/prisma-call-request.repository';
 
+// Provider Validation Service
+import { ProviderValidationService } from '../services/provider-validation.service';
+
+// Provider Module (for provider repositories)
+import { ProviderModule } from './provider.module';
+
 // Use Cases
 import {
     CreateCallRequestUseCase,
@@ -38,6 +44,7 @@ import {
 @Module({
     imports: [
         PrismaModule,
+        ProviderModule, // For provider validation (ProviderUser/ProviderProfile repositories)
         // forwardRef(() => NotificationModule), // For sending notifications
         // forwardRef(() => MembershipModule),   // For quota checking/consumption
     ],
@@ -47,6 +54,12 @@ import {
         {
             provide: 'ICallRequestRepository',
             useClass: PrismaCallRequestRepository,
+        },
+
+        // Provider Validation Service
+        {
+            provide: 'IProviderValidationService',
+            useClass: ProviderValidationService,
         },
 
         // Use Cases
@@ -71,6 +84,7 @@ import {
     ],
     exports: [
         'ICallRequestRepository',
+        'IProviderValidationService',
         CreateCallRequestUseCase,
         GetCallRequestByIdUseCase,
         GetCallRequestsUseCase,
