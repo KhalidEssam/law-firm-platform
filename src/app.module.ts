@@ -26,6 +26,7 @@ import { NotificationModule } from './interface/notification/notification.module
 import { CallRequestModule } from './infrastructure/modules/call-request.module';
 import { RoutingModule } from './infrastructure/modules/routing.module';
 import { ReportsModule } from './infrastructure/modules/reports.module';
+import { SLAModule } from './infrastructure/modules/sla.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ReportsModule } from './infrastructure/modules/reports.module';
     CallRequestModule,
     RoutingModule,
     ReportsModule,
+    SLAModule,
   ],
   controllers: [AppController],
   providers: [
