@@ -7,6 +7,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipModule } from './membership.module';
 import { NotificationModule } from '../../interface/notification/notification.module';
+import { SLAModule } from './sla.module';
 
 // Repository
 import { ConsultationRequestRepository } from '../persistence/consultation/prisma.repository';
@@ -35,6 +36,14 @@ import {
     CheckConsultationQuotaUseCase,
 } from '../../core/application/consultation/use-cases/membership-aware-consultation.use-cases';
 
+// SLA-Aware Use Cases
+import {
+    CreateConsultationWithSLAUseCase,
+    CheckConsultationSLAStatusUseCase,
+    GetConsultationsByUrgencyUseCase,
+    UpdateConsultationSLAStatusUseCase,
+} from '../../core/application/consultation/use-cases/sla-aware-consultation.use-cases';
+
 // Controller
 import { ConsultationRequestController } from '../../interface/http/consultation.controller';
 
@@ -43,6 +52,7 @@ import { ConsultationRequestController } from '../../interface/http/consultation
         PrismaModule, // Import PrismaModule for database access
         forwardRef(() => MembershipModule), // Import MembershipModule for quota/usage integration
         NotificationModule, // Import NotificationModule for sending notifications
+        SLAModule, // Import SLAModule for SLA integration
     ],
     controllers: [
         ConsultationRequestController, // REST API endpoints
@@ -102,6 +112,14 @@ import { ConsultationRequestController } from '../../interface/http/consultation
         CreateConsultationWithMembershipUseCase,
         CompleteConsultationWithUsageTrackingUseCase,
         CheckConsultationQuotaUseCase,
+
+        // ============================================
+        // SLA-AWARE USE CASES
+        // ============================================
+        CreateConsultationWithSLAUseCase,
+        CheckConsultationSLAStatusUseCase,
+        GetConsultationsByUrgencyUseCase,
+        UpdateConsultationSLAStatusUseCase,
     ],
     exports: [
         // Export repository if other modules need it
@@ -119,6 +137,12 @@ import { ConsultationRequestController } from '../../interface/http/consultation
         CreateConsultationWithMembershipUseCase,
         CompleteConsultationWithUsageTrackingUseCase,
         CheckConsultationQuotaUseCase,
+
+        // Export SLA-aware use cases
+        CreateConsultationWithSLAUseCase,
+        CheckConsultationSLAStatusUseCase,
+        GetConsultationsByUrgencyUseCase,
+        UpdateConsultationSLAStatusUseCase,
     ],
 })
 export class ConsultationRequestModule { }

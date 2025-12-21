@@ -39,6 +39,8 @@ import {
     BatchCheckSLAStatusUseCase,
 } from '../../core/application/sla/use-cases/sla-tracking.use-cases';
 
+import { SLASchedulerService } from '../../core/application/sla/services/sla-scheduler.service';
+
 import {
     CreateSLAPolicyDto,
     UpdateSLAPolicyDto,
@@ -116,6 +118,7 @@ export class SLAController {
         private readonly checkBreaches: CheckSLABreachesUseCase,
         private readonly getUrgencyScore: GetUrgencyScoreUseCase,
         private readonly batchCheckStatus: BatchCheckSLAStatusUseCase,
+        private readonly schedulerService: SLASchedulerService,
     ) {}
 
     // ============================================
@@ -324,5 +327,49 @@ export class SLAController {
             })),
         );
         return { results };
+    }
+
+    // ============================================
+    // SCHEDULED JOB ENDPOINTS
+    // ============================================
+
+    /**
+     * Manually trigger SLA status check across all active requests
+     * This runs the same logic as the scheduled cron job
+     */
+    @Post('run-status-check')
+    @Roles('system admin')
+    @Permissions('manage:sla')
+    async runManualStatusCheck(): Promise<{
+        executedAt: Date;
+        totalChecked: number;
+        totalUpdated: number;
+        breachesDetected: number;
+        atRiskDetected: number;
+    }> {
+        const report = await this.schedulerService.triggerManualCheck();
+        return {
+            executedAt: report.executedAt,
+            totalChecked: report.totalChecked,
+            totalUpdated: report.totalUpdated,
+            breachesDetected: report.breachesDetected,
+            atRiskDetected: report.atRiskDetected,
+        };
+    }
+
+    /**
+     * Get daily SLA report
+     */
+    @Get('daily-report')
+    @Roles('system admin', 'platform')
+    async getDailyReport(): Promise<{
+        date: Date;
+        consultations: { total: number; breached: number; atRisk: number; onTrack: number };
+        legalOpinions: { total: number; breached: number; atRisk: number; onTrack: number };
+        serviceRequests: { total: number; breached: number; atRisk: number; onTrack: number };
+        litigationCases: { total: number; breached: number; atRisk: number; onTrack: number };
+        callRequests: { total: number; breached: number; atRisk: number; onTrack: number };
+    }> {
+        return this.schedulerService.generateDailySLAReport();
     }
 }

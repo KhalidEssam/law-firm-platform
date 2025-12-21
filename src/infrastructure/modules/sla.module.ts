@@ -28,12 +28,20 @@ import {
     SortByUrgencyUseCase,
 } from '../../core/application/sla/use-cases/sla-tracking.use-cases';
 
+// Integration Services
+import { SLAIntegrationService } from '../../core/application/sla/services/sla-integration.service';
+import { SLASchedulerService } from '../../core/application/sla/services/sla-scheduler.service';
+
 @Module({
     controllers: [SLAController],
     providers: [
         // Infrastructure
         PrismaService,
         { provide: 'ISLAPolicyRepository', useClass: PrismaSLAPolicyRepository },
+
+        // Integration Services
+        SLAIntegrationService,
+        SLASchedulerService,
 
         // Policy Management Use Cases
         CreateSLAPolicyUseCase,
@@ -55,7 +63,14 @@ import {
         SortByUrgencyUseCase,
     ],
     exports: [
+        // Repository
         'ISLAPolicyRepository',
+
+        // Integration Services (for other modules to use)
+        SLAIntegrationService,
+        SLASchedulerService,
+
+        // Use Cases
         GetSLAPolicyByTypeUseCase,
         CalculateSLADeadlinesUseCase,
         CheckSLAStatusUseCase,
