@@ -162,6 +162,7 @@ export class CaseStatus {
         const mapping: Record<PrismaRequestStatus, CaseStatusEnum> = {
             [PrismaRequestStatus.pending]: CaseStatusEnum.PENDING,
             [PrismaRequestStatus.assigned]: CaseStatusEnum.PENDING,
+            [PrismaRequestStatus.scheduled]: CaseStatusEnum.ACTIVE,
             [PrismaRequestStatus.in_progress]: CaseStatusEnum.ACTIVE,
             [PrismaRequestStatus.quote_sent]: CaseStatusEnum.QUOTE_SENT,
             [PrismaRequestStatus.quote_accepted]: CaseStatusEnum.QUOTE_ACCEPTED,
@@ -169,6 +170,8 @@ export class CaseStatus {
             [PrismaRequestStatus.disputed]: CaseStatusEnum.ACTIVE,
             [PrismaRequestStatus.cancelled]: CaseStatusEnum.CANCELLED,
             [PrismaRequestStatus.closed]: CaseStatusEnum.CLOSED,
+            [PrismaRequestStatus.no_show]: CaseStatusEnum.CANCELLED,
+            [PrismaRequestStatus.rescheduled]: CaseStatusEnum.PENDING,
         };
         return new CaseStatus(mapping[prismaStatus]);
     }

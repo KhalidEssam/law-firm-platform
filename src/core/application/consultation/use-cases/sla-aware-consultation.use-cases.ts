@@ -133,7 +133,7 @@ export class CreateConsultationWithSLAUseCase {
 
     private toDTO(
         consultation: ConsultationRequest,
-        slaResult?: { responseDeadline: Date; resolutionDeadline: Date; escalationDeadline: Date | null } | null,
+        _slaResult?: { responseDeadline: Date; resolutionDeadline: Date; escalationDeadline: Date | null } | null,
     ): ConsultationRequestResponseDTO {
         return {
             id: consultation.id.getValue(),
@@ -154,10 +154,6 @@ export class CreateConsultationWithSLAUseCase {
             slaStatus: consultation.slaStatus?.getValue(),
             createdAt: consultation.createdAt,
             updatedAt: consultation.updatedAt,
-            // Additional SLA info
-            slaResponseDeadline: slaResult?.responseDeadline,
-            slaResolutionDeadline: slaResult?.resolutionDeadline,
-            slaEscalationDeadline: slaResult?.escalationDeadline,
         };
     }
 }

@@ -77,21 +77,14 @@ export class SLAIntegrationService {
             const reqType = this.mapToRequestType(requestType);
             const reqPriority = this.mapToPriority(priority);
 
-            // Find applicable policy
-            const policy = await this.policyRepository.findByTypeAndPriority(reqType, reqPriority);
+            // Find applicable policy using best match (tries exact priority, falls back to normal)
+            const policy = await this.policyRepository.findBestMatch(reqType, reqPriority);
 
             if (!policy) {
-                // Try to find a default policy for the type (without priority)
-                const defaultPolicy = await this.policyRepository.findByTypeAndPriority(reqType);
-
-                if (!defaultPolicy) {
-                    this.logger.warn(
-                        `No SLA policy found for type=${requestType}, priority=${priority}`,
-                    );
-                    return null;
-                }
-
-                return this.calculateSLAFromPolicy(defaultPolicy, reqPriority, createdAt);
+                this.logger.warn(
+                    `No SLA policy found for type=${requestType}, priority=${priority}`,
+                );
+                return null;
             }
 
             return this.calculateSLAFromPolicy(policy, reqPriority, createdAt);
