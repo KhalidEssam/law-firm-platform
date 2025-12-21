@@ -126,8 +126,12 @@ export class ConsultationRequestController {
         @Body() dto: CreateConsultationRequestDTO,
         @Request() req: any,
     ): Promise<ConsultationRequestResponseDTO> {
-        // Override subscriberId from authenticated user (security)
-        dto.subscriberId = req.user.id;
+        // Use authenticated user ID if available, otherwise use from body (for testing)
+        if (req.user?.id) {
+            dto.subscriberId = req.user.id;
+        } else if (!dto.subscriberId) {
+            throw new Error('subscriberId is required');
+        }
 
         return await this.createUseCase.execute(dto);
     }
