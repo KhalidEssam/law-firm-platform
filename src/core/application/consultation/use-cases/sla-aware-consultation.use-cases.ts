@@ -17,9 +17,7 @@ import {
 
 import { RequestStatusHistory } from '../../../domain/consultation/entities/consultation-request-entities';
 
-import {
-    IConsultationRequestUnitOfWork,
-} from '../ports/repository';
+import type { IConsultationRequestUnitOfWork } from '../ports/repository';
 
 import {
     CreateConsultationRequestDTO,
