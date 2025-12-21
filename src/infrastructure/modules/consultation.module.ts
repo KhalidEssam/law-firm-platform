@@ -8,6 +8,7 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipModule } from './membership.module';
 import { NotificationModule } from '../../interface/notification/notification.module';
 import { SLAModule } from './sla.module';
+import { UserModule } from './user.module';
 
 // Repository
 import { ConsultationRequestRepository } from '../persistence/consultation/prisma.repository';
@@ -53,6 +54,7 @@ import { ConsultationRequestController } from '../../interface/http/consultation
         forwardRef(() => MembershipModule), // Import MembershipModule for quota/usage integration
         NotificationModule, // Import NotificationModule for sending notifications
         SLAModule, // Import SLAModule for SLA integration
+        UserModule, // Import UserModule for user lookup by Auth0 ID
     ],
     controllers: [
         ConsultationRequestController, // REST API endpoints

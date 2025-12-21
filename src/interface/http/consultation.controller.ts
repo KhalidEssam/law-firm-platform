@@ -47,6 +47,7 @@ import {
     GetConsultationStatisticsUseCase,
     UpdateSLAStatusesUseCase,
 } from '../../core/application/consultation/use-cases/consultation.use-cases';
+import { GetUserByAuth0IdUseCase } from '../../core/application/use-cases/get-user-by-auth0.use-case';
 
 // DTOs
 import {
@@ -90,6 +91,7 @@ export class ConsultationRequestController {
         private readonly statisticsUseCase: GetConsultationStatisticsUseCase,
         private readonly updateSLAUseCase: UpdateSLAStatusesUseCase,
         private readonly notificationService: NotificationIntegrationService,
+        private readonly getUserByAuth0Id: GetUserByAuth0IdUseCase,
     ) { }
 
     // ============================================
@@ -126,8 +128,13 @@ export class ConsultationRequestController {
         @Body() dto: CreateConsultationRequestDTO,
         @Request() req: any,
     ): Promise<ConsultationRequestResponseDTO> {
-        // Use authenticated user ID if available, otherwise use from body (for testing)
-        if (req.user?.id) {
+        // Get user ID from authenticated user or body
+        if (req.user?.sub) {
+            // Auth0 user - look up database UUID from Auth0 ID
+            const user = await this.getUserByAuth0Id.execute(req.user.sub);
+            dto.subscriberId = user.id;
+        } else if (req.user?.id) {
+            // Local auth with direct ID
             dto.subscriberId = req.user.id;
         } else if (!dto.subscriberId) {
             throw new Error('subscriberId is required');
