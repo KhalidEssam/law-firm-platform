@@ -50,6 +50,7 @@ class CaseStatusMapper {
     private static readonly toPrismaMap: Record<CaseStatusEnum, PrismaRequestStatus> = {
         [CaseStatusEnum.PENDING]: PrismaRequestStatus.pending,
         [CaseStatusEnum.QUOTE_SENT]: PrismaRequestStatus.quote_sent,
+        [CaseStatusEnum.SCHEDULED]: PrismaRequestStatus.scheduled,
         [CaseStatusEnum.QUOTE_ACCEPTED]: PrismaRequestStatus.quote_accepted,
         [CaseStatusEnum.ACTIVE]: PrismaRequestStatus.in_progress,
         [CaseStatusEnum.CLOSED]: PrismaRequestStatus.closed,

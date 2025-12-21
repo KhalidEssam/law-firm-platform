@@ -139,6 +139,7 @@ import {
     DisputeListResponseDto,
     DisputeStatisticsResponseDto,
 } from '../../core/application/billing/dto/dispute.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('billing')
 export class BillingController {
@@ -208,8 +209,9 @@ export class BillingController {
     // ============================================
 
     @Post('invoices')
-    @Roles('system admin', 'platform')
-    @Permissions('create:invoices')
+    @Public()
+    // @Roles('system admin', 'platform')
+    // @Permissions('create:invoices')
     @HttpCode(HttpStatus.CREATED)
     async createMembershipInvoice(
         @Body() dto: CreateMembershipInvoiceDto,

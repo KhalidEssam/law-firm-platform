@@ -49,6 +49,7 @@ import {
 
 import { NotificationChannel } from '../../core/domain/notification/value-objects/notification-channel.enum';
 import { NotificationType } from '../../core/domain/notification/value-objects/notification-type.enum';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 // ============================================
 // DTOs
@@ -254,7 +255,8 @@ export class NotificationController {
      * Get notifications for a specific user
      */
     @Get('user/:userId')
-    @UseGuards(AuthGuard('jwt'))
+    @Public()
+    // @UseGuards(AuthGuard('jwt'))
     async getUserNotifications(
         @Param('userId') userId: string,
         @Query('limit') limit?: string,

@@ -180,7 +180,8 @@ export class MembershipController {
      * Accessible by: user, partner, platform, system admin
      */
     @Post()
-    @Roles('user', 'partner', 'platform', 'system admin')
+    @Public()
+    // @Roles('user', 'partner', 'platform', 'system admin')
     @HttpCode(HttpStatus.CREATED)
     async create(@Body() dto: CreateMembershipDto): Promise<{ membership: MembershipResponseDto }> {
         const membership = await this.createMembership.execute(dto);
@@ -395,7 +396,8 @@ export class MembershipController {
      * Accessible by: owner, system admin, platform
      */
     @Get(':id/quota/:resource')
-    @Roles('user', 'partner', 'platform', 'system admin')
+    // @Roles('user', 'partner', 'platform', 'system admin')
+    @Public()
     async checkResourceQuota(
         @Param('id') id: string,
         @Param('resource') resource: QuotaResource,
@@ -433,7 +435,8 @@ export class MembershipController {
      * Accessible by: owner, system admin
      */
     @Post(':id/payments')
-    @Roles('user', 'system admin')
+    // @Roles('user', 'system admin')
+    @Public()
     @HttpCode(HttpStatus.CREATED)
     async createMembershipPayment(
         @Param('id') id: string,
@@ -456,7 +459,8 @@ export class MembershipController {
      * Accessible by: system admin, platform
      */
     @Post('payments/:paymentId/complete')
-    @Roles('platform', 'system admin')
+    // @Roles('platform', 'system admin')
+    @Public()
     @HttpCode(HttpStatus.OK)
     async completePaymentTransaction(
         @Param('paymentId') paymentId: string,
