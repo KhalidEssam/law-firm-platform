@@ -137,6 +137,50 @@
             },
             "description": "Update the current authenticated user's profile"
           }
+        },
+        {
+          "name": "Send Mobile OTP (WhatsApp)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+966501234567\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/send-mobile-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "send-mobile-otp"]
+            },
+            "description": "Send OTP to user's WhatsApp number. OTP expires in 3 minutes. Phone number must be in international format (e.g., +966501234567)."
+          }
+        },
+        {
+          "name": "Verify Mobile OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+966501234567\",\n  \"otpCode\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/me/verify-mobile-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me", "verify-mobile-otp"]
+            },
+            "description": "Verify the OTP code sent to WhatsApp. OTP must be 6 digits and entered within 3 minutes."
+          }
         }
       ]
     },
@@ -316,7 +360,7 @@
           }
         },
         {
-          "name": "Verify User Mobile",
+          "name": "Verify User Mobile (Direct)",
           "request": {
             "method": "POST",
             "header": [],
@@ -332,7 +376,65 @@
                 }
               ]
             },
-            "description": "Verify user's mobile number (System Admin only)"
+            "description": "Directly verify user's mobile number without OTP (System Admin only)"
+          }
+        },
+        {
+          "name": "Send User Mobile OTP (WhatsApp)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+966501234567\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:id/send-mobile-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id", "send-mobile-otp"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Send OTP to any user's WhatsApp number (System Admin only). OTP expires in 3 minutes."
+          }
+        },
+        {
+          "name": "Verify User Mobile OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+966501234567\",\n  \"otpCode\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:id/verify-mobile-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id", "verify-mobile-otp"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Verify OTP for any user (System Admin only). OTP must be 6 digits."
           }
         },
         {

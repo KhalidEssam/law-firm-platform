@@ -951,6 +951,10 @@ model LegalOpinionRequest {
   paymentStatus    PaymentStatus? @default(pending)
   paymentReference String?
 
+  // SLA fields
+  slaDeadline DateTime?
+  slaStatus   SLAStatus?
+
   submittedAt DateTime  @default(now())
   completedAt DateTime?
   createdAt   DateTime  @default(now())
@@ -970,6 +974,7 @@ model LegalOpinionRequest {
   @@index([status, paymentStatus])
   @@index([createdAt])
   @@index([quoteValidUntil])
+  @@index([slaStatus, slaDeadline])
 }
 
 // ============================================
@@ -1063,6 +1068,10 @@ model ServiceRequest {
 
   status RequestStatus @default(pending)
 
+  // SLA fields
+  slaDeadline DateTime?
+  slaStatus   SLAStatus?
+
   submittedAt DateTime  @default(now())
   completedAt DateTime?
   createdAt   DateTime  @default(now())
@@ -1082,6 +1091,7 @@ model ServiceRequest {
   @@index([assignedProviderId, status])
   @@index([createdAt])
   @@index([status, createdAt])
+  @@index([slaStatus, slaDeadline])
 }
 
 model ServiceQuote {
@@ -1135,6 +1145,10 @@ model LitigationCase {
   paymentStatus    PaymentStatus? @default(pending)
   paymentReference String?
 
+  // SLA fields
+  slaDeadline DateTime?
+  slaStatus   SLAStatus?
+
   submittedAt DateTime  @default(now())
   closedAt    DateTime?
   createdAt   DateTime  @default(now())
@@ -1154,6 +1168,7 @@ model LitigationCase {
   @@index([assignedProviderId, status])
   @@index([caseType, status])
   @@index([createdAt])
+  @@index([slaStatus, slaDeadline])
 }
 
 model CaseHearing {
@@ -1202,6 +1217,10 @@ model CallRequest {
   callPlatform  String?
   callLink      String?
 
+  // SLA fields
+  slaDeadline DateTime?
+  slaStatus   SLAStatus?
+
   submittedAt DateTime  @default(now())
   completedAt DateTime?
   createdAt   DateTime  @default(now())
@@ -1219,6 +1238,7 @@ model CallRequest {
   @@index([assignedProviderId, scheduledAt])
   @@index([status, scheduledAt])
   @@index([createdAt])
+  @@index([slaStatus, slaDeadline])
 }
 
 // ============================================
