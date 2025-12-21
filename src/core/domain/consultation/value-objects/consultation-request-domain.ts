@@ -144,6 +144,59 @@ export class ConsultationStatusVO {
   equals(other: ConsultationStatusVO): boolean {
     return this.value === other.value;
   }
+
+  toString(): string {
+    return this.value;
+  }
+
+  toJSON(): string {
+    return this.value;
+  }
+}
+
+/**
+ * Maps Prisma RequestStatus to domain ConsultationStatus
+ */
+export function mapPrismaStatusToConsultationStatus(prismaStatus: string): ConsultationStatus {
+  const statusMap: Record<string, ConsultationStatus> = {
+    'pending': ConsultationStatus.PENDING,
+    'assigned': ConsultationStatus.ASSIGNED,
+    'scheduled': ConsultationStatus.ASSIGNED,        // Map to assigned
+    'in_progress': ConsultationStatus.IN_PROGRESS,
+    'quote_sent': ConsultationStatus.IN_PROGRESS,    // Consultation doesn't have quote workflow
+    'quote_accepted': ConsultationStatus.IN_PROGRESS,
+    'completed': ConsultationStatus.COMPLETED,
+    'disputed': ConsultationStatus.DISPUTED,
+    'cancelled': ConsultationStatus.CANCELLED,
+    'closed': ConsultationStatus.COMPLETED,          // Map closed to completed
+    'no_show': ConsultationStatus.CANCELLED,         // Map to cancelled
+    'rescheduled': ConsultationStatus.PENDING,       // Map to pending
+  };
+  return statusMap[prismaStatus] || ConsultationStatus.PENDING;
+}
+
+/**
+ * Maps domain ConsultationStatus to Prisma RequestStatus
+ */
+export function mapConsultationStatusToPrisma(status: ConsultationStatus): string {
+  const statusMap: Record<ConsultationStatus, string> = {
+    [ConsultationStatus.PENDING]: 'pending',
+    [ConsultationStatus.ASSIGNED]: 'assigned',
+    [ConsultationStatus.IN_PROGRESS]: 'in_progress',
+    [ConsultationStatus.AWAITING_INFO]: 'in_progress',   // Map to in_progress (awaiting_info not in Prisma)
+    [ConsultationStatus.RESPONDED]: 'in_progress',       // Map to in_progress (responded not in Prisma)
+    [ConsultationStatus.COMPLETED]: 'completed',
+    [ConsultationStatus.CANCELLED]: 'cancelled',
+    [ConsultationStatus.DISPUTED]: 'disputed',
+  };
+  return statusMap[status];
+}
+
+/**
+ * Check if a string is a valid consultation status
+ */
+export function isValidConsultationStatus(value: string): value is ConsultationStatus {
+  return Object.values(ConsultationStatus).includes(value as ConsultationStatus);
 }
 
 /**
