@@ -79,6 +79,8 @@ class ConsultationStatusMapper {
         [PrismaRequestStatus.disputed]: ConsultationStatus.DISPUTED,
         [PrismaRequestStatus.cancelled]: ConsultationStatus.CANCELLED,
         [PrismaRequestStatus.closed]: ConsultationStatus.CANCELLED,
+        [PrismaRequestStatus.no_show]: ConsultationStatus.CANCELLED,
+        [PrismaRequestStatus.rescheduled]: ConsultationStatus.PENDING,
     };
 
     static toPrisma(status: ConsultationStatusVO | ConsultationStatus): PrismaRequestStatus {
