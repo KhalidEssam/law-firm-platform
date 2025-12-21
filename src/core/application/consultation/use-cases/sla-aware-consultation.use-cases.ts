@@ -3,7 +3,7 @@
 // SLA-Aware Consultation Use Cases
 // These use cases wrap core consultation operations with SLA functionality
 
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
     ConsultationRequest,
     ConsultationId,
@@ -15,10 +15,6 @@ import {
     Description,
 } from '../../../domain/consultation/value-objects/consultation-request-domain';
 
-import { RequestStatusHistory } from '../../../domain/consultation/entities/consultation-request-entities';
-
-import type { IConsultationRequestUnitOfWork } from '../ports/repository';
-
 import {
     CreateConsultationRequestDTO,
     ConsultationRequestResponseDTO,
@@ -26,7 +22,8 @@ import {
 
 import { SLAIntegrationService } from '../../sla/services/sla-integration.service';
 import { SLAStatus as SLAModuleStatus } from '../../../domain/sla/value-objects/sla-status.vo';
-import { SLAStatus, SLAStatusType } from '../../../domain/consultation/value-objects/consultation-request-domain';
+import { SLAStatus } from '../../../domain/consultation/value-objects/consultation-request-domain';
+import { ConsultationRequestRepository } from '../../../../infrastructure/persistence/consultation/prisma.repository';
 
 // ============================================
 // HELPER: MAP SLA STATUS BETWEEN MODULES
@@ -54,8 +51,7 @@ export class CreateConsultationWithSLAUseCase {
     private readonly logger = new Logger(CreateConsultationWithSLAUseCase.name);
 
     constructor(
-        @Inject('IConsultationRequestUnitOfWork')
-        private readonly unitOfWork: IConsultationRequestUnitOfWork,
+        private readonly repository: ConsultationRequestRepository,
         private readonly slaIntegration: SLAIntegrationService,
     ) {}
 
@@ -95,23 +91,10 @@ export class CreateConsultationWithSLAUseCase {
             consultation.setSLAStatus(mapSLAModuleStatusToConsultation(slaResult.slaStatus));
         }
 
-        // Use transaction to ensure consistency
-        return await this.unitOfWork.transaction(async (uow) => {
-            // Save consultation with SLA
-            const saved = await uow.consultationRequests.create(consultation);
+        // Save consultation with SLA
+        const saved = await this.repository.create(consultation);
 
-            // Create initial status history
-            const statusHistory = RequestStatusHistory.create({
-                consultationId: saved.id,
-                toStatus: saved.status,
-                reason: slaResult
-                    ? `Initial creation with SLA (Policy: ${slaResult.policyName})`
-                    : 'Initial creation (No SLA policy)',
-            });
-            await uow.statusHistories.create(statusHistory);
-
-            return this.toDTO(saved, slaResult);
-        });
+        return this.toDTO(saved, slaResult);
     }
 
     private validate(dto: CreateConsultationRequestDTO): void {
@@ -163,8 +146,7 @@ export class CreateConsultationWithSLAUseCase {
 @Injectable()
 export class CheckConsultationSLAStatusUseCase {
     constructor(
-        @Inject('IConsultationRequestRepository')
-        private readonly repository: any,
+        private readonly repository: ConsultationRequestRepository,
         private readonly slaIntegration: SLAIntegrationService,
     ) {}
 
@@ -217,8 +199,7 @@ export class CheckConsultationSLAStatusUseCase {
 @Injectable()
 export class GetConsultationsByUrgencyUseCase {
     constructor(
-        @Inject('IConsultationRequestRepository')
-        private readonly repository: any,
+        private readonly repository: ConsultationRequestRepository,
         private readonly slaIntegration: SLAIntegrationService,
     ) {}
 
@@ -240,7 +221,7 @@ export class GetConsultationsByUrgencyUseCase {
         });
 
         // Map to SLA data format
-        const slaDataList = consultations.map((c: any) => ({
+        const slaDataList = consultations.map((c: ConsultationRequest) => ({
             requestId: c.id.getValue(),
             requestType: 'consultation',
             priority: c.urgency?.getValue() || 'normal',
@@ -285,8 +266,7 @@ export class UpdateConsultationSLAStatusUseCase {
     private readonly logger = new Logger(UpdateConsultationSLAStatusUseCase.name);
 
     constructor(
-        @Inject('IConsultationRequestUnitOfWork')
-        private readonly unitOfWork: IConsultationRequestUnitOfWork,
+        private readonly repository: ConsultationRequestRepository,
         private readonly slaIntegration: SLAIntegrationService,
     ) {}
 
@@ -296,44 +276,41 @@ export class UpdateConsultationSLAStatusUseCase {
         newStatus: string;
     }> {
         const id = ConsultationId.create(consultationId);
+        const consultation = await this.repository.findById(id);
 
-        return await this.unitOfWork.transaction(async (uow) => {
-            const consultation = await uow.consultationRequests.findById(id);
+        if (!consultation) {
+            throw new Error(`Consultation request with ID ${consultationId} not found`);
+        }
 
-            if (!consultation) {
-                throw new Error(`Consultation request with ID ${consultationId} not found`);
-            }
+        const slaData = {
+            requestId: consultation.id.getValue(),
+            requestType: 'consultation',
+            priority: consultation.urgency?.getValue() || 'normal',
+            createdAt: consultation.createdAt,
+            respondedAt: consultation.respondedAt,
+            resolvedAt: consultation.completedAt,
+            slaDeadline: consultation.slaDeadline,
+            currentSlaStatus: consultation.slaStatus?.getValue(),
+        };
 
-            const slaData = {
-                requestId: consultation.id.getValue(),
-                requestType: 'consultation',
-                priority: consultation.urgency?.getValue() || 'normal',
-                createdAt: consultation.createdAt,
-                respondedAt: consultation.respondedAt,
-                resolvedAt: consultation.completedAt,
-                slaDeadline: consultation.slaDeadline,
-                currentSlaStatus: consultation.slaStatus?.getValue(),
-            };
+        const result = this.slaIntegration.checkSLAStatus(slaData);
 
-            const result = this.slaIntegration.checkSLAStatus(slaData);
+        if (result.hasChanged) {
+            // Map status from SLA module format to consultation domain format
+            const domainStatus = mapSLAModuleStatusToConsultation(result.currentStatus as any);
+            consultation.setSLAStatus(domainStatus);
+            await this.repository.update(consultation);
 
-            if (result.hasChanged) {
-                // Map status from SLA module format to consultation domain format
-                const domainStatus = mapSLAModuleStatusToConsultation(result.currentStatus as any);
-                consultation.setSLAStatus(domainStatus);
-                await uow.consultationRequests.update(consultation);
+            this.logger.log(
+                `Updated SLA status for ${consultationId}: ` +
+                `${result.previousStatus} -> ${result.currentStatus}`,
+            );
+        }
 
-                this.logger.log(
-                    `Updated SLA status for ${consultationId}: ` +
-                    `${result.previousStatus} -> ${result.currentStatus}`,
-                );
-            }
-
-            return {
-                updated: result.hasChanged,
-                previousStatus: result.previousStatus,
-                newStatus: result.currentStatus,
-            };
-        });
+        return {
+            updated: result.hasChanged,
+            previousStatus: result.previousStatus,
+            newStatus: result.currentStatus,
+        };
     }
 }
