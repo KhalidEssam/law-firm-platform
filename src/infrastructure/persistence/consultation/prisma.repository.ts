@@ -140,28 +140,15 @@ class SLAStatusMapper {
 }
 
 class ConsultationTypeMapper {
-    private static readonly toPrismaMap: Record<string, PrismaRequestType> = {
-        'consultation': PrismaRequestType.consultation,
-        'legal_opinion': PrismaRequestType.legal_opinion,
-        'service': PrismaRequestType.service,
-        'litigation': PrismaRequestType.litigation,
-        'call': PrismaRequestType.call,
-    };
+    // consultationType in Prisma is a plain String field, not RequestType enum
+    // So we just pass through the value directly
 
-    private static readonly toDomainMap: Record<PrismaRequestType, string> = {
-        [PrismaRequestType.consultation]: 'consultation',
-        [PrismaRequestType.legal_opinion]: 'legal_opinion',
-        [PrismaRequestType.service]: 'service',
-        [PrismaRequestType.litigation]: 'litigation',
-        [PrismaRequestType.call]: 'call',
-    };
-
-    static toPrisma(type: ConsultationTypeVO): PrismaRequestType {
-        return this.toPrismaMap[type.getValue()] || PrismaRequestType.consultation;
+    static toPrisma(type: ConsultationTypeVO): string {
+        return type.getValue();
     }
 
-    static toDomain(prismaType: PrismaRequestType): ConsultationTypeVO {
-        return ConsultationTypeVO.create(this.toDomainMap[prismaType]);
+    static toDomain(prismaType: string): ConsultationTypeVO {
+        return ConsultationTypeVO.create(prismaType);
     }
 }
 
