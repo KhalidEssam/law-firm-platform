@@ -695,6 +695,28 @@ export class ConsultationRequest {
   }
 
   /**
+   * Set SLA deadline from external policy
+   */
+  setSLADeadline(deadline: Date): void {
+    this.props.slaDeadline = deadline;
+    this.props.slaStatus = SLAStatus.calculate(deadline);
+    this.props.updatedAt = new Date();
+  }
+
+  /**
+   * Set SLA status directly (for integration with SLA service)
+   */
+  setSLAStatus(status: SLAStatus | { getValue(): string }): void {
+    if (status instanceof SLAStatus) {
+      this.props.slaStatus = status;
+    } else {
+      // Handle external SLA status value objects
+      this.props.slaStatus = SLAStatus.create(status.getValue());
+    }
+    this.props.updatedAt = new Date();
+  }
+
+  /**
    * Soft delete the request
    */
   softDelete(): void {
