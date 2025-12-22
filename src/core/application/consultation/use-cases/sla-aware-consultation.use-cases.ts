@@ -214,11 +214,15 @@ export class GetConsultationsByUrgencyUseCase {
             urgencyScore: number;
         }>
     > {
-        // Get active consultations
-        const consultations = await this.repository.getAll({
-            status: filters?.status || ['pending', 'assigned', 'in_progress'],
-            assignedProviderId: filters?.providerId,
-        });
+        // Get active consultations (use high limit to get all)
+        const result = await this.repository.findAll(
+            {
+                status: filters?.status || ['pending', 'assigned', 'in_progress'],
+                assignedProviderId: filters?.providerId,
+            },
+            { page: 1, limit: 1000 },
+        );
+        const consultations = result.data;
 
         // Map to SLA data format
         const slaDataList = consultations.map((c: ConsultationRequest) => ({
@@ -298,8 +302,7 @@ export class UpdateConsultationSLAStatusUseCase {
         if (result.hasChanged) {
             // Map status from SLA module format to consultation domain format
             const domainStatus = mapSLAModuleStatusToConsultation(result.currentStatus as any);
-            consultation.setSLAStatus(domainStatus);
-            await this.repository.update(consultation);
+            await this.repository.updateSLAStatus(id, domainStatus);
 
             this.logger.log(
                 `Updated SLA status for ${consultationId}: ` +
