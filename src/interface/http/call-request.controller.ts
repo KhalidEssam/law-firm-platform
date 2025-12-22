@@ -12,10 +12,12 @@ import {
     Query,
     HttpCode,
     HttpStatus,
+    Inject,
+    Optional,
+    Logger,
 } from '@nestjs/common';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { Public } from '../../auth/decorators/public.decorator';
 
 // Use Cases
 import {
@@ -53,11 +55,20 @@ import {
     CallRequestListResponseDto,
 } from '../../core/application/call-request/dto/call-request.dto';
 
-// Integration Services (will be added later)
-// import { NotificationIntegrationService } from '../../core/application/notification/notification-integration.service';
+// Notification Integration Service Interface
+export interface ICallNotificationService {
+    notifyCallAssigned(callRequestId: string, providerId: string): Promise<void>;
+    notifyCallScheduled(callRequestId: string): Promise<void>;
+    notifyCallRescheduled(callRequestId: string): Promise<void>;
+    notifyCallCompleted(callRequestId: string): Promise<void>;
+}
+
+export const CALL_NOTIFICATION_SERVICE = Symbol('CALL_NOTIFICATION_SERVICE');
 
 @Controller('call-requests')
 export class CallRequestController {
+    private readonly logger = new Logger(CallRequestController.name);
+
     constructor(
         private readonly createCallRequest: CreateCallRequestUseCase,
         private readonly getCallRequestById: GetCallRequestByIdUseCase,
@@ -77,7 +88,8 @@ export class CallRequestController {
         private readonly getCallMinutesSummary: GetCallMinutesSummaryUseCase,
         private readonly checkProviderAvailability: CheckProviderAvailabilityUseCase,
         private readonly getScheduledCalls: GetScheduledCallsUseCase,
-        // private readonly notificationService: NotificationIntegrationService,
+        @Optional() @Inject(CALL_NOTIFICATION_SERVICE)
+        private readonly notificationService?: ICallNotificationService,
     ) {}
 
     // ============================================
@@ -88,7 +100,7 @@ export class CallRequestController {
      * Create a new call request
      */
     @Post()
-    @Public() // TODO: Add proper auth
+    @Roles('user', 'system admin')
     @HttpCode(HttpStatus.CREATED)
     async create(@Body() dto: CreateCallRequestDto): Promise<{ callRequest: CallRequestResponseDto }> {
         const callRequest = await this.createCallRequest.execute(dto);
@@ -115,7 +127,7 @@ export class CallRequestController {
      * Get call request by ID
      */
     @Get(':id')
-    @Public() // TODO: Add proper auth
+    @Roles('user', 'partner', 'system admin')
     async findById(@Param('id') id: string): Promise<{ callRequest: CallRequestResponseDto }> {
         const callRequest = await this.getCallRequestById.execute(id);
         return { callRequest: this.mapToResponse(callRequest) };
@@ -143,8 +155,7 @@ export class CallRequestController {
      * Assign a provider to a call request
      */
     @Post(':id/assign')
-    // @Roles('system admin', 'platform')
-    @Public()
+    @Roles('system admin', 'platform')
     @HttpCode(HttpStatus.OK)
     async assign(
         @Param('id') id: string,
@@ -152,8 +163,10 @@ export class CallRequestController {
     ): Promise<{ callRequest: CallRequestResponseDto }> {
         const callRequest = await this.assignProvider.execute(id, dto);
 
-        // TODO: Send notification to provider
-        // await this.notificationService.notifyCallAssigned(callRequest.id, dto.providerId);
+        // Send notification to provider (non-blocking)
+        this.sendNotificationSafe(() =>
+            this.notificationService?.notifyCallAssigned(callRequest.id, dto.providerId)
+        );
 
         return { callRequest: this.mapToResponse(callRequest) };
     }
@@ -166,8 +179,7 @@ export class CallRequestController {
      * Schedule a call
      */
     @Post(':id/schedule')
-    // @Roles('partner', 'system admin', 'platform')
-    @Public()
+    @Roles('partner', 'system admin', 'platform')
     @HttpCode(HttpStatus.OK)
     async schedule(
         @Param('id') id: string,
@@ -175,8 +187,10 @@ export class CallRequestController {
     ): Promise<{ callRequest: CallRequestResponseDto }> {
         const callRequest = await this.scheduleCall.execute(id, dto);
 
-        // TODO: Send notification to subscriber
-        // await this.notificationService.notifyCallScheduled(callRequest.id);
+        // Send notification to subscriber (non-blocking)
+        this.sendNotificationSafe(() =>
+            this.notificationService?.notifyCallScheduled(callRequest.id)
+        );
 
         return { callRequest: this.mapToResponse(callRequest) };
     }
@@ -193,8 +207,10 @@ export class CallRequestController {
     ): Promise<{ callRequest: CallRequestResponseDto }> {
         const callRequest = await this.rescheduleCall.execute(id, dto);
 
-        // TODO: Send notification
-        // await this.notificationService.notifyCallRescheduled(callRequest.id);
+        // Send notification (non-blocking)
+        this.sendNotificationSafe(() =>
+            this.notificationService?.notifyCallRescheduled(callRequest.id)
+        );
 
         return { callRequest: this.mapToResponse(callRequest) };
     }
@@ -220,8 +236,7 @@ export class CallRequestController {
      * Start a call
      */
     @Post(':id/start')
-    @Public()
-    // @Roles('partner', 'system admin')
+    @Roles('partner', 'system admin')
     @HttpCode(HttpStatus.OK)
     async start(@Param('id') id: string): Promise<{ callRequest: CallRequestResponseDto }> {
         const callRequest = await this.startCall.execute(id);
@@ -232,8 +247,7 @@ export class CallRequestController {
      * End a call
      */
     @Post(':id/end')
-    // @Roles('partner', 'system admin')
-    @Public()
+    @Roles('partner', 'system admin')
     @HttpCode(HttpStatus.OK)
     async end(
         @Param('id') id: string,
@@ -241,9 +255,10 @@ export class CallRequestController {
     ): Promise<{ callRequest: CallRequestResponseDto }> {
         const callRequest = await this.endCall.execute(id, dto);
 
-        // TODO: Consume quota and send notifications
-        // await this.consumeCallQuota(callRequest);
-        // await this.notificationService.notifyCallCompleted(callRequest.id);
+        // Send completion notification (non-blocking)
+        this.sendNotificationSafe(() =>
+            this.notificationService?.notifyCallCompleted(callRequest.id)
+        );
 
         return { callRequest: this.mapToResponse(callRequest) };
     }
@@ -391,6 +406,22 @@ export class CallRequestController {
     // ============================================
     // HELPER METHODS
     // ============================================
+
+    /**
+     * Safely send notification without blocking the main request
+     */
+    private sendNotificationSafe(notificationFn: () => Promise<void> | undefined): void {
+        if (!this.notificationService) {
+            return;
+        }
+
+        const promise = notificationFn();
+        if (promise) {
+            promise.catch((error) => {
+                this.logger.error('Failed to send notification', error);
+            });
+        }
+    }
 
     private mapToResponse(callRequest: any): CallRequestResponseDto {
         return {
