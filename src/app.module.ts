@@ -28,6 +28,7 @@ import { CallRequestModule } from './infrastructure/modules/call-request.module'
 import { RoutingModule } from './infrastructure/modules/routing.module';
 import { ReportsModule } from './infrastructure/modules/reports.module';
 import { SLAModule } from './infrastructure/modules/sla.module';
+import { SpecializationModule } from './infrastructure/modules/specialization.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { SLAModule } from './infrastructure/modules/sla.module';
     RoutingModule,
     ReportsModule,
     SLAModule,
+    SpecializationModule,
   ],
   controllers: [AppController],
   providers: [
