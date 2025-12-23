@@ -93,6 +93,187 @@ export interface LegalOpinionStatusChangeNotificationPayload {
     subject: string;
 }
 
+// ============================================
+// LITIGATION CASE NOTIFICATION PAYLOADS
+// ============================================
+
+export interface LitigationCaseCreatedNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    caseType: string;
+    title: string;
+}
+
+export interface LitigationCaseAssignedNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId: string;
+    providerEmail?: string;
+    caseType: string;
+    title: string;
+}
+
+export interface LitigationCaseQuoteSentNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    caseType: string;
+    title: string;
+    quoteAmount: number;
+    currency: string;
+    validUntil: Date;
+}
+
+export interface LitigationCaseQuoteAcceptedNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    providerId: string;
+    providerEmail?: string;
+    caseType: string;
+    title: string;
+    quoteAmount: number;
+    currency: string;
+}
+
+export interface LitigationCasePaymentReceivedNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId?: string;
+    providerEmail?: string;
+    amount: number;
+    currency: string;
+}
+
+export interface LitigationCaseActivatedNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    caseType: string;
+    title: string;
+}
+
+export interface LitigationCaseClosedNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    caseType: string;
+    title: string;
+}
+
+export interface LitigationCaseCancelledNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId?: string;
+    providerEmail?: string;
+    reason?: string;
+}
+
+export interface LitigationCaseRefundNotificationPayload {
+    caseId: string;
+    caseNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    refundAmount: number;
+    currency: string;
+}
+
+// ============================================
+// CALL REQUEST NOTIFICATION PAYLOADS
+// ============================================
+
+export interface CallRequestCreatedNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    purpose: string;
+    preferredDate?: Date;
+}
+
+export interface CallRequestAssignedNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId: string;
+    providerEmail?: string;
+    purpose: string;
+}
+
+export interface CallScheduledNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId: string;
+    providerEmail?: string;
+    scheduledAt: Date;
+    durationMinutes: number;
+    callLink?: string;
+}
+
+export interface CallRescheduledNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId: string;
+    providerEmail?: string;
+    oldScheduledAt: Date;
+    newScheduledAt: Date;
+    reason?: string;
+}
+
+export interface CallReminderNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    userId: string;
+    userEmail?: string;
+    scheduledAt: Date;
+    minutesUntilCall: number;
+    callLink?: string;
+}
+
+export interface CallCompletedNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    durationMinutes: number;
+}
+
+export interface CallCancelledNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId?: string;
+    providerEmail?: string;
+    cancelledBy: 'subscriber' | 'provider' | 'system';
+    reason?: string;
+}
+
+export interface CallNoShowNotificationPayload {
+    callRequestId: string;
+    requestNumber: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId: string;
+    providerEmail?: string;
+    scheduledAt: Date;
+}
+
 export interface QuotaWarningNotificationPayload {
     userId: string;
     userEmail?: string;
@@ -493,6 +674,554 @@ export class NotificationIntegrationService {
         } catch (error) {
             console.error('[NotificationIntegration] Failed to send legal opinion status change notification:', error);
             return null;
+        }
+    }
+
+    // ============================================
+    // LITIGATION CASE NOTIFICATIONS
+    // ============================================
+
+    async notifyLitigationCaseCreated(payload: LitigationCaseCreatedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_CREATED,
+                title: 'Litigation Case Submitted',
+                titleAr: 'تم تقديم القضية',
+                message: `Your litigation case #${payload.caseNumber} "${payload.title}" (${payload.caseType}) has been submitted successfully. We will assign a lawyer shortly.`,
+                messageAr: `تم تقديم قضيتك #${payload.caseNumber} "${payload.title}" (${payload.caseType}) بنجاح. سنقوم بتعيين محامٍ قريباً.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send litigation case created notification:', error);
+            return null;
+        }
+    }
+
+    async notifyLitigationCaseAssignedToSubscriber(payload: LitigationCaseAssignedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_ASSIGNED,
+                title: 'Lawyer Assigned to Your Case',
+                titleAr: 'تم تعيين محامٍ لقضيتك',
+                message: `A lawyer has been assigned to your case #${payload.caseNumber} "${payload.title}". You will receive a quote shortly.`,
+                messageAr: `تم تعيين محامٍ لقضيتك #${payload.caseNumber} "${payload.title}". ستتلقى عرض سعر قريباً.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send case assigned notification to subscriber:', error);
+            return null;
+        }
+    }
+
+    async notifyLitigationCaseAssignedToProvider(payload: LitigationCaseAssignedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.providerId,
+                type: NotificationType.CASE_ASSIGNED,
+                title: 'New Case Assigned',
+                titleAr: 'قضية جديدة معينة لك',
+                message: `You have been assigned litigation case #${payload.caseNumber}: "${payload.title}" (${payload.caseType}). Please review and send a quote.`,
+                messageAr: `تم تعيين القضية #${payload.caseNumber}: "${payload.title}" (${payload.caseType}) لك. يرجى المراجعة وإرسال عرض سعر.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.providerEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send case assigned notification to provider:', error);
+            return null;
+        }
+    }
+
+    async notifyLitigationQuoteSent(payload: LitigationCaseQuoteSentNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            const amountStr = `${payload.currency} ${payload.quoteAmount.toFixed(2)}`;
+            const validUntilStr = payload.validUntil.toLocaleDateString();
+
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_QUOTE_SENT,
+                title: 'Quote Received for Your Case',
+                titleAr: 'تم استلام عرض سعر لقضيتك',
+                message: `A quote of ${amountStr} has been sent for case #${payload.caseNumber} "${payload.title}". Valid until: ${validUntilStr}. Please review and accept to proceed.`,
+                messageAr: `تم إرسال عرض سعر بمبلغ ${amountStr} للقضية #${payload.caseNumber} "${payload.title}". صالح حتى: ${validUntilStr}. يرجى المراجعة والقبول للمتابعة.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send quote sent notification:', error);
+            return null;
+        }
+    }
+
+    async notifyLitigationQuoteAccepted(payload: LitigationCaseQuoteAcceptedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            const amountStr = `${payload.currency} ${payload.quoteAmount.toFixed(2)}`;
+
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.providerId,
+                type: NotificationType.CASE_QUOTE_ACCEPTED,
+                title: 'Quote Accepted',
+                titleAr: 'تم قبول عرض السعر',
+                message: `Your quote of ${amountStr} for case #${payload.caseNumber} "${payload.title}" has been accepted. Awaiting payment.`,
+                messageAr: `تم قبول عرض السعر الخاص بك بمبلغ ${amountStr} للقضية #${payload.caseNumber} "${payload.title}". في انتظار الدفع.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.providerEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send quote accepted notification:', error);
+            return null;
+        }
+    }
+
+    async notifyLitigationPaymentReceived(payload: LitigationCasePaymentReceivedNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const amountStr = `${payload.currency} ${payload.amount.toFixed(2)}`;
+
+        // Notify subscriber
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_PAYMENT_RECEIVED,
+                title: 'Payment Confirmed',
+                titleAr: 'تم تأكيد الدفع',
+                message: `Your payment of ${amountStr} for case #${payload.caseNumber} has been received. The case will be activated shortly.`,
+                messageAr: `تم استلام دفعتك بمبلغ ${amountStr} للقضية #${payload.caseNumber}. سيتم تفعيل القضية قريباً.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send payment received notification to subscriber:', error);
+        }
+
+        // Notify provider if assigned
+        if (payload.providerId) {
+            try {
+                await this.sendNotificationUseCase.execute({
+                    userId: payload.providerId,
+                    type: NotificationType.CASE_PAYMENT_RECEIVED,
+                    title: 'Case Payment Confirmed',
+                    titleAr: 'تم تأكيد دفع القضية',
+                    message: `Payment of ${amountStr} has been received for case #${payload.caseNumber}. The case is ready to be activated.`,
+                    messageAr: `تم استلام دفعة بمبلغ ${amountStr} للقضية #${payload.caseNumber}. القضية جاهزة للتفعيل.`,
+                    relatedEntityType: 'LitigationCase',
+                    relatedEntityId: payload.caseId,
+                    email: payload.providerEmail,
+                });
+            } catch (error) {
+                console.error('[NotificationIntegration] Failed to send payment received notification to provider:', error);
+            }
+        }
+    }
+
+    async notifyLitigationCaseActivated(payload: LitigationCaseActivatedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_ACTIVATED,
+                title: 'Case Activated',
+                titleAr: 'تم تفعيل القضية',
+                message: `Your litigation case #${payload.caseNumber} "${payload.title}" is now active. Your assigned lawyer will begin working on it.`,
+                messageAr: `قضيتك #${payload.caseNumber} "${payload.title}" نشطة الآن. سيبدأ المحامي المعين بالعمل عليها.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send case activated notification:', error);
+            return null;
+        }
+    }
+
+    async notifyLitigationCaseClosed(payload: LitigationCaseClosedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_CLOSED,
+                title: 'Case Closed',
+                titleAr: 'تم إغلاق القضية',
+                message: `Your litigation case #${payload.caseNumber} "${payload.title}" has been closed. Thank you for using our services.`,
+                messageAr: `تم إغلاق قضيتك #${payload.caseNumber} "${payload.title}". شكراً لاستخدامك خدماتنا.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send case closed notification:', error);
+            return null;
+        }
+    }
+
+    async notifyLitigationCaseCancelled(payload: LitigationCaseCancelledNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const reasonText = payload.reason ? ` Reason: ${payload.reason}` : '';
+        const reasonTextAr = payload.reason ? ` السبب: ${payload.reason}` : '';
+
+        // Notify subscriber
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_CANCELLED,
+                title: 'Case Cancelled',
+                titleAr: 'تم إلغاء القضية',
+                message: `Your litigation case #${payload.caseNumber} has been cancelled.${reasonText}`,
+                messageAr: `تم إلغاء قضيتك #${payload.caseNumber}.${reasonTextAr}`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send case cancelled notification to subscriber:', error);
+        }
+
+        // Notify provider if assigned
+        if (payload.providerId) {
+            try {
+                await this.sendNotificationUseCase.execute({
+                    userId: payload.providerId,
+                    type: NotificationType.CASE_CANCELLED,
+                    title: 'Assigned Case Cancelled',
+                    titleAr: 'تم إلغاء القضية المعينة',
+                    message: `Case #${payload.caseNumber} assigned to you has been cancelled.${reasonText}`,
+                    messageAr: `تم إلغاء القضية #${payload.caseNumber} المعينة لك.${reasonTextAr}`,
+                    relatedEntityType: 'LitigationCase',
+                    relatedEntityId: payload.caseId,
+                    email: payload.providerEmail,
+                });
+            } catch (error) {
+                console.error('[NotificationIntegration] Failed to send case cancelled notification to provider:', error);
+            }
+        }
+    }
+
+    async notifyLitigationRefundProcessed(payload: LitigationCaseRefundNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            const amountStr = `${payload.currency} ${payload.refundAmount.toFixed(2)}`;
+
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CASE_REFUND_PROCESSED,
+                title: 'Refund Processed for Case',
+                titleAr: 'تم معالجة الاسترداد للقضية',
+                message: `A refund of ${amountStr} has been processed for case #${payload.caseNumber}. It may take 5-10 business days to appear in your account.`,
+                messageAr: `تم معالجة استرداد بمبلغ ${amountStr} للقضية #${payload.caseNumber}. قد يستغرق 5-10 أيام عمل ليظهر في حسابك.`,
+                relatedEntityType: 'LitigationCase',
+                relatedEntityId: payload.caseId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send refund processed notification:', error);
+            return null;
+        }
+    }
+
+    // ============================================
+    // CALL REQUEST NOTIFICATIONS
+    // ============================================
+
+    async notifyCallRequestCreated(payload: CallRequestCreatedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            const dateStr = payload.preferredDate?.toLocaleDateString() || 'Not specified';
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CALL_REQUEST_CREATED,
+                title: 'Call Request Submitted',
+                titleAr: 'تم تقديم طلب المكالمة',
+                message: `Your call request #${payload.requestNumber} has been submitted. Purpose: ${payload.purpose}. Preferred date: ${dateStr}. We will assign a provider shortly.`,
+                messageAr: `تم تقديم طلب المكالمة #${payload.requestNumber}. الغرض: ${payload.purpose}. التاريخ المفضل: ${dateStr}. سنقوم بتعيين مقدم خدمة قريباً.`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send call request created notification:', error);
+            return null;
+        }
+    }
+
+    async notifyCallRequestAssignedToSubscriber(payload: CallRequestAssignedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CALL_REQUEST_ASSIGNED,
+                title: 'Provider Assigned to Your Call',
+                titleAr: 'تم تعيين مقدم خدمة لمكالمتك',
+                message: `A provider has been assigned to your call request #${payload.requestNumber}. You will receive scheduling details shortly.`,
+                messageAr: `تم تعيين مقدم خدمة لطلب المكالمة #${payload.requestNumber}. ستتلقى تفاصيل الجدولة قريباً.`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send call assigned notification to subscriber:', error);
+            return null;
+        }
+    }
+
+    async notifyCallRequestAssignedToProvider(payload: CallRequestAssignedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.providerId,
+                type: NotificationType.CALL_REQUEST_ASSIGNED,
+                title: 'New Call Assigned',
+                titleAr: 'مكالمة جديدة معينة لك',
+                message: `You have been assigned call request #${payload.requestNumber}. Purpose: ${payload.purpose}. Please schedule the call.`,
+                messageAr: `تم تعيين طلب المكالمة #${payload.requestNumber} لك. الغرض: ${payload.purpose}. يرجى جدولة المكالمة.`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.providerEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send call assigned notification to provider:', error);
+            return null;
+        }
+    }
+
+    async notifyCallScheduled(payload: CallScheduledNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const scheduledDateStr = payload.scheduledAt.toLocaleString();
+        const callLinkInfo = payload.callLink ? ` Join link: ${payload.callLink}` : '';
+        const callLinkInfoAr = payload.callLink ? ` رابط الانضمام: ${payload.callLink}` : '';
+
+        // Notify subscriber
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CALL_SCHEDULED,
+                title: 'Call Scheduled',
+                titleAr: 'تم جدولة المكالمة',
+                message: `Your call #${payload.requestNumber} has been scheduled for ${scheduledDateStr} (${payload.durationMinutes} minutes).${callLinkInfo}`,
+                messageAr: `تم جدولة مكالمتك #${payload.requestNumber} في ${scheduledDateStr} (${payload.durationMinutes} دقيقة).${callLinkInfoAr}`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send call scheduled notification to subscriber:', error);
+        }
+
+        // Notify provider
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.providerId,
+                type: NotificationType.CALL_SCHEDULED,
+                title: 'Call Confirmed',
+                titleAr: 'تم تأكيد المكالمة',
+                message: `Call #${payload.requestNumber} confirmed for ${scheduledDateStr} (${payload.durationMinutes} minutes).${callLinkInfo}`,
+                messageAr: `تم تأكيد المكالمة #${payload.requestNumber} في ${scheduledDateStr} (${payload.durationMinutes} دقيقة).${callLinkInfoAr}`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.providerEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send call scheduled notification to provider:', error);
+        }
+    }
+
+    async notifyCallRescheduled(payload: CallRescheduledNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const oldDateStr = payload.oldScheduledAt.toLocaleString();
+        const newDateStr = payload.newScheduledAt.toLocaleString();
+        const reasonText = payload.reason ? ` Reason: ${payload.reason}` : '';
+        const reasonTextAr = payload.reason ? ` السبب: ${payload.reason}` : '';
+
+        // Notify subscriber
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CALL_RESCHEDULED,
+                title: 'Call Rescheduled',
+                titleAr: 'تم إعادة جدولة المكالمة',
+                message: `Your call #${payload.requestNumber} has been rescheduled from ${oldDateStr} to ${newDateStr}.${reasonText}`,
+                messageAr: `تم إعادة جدولة مكالمتك #${payload.requestNumber} من ${oldDateStr} إلى ${newDateStr}.${reasonTextAr}`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send reschedule notification to subscriber:', error);
+        }
+
+        // Notify provider
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.providerId,
+                type: NotificationType.CALL_RESCHEDULED,
+                title: 'Call Rescheduled',
+                titleAr: 'تم إعادة جدولة المكالمة',
+                message: `Call #${payload.requestNumber} has been rescheduled from ${oldDateStr} to ${newDateStr}.${reasonText}`,
+                messageAr: `تم إعادة جدولة المكالمة #${payload.requestNumber} من ${oldDateStr} إلى ${newDateStr}.${reasonTextAr}`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.providerEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send reschedule notification to provider:', error);
+        }
+    }
+
+    async notifyCallReminder(payload: CallReminderNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            const scheduledDateStr = payload.scheduledAt.toLocaleString();
+            const callLinkInfo = payload.callLink ? ` Join link: ${payload.callLink}` : '';
+            const callLinkInfoAr = payload.callLink ? ` رابط الانضمام: ${payload.callLink}` : '';
+
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.userId,
+                type: NotificationType.CALL_REMINDER,
+                title: 'Upcoming Call Reminder',
+                titleAr: 'تذكير بالمكالمة القادمة',
+                message: `Reminder: Your call #${payload.requestNumber} is scheduled in ${payload.minutesUntilCall} minutes (${scheduledDateStr}).${callLinkInfo}`,
+                messageAr: `تذكير: مكالمتك #${payload.requestNumber} مجدولة بعد ${payload.minutesUntilCall} دقيقة (${scheduledDateStr}).${callLinkInfoAr}`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.userEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send call reminder notification:', error);
+            return null;
+        }
+    }
+
+    async notifyCallCompleted(payload: CallCompletedNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CALL_COMPLETED,
+                title: 'Call Completed',
+                titleAr: 'تم إكمال المكالمة',
+                message: `Your call #${payload.requestNumber} has been completed (${payload.durationMinutes} minutes). Thank you for using our service.`,
+                messageAr: `تم إكمال مكالمتك #${payload.requestNumber} (${payload.durationMinutes} دقيقة). شكراً لاستخدامك خدماتنا.`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send call completed notification:', error);
+            return null;
+        }
+    }
+
+    async notifyCallCancelled(payload: CallCancelledNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const cancelledByText = payload.cancelledBy === 'subscriber' ? 'you' : payload.cancelledBy === 'provider' ? 'the provider' : 'the system';
+        const cancelledByTextAr = payload.cancelledBy === 'subscriber' ? 'أنت' : payload.cancelledBy === 'provider' ? 'مقدم الخدمة' : 'النظام';
+        const reasonText = payload.reason ? ` Reason: ${payload.reason}` : '';
+        const reasonTextAr = payload.reason ? ` السبب: ${payload.reason}` : '';
+
+        // Notify subscriber
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CALL_CANCELLED,
+                title: 'Call Cancelled',
+                titleAr: 'تم إلغاء المكالمة',
+                message: `Your call #${payload.requestNumber} has been cancelled by ${cancelledByText}.${reasonText}`,
+                messageAr: `تم إلغاء مكالمتك #${payload.requestNumber} بواسطة ${cancelledByTextAr}.${reasonTextAr}`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send cancellation notification to subscriber:', error);
+        }
+
+        // Notify provider if assigned
+        if (payload.providerId) {
+            try {
+                await this.sendNotificationUseCase.execute({
+                    userId: payload.providerId,
+                    type: NotificationType.CALL_CANCELLED,
+                    title: 'Assigned Call Cancelled',
+                    titleAr: 'تم إلغاء المكالمة المعينة',
+                    message: `Call #${payload.requestNumber} assigned to you has been cancelled.${reasonText}`,
+                    messageAr: `تم إلغاء المكالمة #${payload.requestNumber} المعينة لك.${reasonTextAr}`,
+                    relatedEntityType: 'CallRequest',
+                    relatedEntityId: payload.callRequestId,
+                    email: payload.providerEmail,
+                });
+            } catch (error) {
+                console.error('[NotificationIntegration] Failed to send cancellation notification to provider:', error);
+            }
+        }
+    }
+
+    async notifyCallNoShow(payload: CallNoShowNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const scheduledDateStr = payload.scheduledAt.toLocaleString();
+
+        // Notify subscriber
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.CALL_NO_SHOW,
+                title: 'Call Marked as No-Show',
+                titleAr: 'تم تسجيل غياب عن المكالمة',
+                message: `Your call #${payload.requestNumber} scheduled for ${scheduledDateStr} has been marked as no-show. Please contact support if this was an error.`,
+                messageAr: `تم تسجيل غيابك عن المكالمة #${payload.requestNumber} المجدولة في ${scheduledDateStr}. يرجى التواصل مع الدعم إذا كان هذا خطأ.`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send no-show notification to subscriber:', error);
+        }
+
+        // Notify provider
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.providerId,
+                type: NotificationType.CALL_NO_SHOW,
+                title: 'Call No-Show Recorded',
+                titleAr: 'تم تسجيل غياب عن المكالمة',
+                message: `Call #${payload.requestNumber} scheduled for ${scheduledDateStr} has been marked as no-show.`,
+                messageAr: `تم تسجيل غياب عن المكالمة #${payload.requestNumber} المجدولة في ${scheduledDateStr}.`,
+                relatedEntityType: 'CallRequest',
+                relatedEntityId: payload.callRequestId,
+                email: payload.providerEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send no-show notification to provider:', error);
         }
     }
 
