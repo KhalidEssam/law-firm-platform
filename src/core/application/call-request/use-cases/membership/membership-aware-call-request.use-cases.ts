@@ -109,11 +109,11 @@ export class EndCallWithUsageTrackingUseCase {
 
     async execute(
         callRequestId: string,
-        completedByUserId: string,
+        recordingUrl?: string,
         actualDurationMinutes?: number,
     ): Promise<EndCallWithUsageResult> {
         // 1. End the call
-        const callRequest = await this.endCallUseCase.execute(callRequestId, completedByUserId);
+        const callRequest = await this.endCallUseCase.execute(callRequestId, { recordingUrl });
 
         let usageRecorded = false;
         let quotaRemaining: number | null = null;
@@ -152,10 +152,10 @@ export class EndCallWithUsageTrackingUseCase {
     }
 
     private calculateDuration(callRequest: CallRequest): number {
-        if (!callRequest.startTime || !callRequest.endTime) {
+        if (!callRequest.callStartedAt || !callRequest.callEndedAt) {
             return 0;
         }
-        const durationMs = callRequest.endTime.getTime() - callRequest.startTime.getTime();
+        const durationMs = callRequest.callEndedAt.getTime() - callRequest.callStartedAt.getTime();
         return Math.ceil(durationMs / (1000 * 60)); // Round up to nearest minute
     }
 }
