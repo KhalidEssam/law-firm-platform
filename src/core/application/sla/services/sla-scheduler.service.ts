@@ -237,7 +237,7 @@ export class SLASchedulerService implements OnModuleInit {
                 slaDeadline: true,
                 slaStatus: true,
                 subscriberId: true,
-                assignedLawyerId: true,
+                assignedProviderId: true,
             },
         });
 
@@ -246,7 +246,7 @@ export class SLASchedulerService implements OnModuleInit {
                 ...r,
                 urgency: 'normal',
                 respondedAt: null,
-                providerId: r.assignedLawyerId,
+                providerId: r.assignedProviderId,
             })),
             'legal_opinion',
             async (id, status) => {
@@ -325,7 +325,7 @@ export class SLASchedulerService implements OnModuleInit {
                 slaDeadline: true,
                 slaStatus: true,
                 subscriberId: true,
-                assignedLawyerId: true,
+                assignedProviderId: true,
             },
         });
 
@@ -336,7 +336,7 @@ export class SLASchedulerService implements OnModuleInit {
                 urgency: 'normal',
                 respondedAt: null,
                 completedAt: r.closedAt,
-                providerId: r.assignedLawyerId,
+                providerId: r.assignedProviderId,
             })),
             'litigation',
             async (id, status) => {
