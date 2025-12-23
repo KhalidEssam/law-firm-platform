@@ -29,6 +29,7 @@ import { RoutingModule } from './infrastructure/modules/routing.module';
 import { ReportsModule } from './infrastructure/modules/reports.module';
 import { SLAModule } from './infrastructure/modules/sla.module';
 import { SpecializationModule } from './infrastructure/modules/specialization.module';
+import { DocumentModule } from './infrastructure/modules/document.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { SpecializationModule } from './infrastructure/modules/specialization.mo
     ReportsModule,
     SLAModule,
     SpecializationModule,
+    DocumentModule,
   ],
   controllers: [AppController],
   providers: [
