@@ -5,11 +5,15 @@
 //
 // And ScheduleModule.forRoot() to be imported in app.module.ts
 
-import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { SLAIntegrationService, RequestSLAData } from './sla-integration.service';
-import { SLAStatus } from '../../../domain/sla/value-objects/sla-status.vo';
+import {
+    NotificationIntegrationService,
+    type SLABreachNotificationPayload,
+    type SLAAtRiskNotificationPayload,
+} from '../../notification/notification-integration.service';
 
 // ============================================
 // INTERFACES
@@ -23,6 +27,8 @@ export interface SLAUpdateResult {
     newStatus: string;
     isBreached: boolean;
     isAtRisk: boolean;
+    subscriberId?: string;
+    providerId?: string;
 }
 
 export interface SLASchedulerReport {
@@ -47,10 +53,15 @@ export class SLASchedulerService implements OnModuleInit {
     constructor(
         private readonly prisma: PrismaService,
         private readonly slaIntegration: SLAIntegrationService,
+        @Optional()
+        private readonly notificationService?: NotificationIntegrationService,
     ) {}
 
     onModuleInit() {
         this.logger.log('SLA Scheduler Service initialized');
+        if (this.notificationService) {
+            this.logger.log('SLA notifications enabled');
+        }
     }
 
     // ============================================
@@ -102,8 +113,8 @@ export class SLASchedulerService implements OnModuleInit {
             const report = await this.generateDailySLAReport();
             this.logger.log(`Daily SLA report generated: ${JSON.stringify(report)}`);
 
-            // TODO: Send report via email to admins
-            // await this.notificationService.sendSLADailyReport(report);
+            // Send daily report to admins
+            await this.sendDailyReportNotification(report);
         } catch (error) {
             this.logger.error(`Daily SLA report failed: ${error.message}`, error.stack);
         }
@@ -183,15 +194,24 @@ export class SLASchedulerService implements OnModuleInit {
                 completedAt: true,
                 slaDeadline: true,
                 slaStatus: true,
+                subscriberId: true,
+                assignedProviderId: true,
             },
         });
 
-        return this.processRequests(requests, 'consultation', async (id, status) => {
-            await this.prisma.consultationRequest.update({
-                where: { id },
-                data: { slaStatus: status as any },
-            });
-        });
+        return this.processRequests(
+            requests.map(r => ({
+                ...r,
+                providerId: r.assignedProviderId,
+            })),
+            'consultation',
+            async (id, status) => {
+                await this.prisma.consultationRequest.update({
+                    where: { id },
+                    data: { slaStatus: status as any },
+                });
+            },
+        );
     }
 
     private async checkLegalOpinionSLAs(): Promise<{
@@ -216,11 +236,18 @@ export class SLASchedulerService implements OnModuleInit {
                 completedAt: true,
                 slaDeadline: true,
                 slaStatus: true,
+                subscriberId: true,
+                assignedLawyerId: true,
             },
         });
 
         return this.processRequests(
-            requests.map(r => ({ ...r, urgency: 'normal', respondedAt: null })),
+            requests.map(r => ({
+                ...r,
+                urgency: 'normal',
+                respondedAt: null,
+                providerId: r.assignedLawyerId,
+            })),
             'legal_opinion',
             async (id, status) => {
                 await this.prisma.legalOpinionRequest.update({
@@ -253,11 +280,18 @@ export class SLASchedulerService implements OnModuleInit {
                 completedAt: true,
                 slaDeadline: true,
                 slaStatus: true,
+                subscriberId: true,
+                assignedProviderId: true,
             },
         });
 
         return this.processRequests(
-            requests.map(r => ({ ...r, urgency: 'normal', respondedAt: null })),
+            requests.map(r => ({
+                ...r,
+                urgency: 'normal',
+                respondedAt: null,
+                providerId: r.assignedProviderId,
+            })),
             'service',
             async (id, status) => {
                 await this.prisma.serviceRequest.update({
@@ -290,6 +324,8 @@ export class SLASchedulerService implements OnModuleInit {
                 closedAt: true,
                 slaDeadline: true,
                 slaStatus: true,
+                subscriberId: true,
+                assignedLawyerId: true,
             },
         });
 
@@ -300,6 +336,7 @@ export class SLASchedulerService implements OnModuleInit {
                 urgency: 'normal',
                 respondedAt: null,
                 completedAt: r.closedAt,
+                providerId: r.assignedLawyerId,
             })),
             'litigation',
             async (id, status) => {
@@ -333,11 +370,18 @@ export class SLASchedulerService implements OnModuleInit {
                 completedAt: true,
                 slaDeadline: true,
                 slaStatus: true,
+                subscriberId: true,
+                assignedProviderId: true,
             },
         });
 
         return this.processRequests(
-            requests.map(r => ({ ...r, urgency: 'normal', respondedAt: null })),
+            requests.map(r => ({
+                ...r,
+                urgency: 'normal',
+                respondedAt: null,
+                providerId: r.assignedProviderId,
+            })),
             'call',
             async (id, status) => {
                 await this.prisma.callRequest.update({
@@ -362,6 +406,8 @@ export class SLASchedulerService implements OnModuleInit {
             completedAt: Date | null;
             slaDeadline: Date | null;
             slaStatus: string | null;
+            subscriberId: string;
+            providerId: string | null;
         }>,
         requestType: string,
         updateFn: (id: string, status: string) => Promise<void>,
@@ -399,7 +445,7 @@ export class SLASchedulerService implements OnModuleInit {
                     await updateFn(request.id, checkResult.currentStatus);
 
                     result.updated++;
-                    result.updates.push({
+                    const updateResult: SLAUpdateResult = {
                         requestId: request.id,
                         requestType,
                         requestNumber: request.requestNumber,
@@ -407,16 +453,18 @@ export class SLASchedulerService implements OnModuleInit {
                         newStatus: checkResult.currentStatus,
                         isBreached: checkResult.isBreached,
                         isAtRisk: checkResult.isAtRisk,
-                    });
+                        subscriberId: request.subscriberId,
+                        providerId: request.providerId || undefined,
+                    };
+                    result.updates.push(updateResult);
 
+                    // Trigger notifications for status changes
                     if (checkResult.isBreached) {
                         result.breaches++;
-                        // TODO: Trigger breach notification
-                        // await this.triggerBreachNotification(request, requestType);
+                        await this.triggerBreachNotification(request, requestType);
                     } else if (checkResult.isAtRisk) {
                         result.atRisk++;
-                        // TODO: Trigger at-risk warning
-                        // await this.triggerAtRiskWarning(request, requestType);
+                        await this.triggerAtRiskWarning(request, requestType);
                     }
                 } catch (error) {
                     this.logger.error(
@@ -431,6 +479,168 @@ export class SLASchedulerService implements OnModuleInit {
         }
 
         return result;
+    }
+
+    // ============================================
+    // NOTIFICATION TRIGGERS
+    // ============================================
+
+    private async triggerBreachNotification(
+        request: {
+            id: string;
+            requestNumber: string;
+            slaDeadline: Date | null;
+            subscriberId: string;
+            providerId: string | null;
+        },
+        requestType: string,
+    ): Promise<void> {
+        if (!this.notificationService) {
+            this.logger.warn('Notification service not available for SLA breach notification');
+            return;
+        }
+
+        try {
+            const payload: SLABreachNotificationPayload = {
+                requestId: request.id,
+                requestNumber: request.requestNumber,
+                requestType,
+                subscriberId: request.subscriberId,
+                providerId: request.providerId || undefined,
+                slaDeadline: request.slaDeadline!,
+                breachedAt: new Date(),
+            };
+
+            await this.notificationService.notifySLABreach(payload);
+            this.logger.log(`SLA breach notification sent for ${requestType} ${request.requestNumber}`);
+        } catch (error) {
+            this.logger.error(`Failed to send SLA breach notification: ${error.message}`);
+        }
+    }
+
+    private async triggerAtRiskWarning(
+        request: {
+            id: string;
+            requestNumber: string;
+            slaDeadline: Date | null;
+            subscriberId: string;
+            providerId: string | null;
+        },
+        requestType: string,
+    ): Promise<void> {
+        if (!this.notificationService) {
+            this.logger.warn('Notification service not available for SLA at-risk warning');
+            return;
+        }
+
+        try {
+            const hoursRemaining = request.slaDeadline
+                ? Math.max(0, (request.slaDeadline.getTime() - Date.now()) / (1000 * 60 * 60))
+                : 0;
+
+            const payload: SLAAtRiskNotificationPayload = {
+                requestId: request.id,
+                requestNumber: request.requestNumber,
+                requestType,
+                subscriberId: request.subscriberId,
+                providerId: request.providerId || undefined,
+                slaDeadline: request.slaDeadline!,
+                hoursRemaining: Math.round(hoursRemaining),
+            };
+
+            await this.notificationService.notifySLAAtRisk(payload);
+            this.logger.log(`SLA at-risk warning sent for ${requestType} ${request.requestNumber}`);
+        } catch (error) {
+            this.logger.error(`Failed to send SLA at-risk warning: ${error.message}`);
+        }
+    }
+
+    private async sendDailyReportNotification(report: {
+        date: Date;
+        consultations: { total: number; breached: number; atRisk: number; onTrack: number };
+        legalOpinions: { total: number; breached: number; atRisk: number; onTrack: number };
+        serviceRequests: { total: number; breached: number; atRisk: number; onTrack: number };
+        litigationCases: { total: number; breached: number; atRisk: number; onTrack: number };
+        callRequests: { total: number; breached: number; atRisk: number; onTrack: number };
+    }): Promise<void> {
+        if (!this.notificationService) {
+            this.logger.warn('Notification service not available for daily report');
+            return;
+        }
+
+        try {
+            // Find admin users to send report to
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    roles: {
+                        some: {
+                            role: {
+                                name: { in: ['admin', 'platform'] },
+                            },
+                        },
+                    },
+                    profileStatus: 'active',
+                },
+                select: {
+                    id: true,
+                    email: true,
+                },
+                take: 10, // Limit to first 10 admins
+            });
+
+            const totalActive =
+                report.consultations.total +
+                report.legalOpinions.total +
+                report.serviceRequests.total +
+                report.litigationCases.total +
+                report.callRequests.total;
+
+            const totalBreached =
+                report.consultations.breached +
+                report.legalOpinions.breached +
+                report.serviceRequests.breached +
+                report.litigationCases.breached +
+                report.callRequests.breached;
+
+            const totalAtRisk =
+                report.consultations.atRisk +
+                report.legalOpinions.atRisk +
+                report.serviceRequests.atRisk +
+                report.litigationCases.atRisk +
+                report.callRequests.atRisk;
+
+            const totalOnTrack =
+                report.consultations.onTrack +
+                report.legalOpinions.onTrack +
+                report.serviceRequests.onTrack +
+                report.litigationCases.onTrack +
+                report.callRequests.onTrack;
+
+            for (const admin of admins) {
+                await this.notificationService.notifySLADailyReport({
+                    adminUserId: admin.id,
+                    adminEmail: admin.email,
+                    reportDate: report.date,
+                    summary: {
+                        totalActive,
+                        breached: totalBreached,
+                        atRisk: totalAtRisk,
+                        onTrack: totalOnTrack,
+                    },
+                    byRequestType: {
+                        consultation: report.consultations,
+                        legal_opinion: report.legalOpinions,
+                        service: report.serviceRequests,
+                        litigation: report.litigationCases,
+                        call: report.callRequests,
+                    },
+                });
+            }
+
+            this.logger.log(`Daily SLA report sent to ${admins.length} admins`);
+        } catch (error) {
+            this.logger.error(`Failed to send daily SLA report: ${error.message}`);
+        }
     }
 
     // ============================================

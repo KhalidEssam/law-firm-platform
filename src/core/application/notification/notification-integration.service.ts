@@ -194,6 +194,52 @@ export interface RefundProcessedNotificationPayload {
 }
 
 // ============================================
+// SLA NOTIFICATION PAYLOADS
+// ============================================
+
+export interface SLABreachNotificationPayload {
+    requestId: string;
+    requestNumber: string;
+    requestType: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId?: string;
+    providerEmail?: string;
+    slaDeadline: Date;
+    breachedAt: Date;
+}
+
+export interface SLAAtRiskNotificationPayload {
+    requestId: string;
+    requestNumber: string;
+    requestType: string;
+    subscriberId: string;
+    subscriberEmail?: string;
+    providerId?: string;
+    providerEmail?: string;
+    slaDeadline: Date;
+    hoursRemaining: number;
+}
+
+export interface SLADailyReportNotificationPayload {
+    adminUserId: string;
+    adminEmail?: string;
+    reportDate: Date;
+    summary: {
+        totalActive: number;
+        breached: number;
+        atRisk: number;
+        onTrack: number;
+    };
+    byRequestType: Record<string, {
+        total: number;
+        breached: number;
+        atRisk: number;
+        onTrack: number;
+    }>;
+}
+
+// ============================================
 // NOTIFICATION INTEGRATION SERVICE
 // ============================================
 
@@ -775,5 +821,135 @@ export class NotificationIntegrationService {
             console.error('[NotificationIntegration] Failed to send templated notification:', error);
             return null;
         }
+    }
+
+    // ============================================
+    // SLA NOTIFICATIONS
+    // ============================================
+
+    /**
+     * Notify about SLA breach - sent to subscriber and provider
+     */
+    async notifySLABreach(payload: SLABreachNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const requestTypeLabel = this.formatRequestType(payload.requestType);
+
+        // Notify subscriber
+        try {
+            await this.sendNotificationUseCase.execute({
+                userId: payload.subscriberId,
+                type: NotificationType.SLA_BREACH,
+                title: 'SLA Breach Alert',
+                titleAr: 'تنبيه انتهاك اتفاقية مستوى الخدمة',
+                message: `Your ${requestTypeLabel} #${payload.requestNumber} has exceeded the SLA deadline. Our team is prioritizing this request.`,
+                messageAr: `تجاوز ${requestTypeLabel} #${payload.requestNumber} الموعد النهائي لاتفاقية مستوى الخدمة. فريقنا يعطي الأولوية لهذا الطلب.`,
+                relatedEntityType: this.getEntityType(payload.requestType),
+                relatedEntityId: payload.requestId,
+                email: payload.subscriberEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send SLA breach notification to subscriber:', error);
+        }
+
+        // Notify provider if assigned
+        if (payload.providerId) {
+            try {
+                await this.sendNotificationUseCase.execute({
+                    userId: payload.providerId,
+                    type: NotificationType.SLA_BREACH,
+                    title: 'URGENT: SLA Breach',
+                    titleAr: 'عاجل: انتهاك اتفاقية مستوى الخدمة',
+                    message: `${requestTypeLabel} #${payload.requestNumber} has breached SLA. Immediate attention required.`,
+                    messageAr: `${requestTypeLabel} #${payload.requestNumber} انتهك اتفاقية مستوى الخدمة. مطلوب اهتمام فوري.`,
+                    relatedEntityType: this.getEntityType(payload.requestType),
+                    relatedEntityId: payload.requestId,
+                    email: payload.providerEmail,
+                });
+            } catch (error) {
+                console.error('[NotificationIntegration] Failed to send SLA breach notification to provider:', error);
+            }
+        }
+    }
+
+    /**
+     * Notify about SLA at-risk status - sent to provider
+     */
+    async notifySLAAtRisk(payload: SLAAtRiskNotificationPayload): Promise<void> {
+        if (!this.sendNotificationUseCase) return;
+
+        const requestTypeLabel = this.formatRequestType(payload.requestType);
+
+        // Notify provider if assigned
+        if (payload.providerId) {
+            try {
+                await this.sendNotificationUseCase.execute({
+                    userId: payload.providerId,
+                    type: NotificationType.SLA_WARNING,
+                    title: 'SLA Warning',
+                    titleAr: 'تحذير اتفاقية مستوى الخدمة',
+                    message: `${requestTypeLabel} #${payload.requestNumber} is at risk of SLA breach. ${payload.hoursRemaining} hours remaining until deadline.`,
+                    messageAr: `${requestTypeLabel} #${payload.requestNumber} معرض لخطر انتهاك اتفاقية مستوى الخدمة. ${payload.hoursRemaining} ساعات متبقية حتى الموعد النهائي.`,
+                    relatedEntityType: this.getEntityType(payload.requestType),
+                    relatedEntityId: payload.requestId,
+                    email: payload.providerEmail,
+                });
+            } catch (error) {
+                console.error('[NotificationIntegration] Failed to send SLA at-risk notification to provider:', error);
+            }
+        }
+    }
+
+    /**
+     * Send daily SLA report to admin
+     */
+    async notifySLADailyReport(payload: SLADailyReportNotificationPayload): Promise<Notification | null> {
+        if (!this.sendNotificationUseCase) return null;
+
+        try {
+            const reportSummary = `Total Active: ${payload.summary.totalActive}, ` +
+                `Breached: ${payload.summary.breached}, ` +
+                `At Risk: ${payload.summary.atRisk}, ` +
+                `On Track: ${payload.summary.onTrack}`;
+
+            return await this.sendNotificationUseCase.execute({
+                userId: payload.adminUserId,
+                type: NotificationType.ADMIN_ALERT,
+                title: `Daily SLA Report - ${payload.reportDate.toISOString().split('T')[0]}`,
+                titleAr: `تقرير اتفاقية مستوى الخدمة اليومي - ${payload.reportDate.toISOString().split('T')[0]}`,
+                message: `SLA Summary: ${reportSummary}`,
+                messageAr: `ملخص اتفاقية مستوى الخدمة: ${reportSummary}`,
+                email: payload.adminEmail,
+            });
+        } catch (error) {
+            console.error('[NotificationIntegration] Failed to send SLA daily report notification:', error);
+            return null;
+        }
+    }
+
+    // ============================================
+    // HELPER METHODS
+    // ============================================
+
+    private formatRequestType(requestType: string): string {
+        const typeMap: Record<string, string> = {
+            consultation: 'Consultation Request',
+            legal_opinion: 'Legal Opinion Request',
+            service: 'Service Request',
+            litigation: 'Litigation Case',
+            call: 'Call Request',
+        };
+        return typeMap[requestType] || requestType;
+    }
+
+    private getEntityType(requestType: string): string {
+        const entityMap: Record<string, string> = {
+            consultation: 'ConsultationRequest',
+            legal_opinion: 'LegalOpinionRequest',
+            service: 'ServiceRequest',
+            litigation: 'LitigationCase',
+            call: 'CallRequest',
+        };
+        return entityMap[requestType] || requestType;
     }
 }
