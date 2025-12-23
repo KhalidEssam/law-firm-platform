@@ -19,3 +19,9 @@ export * from './subscriber';
 
 // Admin Use Cases
 export * from './admin';
+
+// Membership-Aware Use Cases
+export * from './membership';
+
+// Routing-Aware Use Cases
+export * from './routing';

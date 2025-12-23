@@ -15,7 +15,12 @@ import { ProviderValidationService } from '../services/provider-validation.servi
 // Provider Module (for provider repositories)
 import { ProviderModule } from './provider.module';
 
-// Use Cases
+// Integration Modules
+import { NotificationModule } from '../../interface/notification/notification.module';
+import { MembershipModule } from './membership.module';
+import { RoutingModule } from './routing.module';
+
+// Core Use Cases
 import {
     CreateCallRequestUseCase,
     GetCallRequestByIdUseCase,
@@ -37,16 +42,25 @@ import {
     GetScheduledCallsUseCase,
 } from '../../core/application/call-request/use-cases/call-request.use-cases';
 
-// Integration modules (to be added)
-// import { NotificationModule } from '../../interface/notification/notification.module';
-// import { MembershipModule } from './membership.module';
+// Membership-Aware Use Cases
+import {
+    CreateCallRequestWithMembershipUseCase,
+    EndCallWithUsageTrackingUseCase,
+    CheckCallQuotaUseCase,
+} from '../../core/application/call-request/use-cases/membership';
+
+// Routing-Aware Use Cases
+import {
+    CreateCallRequestWithRoutingUseCase,
+} from '../../core/application/call-request/use-cases/routing';
 
 @Module({
     imports: [
         PrismaModule,
         ProviderModule, // For provider validation (ProviderUser/ProviderProfile repositories)
-        // forwardRef(() => NotificationModule), // For sending notifications
-        // forwardRef(() => MembershipModule),   // For quota checking/consumption
+        forwardRef(() => NotificationModule), // For sending notifications
+        forwardRef(() => MembershipModule), // For quota checking/consumption
+        forwardRef(() => RoutingModule), // For auto-assignment
     ],
     controllers: [CallRequestController],
     providers: [
@@ -62,7 +76,9 @@ import {
             useClass: ProviderValidationService,
         },
 
-        // Use Cases
+        // ============================================
+        // CORE USE CASES
+        // ============================================
         CreateCallRequestUseCase,
         GetCallRequestByIdUseCase,
         GetCallRequestsUseCase,
@@ -81,10 +97,23 @@ import {
         GetCallMinutesSummaryUseCase,
         CheckProviderAvailabilityUseCase,
         GetScheduledCallsUseCase,
+
+        // ============================================
+        // MEMBERSHIP-AWARE USE CASES
+        // ============================================
+        CreateCallRequestWithMembershipUseCase,
+        EndCallWithUsageTrackingUseCase,
+        CheckCallQuotaUseCase,
+
+        // ============================================
+        // ROUTING-AWARE USE CASES
+        // ============================================
+        CreateCallRequestWithRoutingUseCase,
     ],
     exports: [
         'ICallRequestRepository',
         'IProviderValidationService',
+        // Core Use Cases
         CreateCallRequestUseCase,
         GetCallRequestByIdUseCase,
         GetCallRequestsUseCase,
@@ -92,6 +121,12 @@ import {
         StartCallUseCase,
         EndCallUseCase,
         GetCallMinutesSummaryUseCase,
+        // Membership-Aware Use Cases
+        CreateCallRequestWithMembershipUseCase,
+        EndCallWithUsageTrackingUseCase,
+        CheckCallQuotaUseCase,
+        // Routing-Aware Use Cases
+        CreateCallRequestWithRoutingUseCase,
     ],
 })
 export class CallRequestModule {}

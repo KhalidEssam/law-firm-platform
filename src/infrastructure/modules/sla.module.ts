@@ -1,9 +1,10 @@
 // src/infrastructure/modules/sla.module.ts
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PrismaSLAPolicyRepository } from '../persistence/sla/prisma-sla-policy.repository';
 import { SLAController } from '../../interface/http/sla.controller';
+import { NotificationModule } from '../../interface/notification/notification.module';
 
 // Use Cases - Policy Management
 import {
@@ -33,6 +34,9 @@ import { SLAIntegrationService } from '../../core/application/sla/services/sla-i
 import { SLASchedulerService } from '../../core/application/sla/services/sla-scheduler.service';
 
 @Module({
+    imports: [
+        forwardRef(() => NotificationModule), // For SLA breach notifications
+    ],
     controllers: [SLAController],
     providers: [
         // Infrastructure
