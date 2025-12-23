@@ -47,11 +47,18 @@ export enum NotificationType {
     LEGAL_OPINION_STATUS_CHANGE = 'LEGAL_OPINION_STATUS_CHANGE',
     NEW_LEGAL_OPINION_REQUEST = 'NEW_LEGAL_OPINION_REQUEST',
 
-    // Litigation
+    // Litigation Case
     CASE_CREATED = 'CASE_CREATED',
     CASE_ASSIGNED = 'CASE_ASSIGNED',
     CASE_HEARING_SCHEDULED = 'CASE_HEARING_SCHEDULED',
     CASE_UPDATED = 'CASE_UPDATED',
+    CASE_QUOTE_SENT = 'CASE_QUOTE_SENT',
+    CASE_QUOTE_ACCEPTED = 'CASE_QUOTE_ACCEPTED',
+    CASE_PAYMENT_RECEIVED = 'CASE_PAYMENT_RECEIVED',
+    CASE_ACTIVATED = 'CASE_ACTIVATED',
+    CASE_CLOSED = 'CASE_CLOSED',
+    CASE_CANCELLED = 'CASE_CANCELLED',
+    CASE_REFUND_PROCESSED = 'CASE_REFUND_PROCESSED',
 
     // Billing
     INVOICE_GENERATED = 'INVOICE_GENERATED',
@@ -72,6 +79,17 @@ export enum NotificationType {
     PROVIDER_VERIFIED = 'PROVIDER_VERIFIED',
     NEW_REQUEST_AVAILABLE = 'NEW_REQUEST_AVAILABLE',
     REQUEST_MESSAGE = 'REQUEST_MESSAGE',
+
+    // Call Request
+    CALL_REQUEST_CREATED = 'CALL_REQUEST_CREATED',
+    CALL_REQUEST_ASSIGNED = 'CALL_REQUEST_ASSIGNED',
+    CALL_SCHEDULED = 'CALL_SCHEDULED',
+    CALL_RESCHEDULED = 'CALL_RESCHEDULED',
+    CALL_REMINDER = 'CALL_REMINDER',
+    CALL_STARTED = 'CALL_STARTED',
+    CALL_COMPLETED = 'CALL_COMPLETED',
+    CALL_CANCELLED = 'CALL_CANCELLED',
+    CALL_NO_SHOW = 'CALL_NO_SHOW',
 
     // SLA
     SLA_BREACH = 'SLA_BREACH',
@@ -112,11 +130,31 @@ export function getRelatedEntityType(type: NotificationType): string | null {
         NotificationType.CASE_ASSIGNED,
         NotificationType.CASE_HEARING_SCHEDULED,
         NotificationType.CASE_UPDATED,
+        NotificationType.CASE_QUOTE_SENT,
+        NotificationType.CASE_QUOTE_ACCEPTED,
+        NotificationType.CASE_PAYMENT_RECEIVED,
+        NotificationType.CASE_ACTIVATED,
+        NotificationType.CASE_CLOSED,
+        NotificationType.CASE_CANCELLED,
+        NotificationType.CASE_REFUND_PROCESSED,
+    ];
+
+    const callRequestTypes = [
+        NotificationType.CALL_REQUEST_CREATED,
+        NotificationType.CALL_REQUEST_ASSIGNED,
+        NotificationType.CALL_SCHEDULED,
+        NotificationType.CALL_RESCHEDULED,
+        NotificationType.CALL_REMINDER,
+        NotificationType.CALL_STARTED,
+        NotificationType.CALL_COMPLETED,
+        NotificationType.CALL_CANCELLED,
+        NotificationType.CALL_NO_SHOW,
     ];
 
     if (consultationTypes.includes(type)) return 'consultation';
     if (opinionTypes.includes(type)) return 'legal_opinion';
     if (litigationTypes.includes(type)) return 'litigation';
+    if (callRequestTypes.includes(type)) return 'call_request';
 
     return null;
 }
