@@ -14,6 +14,12 @@ import { LitigationCaseController } from '../../interface/http/litigation-case.c
 // Repository
 import { PrismaLitigationCaseRepository } from '../persistence/litigation-case/prisma.repository';
 
+// Unit of Work
+import {
+    PrismaLitigationUnitOfWork,
+    LITIGATION_UNIT_OF_WORK,
+} from '../persistence/litigation-case/prisma-litigation.uow';
+
 // Use Cases
 import {
     CreateLitigationCaseUseCase,
@@ -68,6 +74,12 @@ import {
             useClass: PrismaLitigationCaseRepository,
         },
 
+        // Unit of Work
+        {
+            provide: LITIGATION_UNIT_OF_WORK,
+            useClass: PrismaLitigationUnitOfWork,
+        },
+
         // Use Cases
         CreateLitigationCaseUseCase,
         UpdateLitigationCaseUseCase,
@@ -104,6 +116,7 @@ import {
     ],
     exports: [
         'ILitigationCaseRepository',
+        LITIGATION_UNIT_OF_WORK,
         CreateLitigationCaseUseCase,
         UpdateLitigationCaseUseCase,
         AssignProviderUseCase,
