@@ -47,14 +47,14 @@ import {
 // DTOs
 import {
     ReportListQueryDto,
-    RecordMetricDto,
-    RecordMetricBatchDto,
+    type RecordMetricDto,
+    type RecordMetricBatchDto,
     MetricQueryDto,
-    AggregateMetricDto,
-    TimeSeriesQueryDto,
-    ReportParametersData,
+    type AggregateMetricDto,
+    type TimeSeriesQueryDto,
+    
 } from '../../core/application/reports/dto/reports.dto';
-
+import { ReportParametersData } from '../../core/domain/reports/value-objects/report.vo';
 // ============================================
 // REPORTS CONTROLLER
 // ============================================

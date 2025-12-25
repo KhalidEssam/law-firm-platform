@@ -180,7 +180,7 @@ export interface OperationalReportData {
     providers: {
         totalActive: number;
         averageWorkload: number;
-        topPerformers: Array<{ id: string; name: string; completedRequests: number }>;
+        topPerformers: Array<{ providerId: string; name: string; completedRequests: number }>;
     };
     subscribers: {
         totalActive: number;

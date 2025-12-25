@@ -1,0 +1,182 @@
+{
+    "info": {
+        "name": "SLA Scheduler Test Suite",
+        "description": "Test scenarios for SLA scheduler and breach detection",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000"
+        },
+        {
+            "key": "token",
+            "value": "YOUR_JWT_TOKEN"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "1. Setup - Seed Default SLA Policies",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/policies/seed-defaults",
+                "description": "Create default SLA policies for all request types"
+            }
+        },
+        {
+            "name": "2. List All SLA Policies",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/sla/policies"
+            }
+        },
+        {
+            "name": "3. Get Policy for Consultation (High Priority)",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/sla/policies/by-type/consultation?priority=high"
+            }
+        },
+        {
+            "name": "4. Calculate SLA Deadlines",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/sla/calculate?requestType=consultation&priority=high"
+            }
+        },
+        {
+            "name": "5. Create Consultation Request (with SLA)",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/consultations",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"subscriberId\": \"{{subscriberId}}\",\n  \"consultationType\": \"legal_advice\",\n  \"category\": \"corporate\",\n  \"subject\": \"Contract Review - Urgent SLA Test\",\n  \"description\": \"This is a test consultation to verify SLA tracking. The consultation should have an SLA deadline automatically applied based on the urgency level.\",\n  \"urgency\": \"high\"\n}"
+                }
+            }
+        },
+        {
+            "name": "6. Check SLA Status (On Track)",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/check-status",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"requestId\": \"{{consultationId}}\",\n  \"requestType\": \"consultation\",\n  \"priority\": \"high\",\n  \"responseDeadline\": \"{{responseDeadline}}\",\n  \"resolutionDeadline\": \"{{resolutionDeadline}}\",\n  \"createdAt\": \"{{createdAt}}\"\n}"
+                }
+            }
+        },
+        {
+            "name": "7. Check SLA Status (Simulated Breach)",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/check-status",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"requestId\": \"test-breach-001\",\n  \"requestType\": \"consultation\",\n  \"priority\": \"high\",\n  \"responseDeadline\": \"2024-01-01T10:00:00Z\",\n  \"resolutionDeadline\": \"2024-01-01T12:00:00Z\",\n  \"createdAt\": \"2024-01-01T08:00:00Z\"\n}",
+                    "description": "Simulates a breached SLA with past deadlines"
+                }
+            }
+        },
+        {
+            "name": "8. Check SLA Breaches",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/check-breaches",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"requestId\": \"test-breach-001\",\n  \"requestType\": \"consultation\",\n  \"priority\": \"high\",\n  \"responseDeadline\": \"2024-01-01T10:00:00Z\",\n  \"resolutionDeadline\": \"2024-01-01T12:00:00Z\",\n  \"createdAt\": \"2024-01-01T08:00:00Z\"\n}"
+                }
+            }
+        },
+        {
+            "name": "9. Batch Check Multiple Requests",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/batch-check",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "[\n  {\n    \"requestId\": \"req-001\",\n    \"requestType\": \"consultation\",\n    \"priority\": \"high\",\n    \"responseDeadline\": \"2025-12-25T10:00:00Z\",\n    \"resolutionDeadline\": \"2025-12-25T18:00:00Z\",\n    \"createdAt\": \"2025-12-21T08:00:00Z\"\n  },\n  {\n    \"requestId\": \"req-002\",\n    \"requestType\": \"legal_opinion\",\n    \"priority\": \"normal\",\n    \"responseDeadline\": \"2024-01-01T10:00:00Z\",\n    \"resolutionDeadline\": \"2024-01-01T18:00:00Z\",\n    \"createdAt\": \"2024-01-01T08:00:00Z\"\n  }\n]"
+                }
+            }
+        },
+        {
+            "name": "10. Run Manual SLA Status Check (Scheduler)",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/run-status-check",
+                "description": "Triggers the scheduler manually - same as cron job"
+            }
+        },
+        {
+            "name": "11. Get Daily SLA Report",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/sla/daily-report"
+            }
+        },
+        {
+            "name": "12. Create Custom SLA Policy",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/policies",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Urgent Consultation SLA\",\n  \"requestType\": \"consultation\",\n  \"priority\": \"urgent\",\n  \"responseTime\": 30,\n  \"resolutionTime\": 120,\n  \"escalationTime\": 60,\n  \"isActive\": true\n}"
+                }
+            }
+        },
+        {
+            "name": "13. Activate/Deactivate Policy",
+            "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/sla/policies/{{policyId}}/deactivate"
+            }
+        }
+    ]
+}

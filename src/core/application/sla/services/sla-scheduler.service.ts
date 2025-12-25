@@ -69,9 +69,9 @@ export class SLASchedulerService implements OnModuleInit {
     // ============================================
 
     /**
-     * Run every 5 minutes to check and update SLA statuses.
+     * Run every hour to check and update SLA statuses.
      */
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async handleSLAStatusCheck(): Promise<void> {
         if (this.isRunning) {
             this.logger.warn('SLA check already running, skipping...');

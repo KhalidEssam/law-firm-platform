@@ -26,7 +26,7 @@ export class GenerateOperationalReportUseCase {
         private readonly reportRepo: IReportRepository,
         @Inject(REPORT_DATA_PROVIDER)
         private readonly dataProvider: IReportDataProvider,
-    ) {}
+    ) { }
 
     async execute(dto: GenerateReportDto): Promise<ReportResponseDto> {
         const report = Report.create({

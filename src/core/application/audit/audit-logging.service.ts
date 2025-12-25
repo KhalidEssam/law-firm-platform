@@ -8,7 +8,7 @@ import {
     AuditLog,
     AuditActionType,
     AuditEntityType,
-    IAuditLogRepository,
+    type IAuditLogRepository,
     AUDIT_LOG_REPOSITORY,
     AuditLogFilters,
     AuditLogPaginationOptions,
