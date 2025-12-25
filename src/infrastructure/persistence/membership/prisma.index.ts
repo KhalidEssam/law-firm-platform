@@ -12,6 +12,8 @@ export {
     PrismaMembershipQuotaUsageRepository
 } from './prisma.repository';
 
+export { PrismaMembershipUnitOfWork, MEMBERSHIP_UNIT_OF_WORK } from './prisma-membership.uow';
+
 
 
 
