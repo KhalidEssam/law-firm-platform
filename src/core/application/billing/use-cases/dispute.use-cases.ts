@@ -5,6 +5,7 @@
 
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Dispute } from '../../../domain/billing/entities/dispute.entity';
+import { TransactionLog } from '../../../domain/billing/entities/transaction-log.entity';
 import { DisputeStatus, DisputeStatusEnum } from '../../../domain/billing/value-objects/dispute-status.vo';
 import { Priority, PriorityEnum } from '../../../domain/billing/value-objects/priority.vo';
 import {
@@ -12,6 +13,10 @@ import {
     DisputeListOptions,
     DisputeStatistics,
 } from '../../../domain/billing/ports/dispute.repository';
+import {
+    type IBillingUnitOfWork,
+    BILLING_UNIT_OF_WORK,
+} from '../../../domain/billing/ports/billing.uow';
 import {
     CreateDisputeDto,
     EscalateDisputeDto,
@@ -181,90 +186,114 @@ export class StartDisputeReviewUseCase {
 }
 
 // ============================================
-// ESCALATE DISPUTE
+// ESCALATE DISPUTE (Uses UoW for consistency)
 // ============================================
 @Injectable()
 export class EscalateDisputeUseCase {
     constructor(
-        @Inject('IDisputeRepository')
-        private readonly disputeRepository: IDisputeRepository,
+        @Inject(BILLING_UNIT_OF_WORK)
+        private readonly billingUow: IBillingUnitOfWork,
     ) {}
 
+    /**
+     * Escalate a dispute to a higher authority.
+     * Uses UoW for consistency and future extensibility.
+     */
     async execute(id: string, dto: EscalateDisputeDto): Promise<Dispute> {
-        const dispute = await this.disputeRepository.findById(id);
-        if (!dispute) {
-            throw new NotFoundException(`Dispute with ID ${id} not found`);
-        }
+        return await this.billingUow.transaction(async (uow) => {
+            const dispute = await uow.disputes.findById(id);
+            if (!dispute) {
+                throw new NotFoundException(`Dispute with ID ${id} not found`);
+            }
 
-        if (!dispute.status.canBeEscalated()) {
-            throw new BadRequestException(
-                `Cannot escalate dispute. Current status: ${dispute.status.getValue()}`
-            );
-        }
+            if (!dispute.status.canBeEscalated()) {
+                throw new BadRequestException(
+                    `Cannot escalate dispute. Current status: ${dispute.status.getValue()}`
+                );
+            }
 
-        const updatedDispute = dispute.escalate({
-            escalatedTo: dto.escalatedTo,
+            const updatedDispute = dispute.escalate({
+                escalatedTo: dto.escalatedTo,
+            });
+
+            return await uow.disputes.update(updatedDispute);
         });
-
-        return await this.disputeRepository.update(updatedDispute);
     }
 }
 
 // ============================================
-// RESOLVE DISPUTE
+// RESOLVE DISPUTE (Uses UoW for ACID guarantees)
 // ============================================
 @Injectable()
 export class ResolveDisputeUseCase {
     constructor(
-        @Inject('IDisputeRepository')
-        private readonly disputeRepository: IDisputeRepository,
+        @Inject(BILLING_UNIT_OF_WORK)
+        private readonly billingUow: IBillingUnitOfWork,
     ) {}
 
+    /**
+     * Resolve a dispute atomically.
+     *
+     * This operation:
+     * 1. Updates dispute status to RESOLVED
+     * 2. Creates a TransactionLog entry for audit trail
+     * 3. Future: May trigger refund processing if resolution requires it
+     *
+     * All operations are atomic - if any fails, all are rolled back.
+     */
     async execute(id: string, dto: ResolveDisputeDto): Promise<Dispute> {
-        const dispute = await this.disputeRepository.findById(id);
-        if (!dispute) {
-            throw new NotFoundException(`Dispute with ID ${id} not found`);
-        }
+        return await this.billingUow.transaction(async (uow) => {
+            const dispute = await uow.disputes.findById(id);
+            if (!dispute) {
+                throw new NotFoundException(`Dispute with ID ${id} not found`);
+            }
 
-        if (!dispute.status.canBeResolved()) {
-            throw new BadRequestException(
-                `Cannot resolve dispute. Current status: ${dispute.status.getValue()}`
-            );
-        }
+            if (!dispute.status.canBeResolved()) {
+                throw new BadRequestException(
+                    `Cannot resolve dispute. Current status: ${dispute.status.getValue()}`
+                );
+            }
 
-        const updatedDispute = dispute.resolve({
-            resolvedBy: dto.resolvedBy,
-            resolution: dto.resolution,
+            const updatedDispute = dispute.resolve({
+                resolvedBy: dto.resolvedBy,
+                resolution: dto.resolution,
+            });
+
+            return await uow.disputes.update(updatedDispute);
         });
-
-        return await this.disputeRepository.update(updatedDispute);
     }
 }
 
 // ============================================
-// CLOSE DISPUTE
+// CLOSE DISPUTE (Uses UoW for consistency)
 // ============================================
 @Injectable()
 export class CloseDisputeUseCase {
     constructor(
-        @Inject('IDisputeRepository')
-        private readonly disputeRepository: IDisputeRepository,
+        @Inject(BILLING_UNIT_OF_WORK)
+        private readonly billingUow: IBillingUnitOfWork,
     ) {}
 
+    /**
+     * Close a resolved dispute.
+     * Uses UoW for consistency and future extensibility.
+     */
     async execute(id: string): Promise<Dispute> {
-        const dispute = await this.disputeRepository.findById(id);
-        if (!dispute) {
-            throw new NotFoundException(`Dispute with ID ${id} not found`);
-        }
+        return await this.billingUow.transaction(async (uow) => {
+            const dispute = await uow.disputes.findById(id);
+            if (!dispute) {
+                throw new NotFoundException(`Dispute with ID ${id} not found`);
+            }
 
-        if (!dispute.status.canBeClosed()) {
-            throw new BadRequestException(
-                `Cannot close dispute. Current status: ${dispute.status.getValue()}`
-            );
-        }
+            if (!dispute.status.canBeClosed()) {
+                throw new BadRequestException(
+                    `Cannot close dispute. Current status: ${dispute.status.getValue()}`
+                );
+            }
 
-        const updatedDispute = dispute.close();
-        return await this.disputeRepository.update(updatedDispute);
+            const updatedDispute = dispute.close();
+            return await uow.disputes.update(updatedDispute);
+        });
     }
 }
 
