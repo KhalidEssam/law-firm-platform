@@ -3,13 +3,16 @@
 // ============================================
 
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaService } from '../../../../../prisma/prisma.service';
 import { Report } from '../../../../domain/reports/entities/report.entity';
 import { ReportType } from '../../../../domain/reports/value-objects/report.vo';
 import {
     type IReportRepository,
     REPORT_REPOSITORY,
 } from '../../ports/reports.repository';
+import {
+    type IReportDataProvider,
+    REPORT_DATA_PROVIDER,
+} from '../../ports/report-data-provider';
 import {
     GenerateReportDto,
     ReportResponseDto,
@@ -21,7 +24,8 @@ export class GeneratePerformanceReportUseCase {
     constructor(
         @Inject(REPORT_REPOSITORY)
         private readonly reportRepo: IReportRepository,
-        private readonly prisma: PrismaService,
+        @Inject(REPORT_DATA_PROVIDER)
+        private readonly dataProvider: IReportDataProvider,
     ) {}
 
     async execute(dto: GenerateReportDto): Promise<ReportResponseDto> {
@@ -58,37 +62,16 @@ export class GeneratePerformanceReportUseCase {
     }
 
     private async generatePerformanceData(startDate: Date, endDate: Date): Promise<PerformanceReportData> {
-        // Get provider ratings
-        const ratings = await this.prisma.providerReview.aggregate({
-            where: {
-                createdAt: { gte: startDate, lte: endDate },
-                isPublic: true,
-            },
-            _avg: { rating: true },
-        });
-
-        // Get rating distribution
-        const ratingDistribution = await this.prisma.providerReview.groupBy({
-            by: ['rating'],
-            _count: { id: true },
-            where: {
-                createdAt: { gte: startDate, lte: endDate },
-                isPublic: true,
-            },
-        });
+        const dateRange = { startDate, endDate };
+        const performanceStats = await this.dataProvider.getPerformanceStats(dateRange);
 
         const distribution: Record<string, number> = {};
-        for (const r of ratingDistribution) {
-            distribution[String(r.rating)] = r._count.id;
+        for (const [rating, count] of Object.entries(performanceStats.ratings.distribution)) {
+            distribution[String(rating)] = count;
         }
 
-        // Get request throughput
-        const totalRequests = await this.prisma.consultationRequest.count({
-            where: { createdAt: { gte: startDate, lte: endDate } },
-        });
-
         const hoursDiff = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
-        const requestsPerHour = hoursDiff > 0 ? totalRequests / hoursDiff : 0;
+        const requestsPerHour = hoursDiff > 0 ? performanceStats.totalRequests / hoursDiff : 0;
 
         return {
             period: {
@@ -107,10 +90,10 @@ export class GeneratePerformanceReportUseCase {
                 lowestHour: 'N/A',
             },
             providers: {
-                averageRating: ratings._avg.rating || 0,
+                averageRating: performanceStats.ratings.average,
                 ratingDistribution: distribution,
                 responseRate: 0,
-                completionRate: 0,
+                completionRate: performanceStats.completionRate,
             },
             routing: {
                 autoAssignRate: 0,

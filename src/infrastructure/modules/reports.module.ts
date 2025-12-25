@@ -15,12 +15,14 @@ import {
     PrismaReportRepository,
     PrismaAnalyticsMetricRepository,
 } from '../persistence/reports/prisma-reports.repository';
+import { PrismaReportDataProvider } from '../persistence/reports/prisma-report-data-provider';
 
 // Repository Tokens
 import {
     REPORT_REPOSITORY,
     ANALYTICS_METRIC_REPOSITORY,
 } from '../../core/application/reports/ports/reports.repository';
+import { REPORT_DATA_PROVIDER } from '../../core/application/reports/ports/report-data-provider';
 
 // Report Generation Use Cases
 import {
@@ -57,7 +59,7 @@ import {
     ],
     providers: [
         // ============================================
-        // REPOSITORIES
+        // REPOSITORIES & DATA PROVIDERS
         // ============================================
         {
             provide: REPORT_REPOSITORY,
@@ -66,6 +68,10 @@ import {
         {
             provide: ANALYTICS_METRIC_REPOSITORY,
             useClass: PrismaAnalyticsMetricRepository,
+        },
+        {
+            provide: REPORT_DATA_PROVIDER,
+            useClass: PrismaReportDataProvider,
         },
 
         // ============================================

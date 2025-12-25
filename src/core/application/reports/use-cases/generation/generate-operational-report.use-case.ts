@@ -3,13 +3,16 @@
 // ============================================
 
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaService } from '../../../../../prisma/prisma.service';
 import { Report } from '../../../../domain/reports/entities/report.entity';
 import { ReportType } from '../../../../domain/reports/value-objects/report.vo';
 import {
     type IReportRepository,
     REPORT_REPOSITORY,
 } from '../../ports/reports.repository';
+import {
+    type IReportDataProvider,
+    REPORT_DATA_PROVIDER,
+} from '../../ports/report-data-provider';
 import {
     GenerateReportDto,
     ReportResponseDto,
@@ -21,7 +24,8 @@ export class GenerateOperationalReportUseCase {
     constructor(
         @Inject(REPORT_REPOSITORY)
         private readonly reportRepo: IReportRepository,
-        private readonly prisma: PrismaService,
+        @Inject(REPORT_DATA_PROVIDER)
+        private readonly dataProvider: IReportDataProvider,
     ) {}
 
     async execute(dto: GenerateReportDto): Promise<ReportResponseDto> {
@@ -58,57 +62,25 @@ export class GenerateOperationalReportUseCase {
     }
 
     private async generateOperationalData(startDate: Date, endDate: Date): Promise<OperationalReportData> {
-        // Get request counts by type
-        const [consultations, opinions, litigations, calls] = await Promise.all([
-            this.prisma.consultationRequest.count({
-                where: { createdAt: { gte: startDate, lte: endDate } },
-            }),
-            this.prisma.legalOpinionRequest.count({
-                where: { createdAt: { gte: startDate, lte: endDate } },
-            }),
-            this.prisma.litigationCase.count({
-                where: { createdAt: { gte: startDate, lte: endDate } },
-            }),
-            this.prisma.callRequest.count({
-                where: { createdAt: { gte: startDate, lte: endDate } },
-            }),
+        const dateRange = { startDate, endDate };
+
+        const [operationalStats, providerStats, subscriberStats] = await Promise.all([
+            this.dataProvider.getOperationalStats(dateRange),
+            this.dataProvider.getProviderWorkloadStats(),
+            this.dataProvider.getSubscriberStats(dateRange),
         ]);
 
-        // Get active providers
-        const activeProviders = await this.prisma.providerUser.count({
-            where: { isActive: true, canAcceptRequests: true },
-        });
+        const { requestCounts, slaStats } = operationalStats;
+        const totalRequests =
+            requestCounts.consultations +
+            requestCounts.legalOpinions +
+            requestCounts.litigations +
+            requestCounts.calls +
+            requestCounts.services;
 
-        // Get active subscribers
-        const activeSubscribers = await this.prisma.user.count({
-            where: {
-                profileStatus: 'active',
-                roles: { some: { role: { name: 'user' } } },
-            },
-        });
-
-        // Get SLA metrics
-        const slaMetrics = await this.prisma.consultationRequest.groupBy({
-            by: ['slaStatus'],
-            _count: { id: true },
-            where: { createdAt: { gte: startDate, lte: endDate } },
-        });
-
-        const slaData = {
-            onTrack: 0,
-            atRisk: 0,
-            breached: 0,
-            complianceRate: 0,
-        };
-
-        let total = 0;
-        for (const m of slaMetrics) {
-            total += m._count.id;
-            if (m.slaStatus === 'on_track') slaData.onTrack = m._count.id;
-            if (m.slaStatus === 'at_risk') slaData.atRisk = m._count.id;
-            if (m.slaStatus === 'breached') slaData.breached = m._count.id;
-        }
-        slaData.complianceRate = total > 0 ? (slaData.onTrack / total) * 100 : 100;
+        const complianceRate = slaStats.total > 0
+            ? (slaStats.onTrack / slaStats.total) * 100
+            : 100;
 
         return {
             period: {
@@ -116,27 +88,32 @@ export class GenerateOperationalReportUseCase {
                 endDate: endDate.toISOString(),
             },
             requests: {
-                total: consultations + opinions + litigations + calls,
+                total: totalRequests,
                 byType: {
-                    consultation: consultations,
-                    legal_opinion: opinions,
-                    litigation: litigations,
-                    call: calls,
+                    consultation: requestCounts.consultations,
+                    legal_opinion: requestCounts.legalOpinions,
+                    litigation: requestCounts.litigations,
+                    call: requestCounts.calls,
                 },
                 byStatus: {},
                 averageCompletionTime: 0,
             },
             providers: {
-                totalActive: activeProviders,
-                averageWorkload: 0,
-                topPerformers: [],
+                totalActive: providerStats.totalActive,
+                averageWorkload: providerStats.averageWorkload,
+                topPerformers: providerStats.topPerformers,
             },
             subscribers: {
-                totalActive: activeSubscribers,
-                newThisPeriod: 0,
-                retention: 0,
+                totalActive: subscriberStats.totalActive,
+                newThisPeriod: subscriberStats.newThisPeriod,
+                retention: subscriberStats.retention,
             },
-            sla: slaData,
+            sla: {
+                onTrack: slaStats.onTrack,
+                atRisk: slaStats.atRisk,
+                breached: slaStats.breached,
+                complianceRate,
+            },
         };
     }
 
