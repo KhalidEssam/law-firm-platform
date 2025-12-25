@@ -129,7 +129,7 @@ class TransactionalCallRequestRepository implements ICallRequestRepository {
     }
 
     private mapStatusToPrisma(status: CallStatus): RequestStatus {
-        return mapCallStatusToPrisma(status);
+        return mapCallStatusToPrisma(status) as RequestStatus;
     }
 
     // ============================================

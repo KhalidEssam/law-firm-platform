@@ -14,6 +14,12 @@ import { LegalOpinionRequestController } from 'src/interface/http/legal-opinion-
 // Repository
 import { PrismaLegalOpinionRequestRepository } from '../persistence/legal-opinion/prisma.repository';
 
+// Unit of Work
+import {
+    PrismaLegalOpinionUnitOfWork,
+    LEGAL_OPINION_UNIT_OF_WORK,
+} from '../persistence/legal-opinion/prisma-legal-opinion.uow';
+
 // Use Cases
 import { CreateOpinionRequestUseCase } from '../../core/application/legal-opinion/use-cases/create-opinion-request.use-case';
 import { UpdateOpinionRequestUseCase } from '../../core/application/legal-opinion/use-cases/update-opinion-request.use-case';
@@ -83,6 +89,14 @@ import {
     },
 
     // ============================================
+    // UNIT OF WORK (Infrastructure Layer)
+    // ============================================
+    {
+      provide: LEGAL_OPINION_UNIT_OF_WORK,
+      useClass: PrismaLegalOpinionUnitOfWork,
+    },
+
+    // ============================================
     // USE CASES (Application Layer)
     // ============================================
 
@@ -124,6 +138,9 @@ import {
   exports: [
     // Export repository interface for other modules
     'ILegalOpinionRequestRepository',
+
+    // Export Unit of Work for other modules
+    LEGAL_OPINION_UNIT_OF_WORK,
 
     // Export use cases that might be needed by other modules
     GetOpinionRequestUseCase,
