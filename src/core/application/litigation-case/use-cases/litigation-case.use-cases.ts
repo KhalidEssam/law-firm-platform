@@ -6,6 +6,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { type ILitigationCaseRepository } from '../../../domain/litigation-case/port/litigation-case.repository';
 import { LitigationCase } from '../../../domain/litigation-case/entities/litigation-case.entity';
+import { LitigationStatusHistory } from '../../../domain/litigation-case/entities/litigation-status-history.entity';
 import {
     CaseId,
     CaseNumber,
@@ -21,6 +22,10 @@ import {
     QuoteDetails,
     PaymentReference,
 } from '../../../domain/litigation-case/value-objects/litigation-case.vo';
+import {
+    type ILitigationUnitOfWork,
+    LITIGATION_UNIT_OF_WORK,
+} from '../../../domain/litigation-case/ports/litigation.uow';
 
 // ============================================
 // CREATE LITIGATION CASE
@@ -285,7 +290,7 @@ export class AcceptQuoteUseCase {
 }
 
 // ============================================
-// MARK AS PAID
+// MARK AS PAID (Uses UoW for ACID guarantees with status history)
 // ============================================
 
 export interface MarkAsPaidCommand {
@@ -293,30 +298,52 @@ export interface MarkAsPaidCommand {
     paymentReference: string;
     amount?: number;
     currency?: string;
+    markedBy?: string;
 }
 
 @Injectable()
 export class MarkAsPaidUseCase {
     constructor(
-        @Inject('ILitigationCaseRepository')
-        private readonly repository: ILitigationCaseRepository,
+        @Inject(LITIGATION_UNIT_OF_WORK)
+        private readonly litigationUow: ILitigationUnitOfWork,
     ) { }
 
+    /**
+     * Marks a litigation case as paid atomically with status history.
+     *
+     * All operations are atomic:
+     * 1. Updates case payment status
+     * 2. Creates status history record for audit
+     */
     async execute(command: MarkAsPaidCommand): Promise<any> {
-        const litigationCase = await this.repository.findById(CaseId.create(command.caseId));
+        return await this.litigationUow.transaction(async (uow) => {
+            const litigationCase = await uow.cases.findById(CaseId.create(command.caseId));
 
-        if (!litigationCase) {
-            throw new NotFoundException('Litigation case not found');
-        }
+            if (!litigationCase) {
+                throw new NotFoundException('Litigation case not found');
+            }
 
-        const amount = command.amount && command.currency
-            ? Money.create(command.amount, command.currency)
-            : undefined;
+            const oldStatus = litigationCase.status;
+            const amount = command.amount && command.currency
+                ? Money.create(command.amount, command.currency)
+                : undefined;
 
-        litigationCase.markAsPaid(command.paymentReference, amount);
+            litigationCase.markAsPaid(command.paymentReference, amount);
 
-        const updated = await this.repository.update(litigationCase);
-        return this.toDto(updated);
+            const updated = await uow.cases.update(litigationCase);
+
+            // Create status history record atomically
+            const statusHistory = LitigationStatusHistory.create({
+                litigationCaseId: litigationCase.id,
+                fromStatus: oldStatus,
+                toStatus: updated.status,
+                reason: `Payment received: ${command.paymentReference}`,
+                changedBy: command.markedBy ? UserId.create(command.markedBy) : undefined,
+            });
+            await uow.statusHistories.create(statusHistory);
+
+            return this.toDto(updated);
+        });
     }
 
     private toDto(litigationCase: LitigationCase): any {
@@ -331,31 +358,49 @@ export class MarkAsPaidUseCase {
 }
 
 // ============================================
-// ACTIVATE CASE
+// ACTIVATE CASE (Uses UoW for ACID guarantees with status history)
 // ============================================
 
 export interface ActivateCaseCommand {
     caseId: string;
+    activatedBy?: string;
 }
 
 @Injectable()
 export class ActivateCaseUseCase {
     constructor(
-        @Inject('ILitigationCaseRepository')
-        private readonly repository: ILitigationCaseRepository,
+        @Inject(LITIGATION_UNIT_OF_WORK)
+        private readonly litigationUow: ILitigationUnitOfWork,
     ) { }
 
+    /**
+     * Activates a litigation case atomically with status history.
+     */
     async execute(command: ActivateCaseCommand): Promise<any> {
-        const litigationCase = await this.repository.findById(CaseId.create(command.caseId));
+        return await this.litigationUow.transaction(async (uow) => {
+            const litigationCase = await uow.cases.findById(CaseId.create(command.caseId));
 
-        if (!litigationCase) {
-            throw new NotFoundException('Litigation case not found');
-        }
+            if (!litigationCase) {
+                throw new NotFoundException('Litigation case not found');
+            }
 
-        litigationCase.activate();
+            const oldStatus = litigationCase.status;
+            litigationCase.activate();
 
-        const updated = await this.repository.update(litigationCase);
-        return this.toDto(updated);
+            const updated = await uow.cases.update(litigationCase);
+
+            // Create status history record atomically
+            const statusHistory = LitigationStatusHistory.create({
+                litigationCaseId: litigationCase.id,
+                fromStatus: oldStatus,
+                toStatus: updated.status,
+                reason: 'Case activated',
+                changedBy: command.activatedBy ? UserId.create(command.activatedBy) : undefined,
+            });
+            await uow.statusHistories.create(statusHistory);
+
+            return this.toDto(updated);
+        });
     }
 
     private toDto(litigationCase: LitigationCase): any {
@@ -369,31 +414,50 @@ export class ActivateCaseUseCase {
 }
 
 // ============================================
-// CLOSE CASE
+// CLOSE CASE (Uses UoW for ACID guarantees with status history)
 // ============================================
 
 export interface CloseCaseCommand {
     caseId: string;
+    closedBy?: string;
+    reason?: string;
 }
 
 @Injectable()
 export class CloseCaseUseCase {
     constructor(
-        @Inject('ILitigationCaseRepository')
-        private readonly repository: ILitigationCaseRepository,
+        @Inject(LITIGATION_UNIT_OF_WORK)
+        private readonly litigationUow: ILitigationUnitOfWork,
     ) { }
 
+    /**
+     * Closes a litigation case atomically with status history.
+     */
     async execute(command: CloseCaseCommand): Promise<any> {
-        const litigationCase = await this.repository.findById(CaseId.create(command.caseId));
+        return await this.litigationUow.transaction(async (uow) => {
+            const litigationCase = await uow.cases.findById(CaseId.create(command.caseId));
 
-        if (!litigationCase) {
-            throw new NotFoundException('Litigation case not found');
-        }
+            if (!litigationCase) {
+                throw new NotFoundException('Litigation case not found');
+            }
 
-        litigationCase.close();
+            const oldStatus = litigationCase.status;
+            litigationCase.close();
 
-        const updated = await this.repository.update(litigationCase);
-        return this.toDto(updated);
+            const updated = await uow.cases.update(litigationCase);
+
+            // Create status history record atomically
+            const statusHistory = LitigationStatusHistory.create({
+                litigationCaseId: litigationCase.id,
+                fromStatus: oldStatus,
+                toStatus: updated.status,
+                reason: command.reason || 'Case closed',
+                changedBy: command.closedBy ? UserId.create(command.closedBy) : undefined,
+            });
+            await uow.statusHistories.create(statusHistory);
+
+            return this.toDto(updated);
+        });
     }
 
     private toDto(litigationCase: LitigationCase): any {
@@ -408,7 +472,7 @@ export class CloseCaseUseCase {
 }
 
 // ============================================
-// CANCEL CASE
+// CANCEL CASE (Uses UoW for ACID guarantees with status history)
 // ============================================
 
 export interface CancelCaseCommand {
@@ -420,25 +484,42 @@ export interface CancelCaseCommand {
 @Injectable()
 export class CancelCaseUseCase {
     constructor(
-        @Inject('ILitigationCaseRepository')
-        private readonly repository: ILitigationCaseRepository,
+        @Inject(LITIGATION_UNIT_OF_WORK)
+        private readonly litigationUow: ILitigationUnitOfWork,
     ) { }
 
+    /**
+     * Cancels a litigation case atomically with status history.
+     */
     async execute(command: CancelCaseCommand): Promise<any> {
-        const litigationCase = await this.repository.findById(CaseId.create(command.caseId));
+        return await this.litigationUow.transaction(async (uow) => {
+            const litigationCase = await uow.cases.findById(CaseId.create(command.caseId));
 
-        if (!litigationCase) {
-            throw new NotFoundException('Litigation case not found');
-        }
+            if (!litigationCase) {
+                throw new NotFoundException('Litigation case not found');
+            }
 
-        if (litigationCase.subscriberId.getValue() !== command.userId) {
-            throw new ForbiddenException('Only case owner can cancel');
-        }
+            if (litigationCase.subscriberId.getValue() !== command.userId) {
+                throw new ForbiddenException('Only case owner can cancel');
+            }
 
-        litigationCase.cancel(command.reason);
+            const oldStatus = litigationCase.status;
+            litigationCase.cancel(command.reason);
 
-        const updated = await this.repository.update(litigationCase);
-        return this.toDto(updated);
+            const updated = await uow.cases.update(litigationCase);
+
+            // Create status history record atomically
+            const statusHistory = LitigationStatusHistory.create({
+                litigationCaseId: litigationCase.id,
+                fromStatus: oldStatus,
+                toStatus: updated.status,
+                reason: command.reason || 'Case cancelled by owner',
+                changedBy: UserId.create(command.userId),
+            });
+            await uow.statusHistories.create(statusHistory);
+
+            return this.toDto(updated);
+        });
     }
 
     private toDto(litigationCase: LitigationCase): any {
