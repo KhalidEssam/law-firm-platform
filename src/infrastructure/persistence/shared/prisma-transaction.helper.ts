@@ -11,11 +11,20 @@ import {
 } from '../../../core/domain/shared/ports/base-unit-of-work.interface';
 
 /**
+ * Prisma interactive transaction options type.
+ */
+export interface PrismaInteractiveTransactionOptions {
+    maxWait?: number;
+    timeout?: number;
+    isolationLevel?: Prisma.TransactionIsolationLevel;
+}
+
+/**
  * Maps our domain transaction options to Prisma transaction options.
  */
 export function toPrismaTransactionOptions(
     options?: TransactionOptions,
-): Prisma.TransactionOptions {
+): PrismaInteractiveTransactionOptions {
     const opts = options ?? DEFAULT_TRANSACTION_OPTIONS;
 
     return {

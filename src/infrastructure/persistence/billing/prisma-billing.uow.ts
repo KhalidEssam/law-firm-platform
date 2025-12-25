@@ -1022,7 +1022,6 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
                 currency: CurrencyMapper.toPrisma(invoice.amount.currency),
                 status: InvoiceStatusMapper.toPrisma(invoice.status.getValue()),
                 dueDate: invoice.dueDate,
-                paidAt: invoice.paidAt,
                 createdAt: invoice.createdAt,
                 updatedAt: invoice.updatedAt,
             },
@@ -1067,7 +1066,6 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
             where: { id: invoice.id },
             data: {
                 status: InvoiceStatusMapper.toPrisma(invoice.status.getValue()),
-                paidAt: invoice.paidAt,
                 updatedAt: new Date(),
             },
         });
@@ -1079,7 +1077,6 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
             where: { id },
             data: {
                 status: InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.PAID),
-                paidAt: new Date(),
                 updatedAt: new Date(),
             },
         });
@@ -1115,7 +1112,7 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
     async findOverdueInvoices(): Promise<MembershipInvoice[]> {
         const found = await this.prisma.membershipInvoice.findMany({
             where: {
-                status: InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.PENDING),
+                status: InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.UNPAID),
                 dueDate: { lt: new Date() },
             },
             orderBy: { dueDate: 'asc' },
@@ -1128,7 +1125,7 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
         futureDate.setDate(futureDate.getDate() + daysAhead);
         const found = await this.prisma.membershipInvoice.findMany({
             where: {
-                status: InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.PENDING),
+                status: InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.UNPAID),
                 dueDate: { gte: new Date(), lte: futureDate },
             },
             orderBy: { dueDate: 'asc' },
@@ -1142,7 +1139,7 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
                 membershipId,
                 status: {
                     in: [
-                        InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.PENDING),
+                        InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.UNPAID),
                         InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.OVERDUE),
                     ],
                 },
@@ -1158,7 +1155,7 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
                 membershipId,
                 status: {
                     in: [
-                        InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.PENDING),
+                        InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.UNPAID),
                         InvoiceStatusMapper.toPrisma(InvoiceStatusEnum.OVERDUE),
                     ],
                 },
@@ -1186,7 +1183,6 @@ class TransactionalMembershipInvoiceRepository implements IMembershipInvoiceRepo
             currency: CurrencyMapper.toDomain(record.currency),
             status: InvoiceStatusMapper.toDomain(record.status),
             dueDate: record.dueDate,
-            paidAt: record.paidAt ?? undefined,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
         });
