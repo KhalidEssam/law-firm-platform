@@ -13,6 +13,12 @@ import { UserModule } from './user.module';
 // Repository
 import { ConsultationRequestRepository } from '../persistence/consultation/prisma.repository';
 
+// Unit of Work
+import {
+    PrismaConsultationUnitOfWork,
+    CONSULTATION_UNIT_OF_WORK,
+} from '../persistence/consultation/prisma-consultation.uow';
+
 // Use Cases - 13 Core Use Cases
 import {
     CreateConsultationRequestUseCase,
@@ -64,6 +70,14 @@ import { ConsultationRequestController } from '../../interface/http/consultation
         // REPOSITORY
         // ============================================
         ConsultationRequestRepository,
+
+        // ============================================
+        // UNIT OF WORK
+        // ============================================
+        {
+            provide: CONSULTATION_UNIT_OF_WORK,
+            useClass: PrismaConsultationUnitOfWork,
+        },
 
         // ============================================
         // USE CASES (13 Core)
@@ -126,6 +140,9 @@ import { ConsultationRequestController } from '../../interface/http/consultation
     exports: [
         // Export repository if other modules need it
         ConsultationRequestRepository,
+
+        // Export Unit of Work for other modules
+        CONSULTATION_UNIT_OF_WORK,
 
         // Export use cases if other modules need to use them
         CreateConsultationRequestUseCase,
