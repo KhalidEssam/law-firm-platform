@@ -21,6 +21,12 @@ import {
     PrismaMembershipChangeLogRepository,
 } from '../persistence/membership/prisma.repository';
 
+// Unit of Work
+import {
+    PrismaMembershipUnitOfWork,
+    MEMBERSHIP_UNIT_OF_WORK,
+} from '../persistence/membership/prisma-membership.uow';
+
 // Core Use Cases
 import {
     CreateMembershipUseCase,
@@ -143,6 +149,14 @@ import { MembershipIntegrationService } from '../../core/application/membership/
         },
 
         // ============================================
+        // UNIT OF WORK
+        // ============================================
+        {
+            provide: MEMBERSHIP_UNIT_OF_WORK,
+            useClass: PrismaMembershipUnitOfWork,
+        },
+
+        // ============================================
         // MEMBERSHIP USE CASES
         // ============================================
         CreateMembershipUseCase,
@@ -244,6 +258,9 @@ import { MembershipIntegrationService } from '../../core/application/membership/
         'ITierServiceRepository',
         'IServiceUsageRepository',
         'IMembershipChangeLogRepository',
+
+        // Export Unit of Work for cross-module transactional operations
+        MEMBERSHIP_UNIT_OF_WORK,
 
         // Export commonly used use cases
         GetActiveMembershipByUserUseCase,

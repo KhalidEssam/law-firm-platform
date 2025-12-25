@@ -20,6 +20,10 @@ import {
     type IMembershipCouponRedemptionRepository,
     type IMembershipQuotaUsageRepository,
 } from '../ports/repository';
+import {
+    type IMembershipUnitOfWork,
+    MEMBERSHIP_UNIT_OF_WORK,
+} from '../../../domain/membership/ports/membership.uow';
 
 // ============================================
 // 1. CREATE MEMBERSHIP USE CASE
@@ -216,64 +220,73 @@ export class ToggleAutoRenewUseCase {
 }
 
 // ============================================
-// 7. APPLY COUPON USE CASE
+// 7. APPLY COUPON USE CASE (Uses UoW for ACID guarantees)
 // ============================================
 
 @Injectable()
 export class ApplyCouponUseCase {
     constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-        @Inject('IMembershipTierRepository')
-        private readonly tierRepo: IMembershipTierRepository,
-        @Inject('IMembershipCouponRepository')
-        private readonly couponRepo: IMembershipCouponRepository,
-        @Inject('IMembershipCouponRedemptionRepository')
-        private readonly redemptionRepo: IMembershipCouponRedemptionRepository,
+        @Inject(MEMBERSHIP_UNIT_OF_WORK)
+        private readonly membershipUow: IMembershipUnitOfWork,
     ) { }
 
+    /**
+     * Apply a coupon to a membership atomically.
+     *
+     * This operation:
+     * 1. Validates membership exists
+     * 2. Validates coupon is valid and can be redeemed
+     * 3. Checks if user has already redeemed this coupon
+     * 4. Creates redemption record
+     * 5. Increments coupon usage count
+     *
+     * All operations are atomic with Serializable isolation
+     * to prevent race conditions (e.g., double redemption).
+     */
     async execute(membershipId: string, couponCode: string): Promise<{ discountAmount: number }> {
-        // Validate membership
-        const membership = await this.membershipRepo.findById(membershipId);
-        if (!membership) {
-            throw new NotFoundException('Membership not found');
-        }
+        return await this.membershipUow.transaction(async (uow) => {
+            // 1. Validate membership
+            const membership = await uow.memberships.findById(membershipId);
+            if (!membership) {
+                throw new NotFoundException('Membership not found');
+            }
 
-        // Validate coupon
-        const validationResult = await this.couponRepo.validateCoupon(couponCode);
-        if (!validationResult.valid) {
-            throw new BadRequestException(validationResult.reason || 'Invalid coupon');
-        }
+            // 2. Validate coupon
+            const validationResult = await uow.coupons.validateCoupon(couponCode);
+            if (!validationResult.valid) {
+                throw new BadRequestException(validationResult.reason || 'Invalid coupon');
+            }
 
-        const coupon = validationResult.coupon!;
+            const coupon = validationResult.coupon!;
 
-        // Check if already redeemed
-        const alreadyRedeemed = await this.redemptionRepo.hasUserRedeemedCoupon(membershipId, coupon.id);
-        if (alreadyRedeemed) {
-            throw new BadRequestException('Coupon already redeemed for this membership');
-        }
+            // 3. Check if already redeemed (within transaction to prevent race condition)
+            const alreadyRedeemed = await uow.redemptions.hasUserRedeemedCoupon(membershipId, coupon.id);
+            if (alreadyRedeemed) {
+                throw new BadRequestException('Coupon already redeemed for this membership');
+            }
 
-        // Get tier price
-        const tier = await this.tierRepo.findById(membership.tierId);
-        if (!tier) {
-            throw new NotFoundException('Membership tier not found');
-        }
+            // 4. Get tier price
+            const tier = await uow.tiers.findById(membership.tierId);
+            if (!tier) {
+                throw new NotFoundException('Membership tier not found');
+            }
 
-        // Calculate discount
-        const discountAmount = coupon.calculateDiscount(tier.price.amount);
+            // 5. Calculate discount
+            const discountAmount = coupon.calculateDiscount(tier.price.amount);
 
-        // Create redemption
-        await this.redemptionRepo.create(
-            MembershipCouponRedemption.create({
-                membershipId,
-                couponId: coupon.id,
-            })
-        );
+            // 6. Create redemption record atomically
+            await uow.redemptions.create(
+                MembershipCouponRedemption.create({
+                    membershipId,
+                    couponId: coupon.id,
+                })
+            );
 
-        // Increment coupon usage
-        await this.couponRepo.incrementUsage(coupon.id);
+            // 7. Increment coupon usage atomically
+            await uow.coupons.incrementUsage(coupon.id);
 
-        return { discountAmount };
+            return { discountAmount };
+        });
     }
 }
 
@@ -350,18 +363,14 @@ export class CheckQuotaUseCase {
 }
 
 // ============================================
-// 9. CONSUME QUOTA USE CASE
+// 9. CONSUME QUOTA USE CASE (Uses UoW for ACID guarantees)
 // ============================================
 
 @Injectable()
 export class ConsumeQuotaUseCase {
     constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-        @Inject('IMembershipTierRepository')
-        private readonly tierRepo: IMembershipTierRepository,
-        @Inject('IMembershipQuotaUsageRepository')
-        private readonly quotaRepo: IMembershipQuotaUsageRepository,
+        @Inject(MEMBERSHIP_UNIT_OF_WORK)
+        private readonly membershipUow: IMembershipUnitOfWork,
     ) { }
 
     // Map user-friendly names to internal QuotaResource values
@@ -384,44 +393,61 @@ export class ConsumeQuotaUseCase {
         return friendlyNameMap[resource] || resource as QuotaResource;
     }
 
+    /**
+     * Consume quota atomically with race condition prevention.
+     *
+     * This operation:
+     * 1. Validates membership exists and is active
+     * 2. Gets tier to check quota limits
+     * 3. Checks current usage against limit
+     * 4. Increments usage atomically
+     *
+     * All operations are atomic with Serializable isolation
+     * to prevent race conditions where concurrent requests
+     * could exceed quota limits.
+     */
     async execute(membershipId: string, resource: QuotaResource, amount: number): Promise<void> {
-        const membership = await this.membershipRepo.findById(membershipId);
-        if (!membership) {
-            throw new NotFoundException('Membership not found');
-        }
+        await this.membershipUow.transaction(async (uow) => {
+            // 1. Validate membership
+            const membership = await uow.memberships.findById(membershipId);
+            if (!membership) {
+                throw new NotFoundException('Membership not found');
+            }
 
-        if (!membership.isActive) {
-            throw new BadRequestException('Membership is not active');
-        }
+            if (!membership.isActive) {
+                throw new BadRequestException('Membership is not active');
+            }
 
-        const tier = await this.tierRepo.findById(membership.tierId);
-        if (!tier) {
-            throw new NotFoundException('Membership tier not found');
-        }
+            // 2. Get tier to check limits
+            const tier = await uow.tiers.findById(membership.tierId);
+            if (!tier) {
+                throw new NotFoundException('Membership tier not found');
+            }
 
-        // Normalize the resource name to handle user-friendly names
-        const normalizedResource = this.normalizeResource(resource as string);
+            // Normalize the resource name to handle user-friendly names
+            const normalizedResource = this.normalizeResource(resource as string);
 
-        // Get tier limit
-        const resourceToQuotaField: Record<QuotaResource, keyof typeof tier.quota> = {
-            [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
-            [QuotaResource.OPINIONS]: 'opinionsPerMonth',
-            [QuotaResource.SERVICES]: 'servicesPerMonth',
-            [QuotaResource.CASES]: 'casesPerMonth',
-            [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
-        };
+            // 3. Get tier limit
+            const resourceToQuotaField: Record<QuotaResource, keyof typeof tier.quota> = {
+                [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
+                [QuotaResource.OPINIONS]: 'opinionsPerMonth',
+                [QuotaResource.SERVICES]: 'servicesPerMonth',
+                [QuotaResource.CASES]: 'casesPerMonth',
+                [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
+            };
 
-        const quotaField = resourceToQuotaField[normalizedResource];
-        const limit = quotaField ? tier.getQuotaLimit(quotaField) : undefined;
+            const quotaField = resourceToQuotaField[normalizedResource];
+            const limit = quotaField ? tier.getQuotaLimit(quotaField) : undefined;
 
-        // Check if has available quota
-        const hasQuota = await this.quotaRepo.hasAvailableQuota(membershipId, normalizedResource, amount, limit);
-        if (!hasQuota) {
-            throw new BadRequestException(`Insufficient quota for ${resource}`);
-        }
+            // 4. Check quota within transaction (prevents race conditions)
+            const hasQuota = await uow.quotaUsage.hasAvailableQuota(membershipId, normalizedResource, amount, limit);
+            if (!hasQuota) {
+                throw new BadRequestException(`Insufficient quota for ${resource}`);
+            }
 
-        // Consume quota
-        await this.quotaRepo.incrementUsage(membershipId, normalizedResource, amount);
+            // 5. Consume quota atomically
+            await uow.quotaUsage.incrementUsage(membershipId, normalizedResource, amount);
+        });
     }
 }
 
