@@ -2,6 +2,7 @@
 // CANCEL CONSULTATION REQUEST USE CASE
 // ============================================
 
+import { Injectable, Inject } from '@nestjs/common';
 import {
     ConsultationRequest,
     ConsultationId,
@@ -9,12 +10,15 @@ import {
 
 import { RequestStatusHistory } from '../../../../domain/consultation/entities/consultation-request-entities';
 
-import { IConsultationRequestUnitOfWork } from '../../ports/repository';
+import type { IConsultationRequestUnitOfWork } from '../../../../domain/consultation/ports/consultation-request.repository';
+import { CONSULTATION_UNIT_OF_WORK } from '../../../../domain/consultation/ports/consultation-request.repository';
 
 import { ConsultationRequestResponseDTO } from '../../consultation request.dtos';
 
+@Injectable()
 export class CancelConsultationRequestUseCase {
     constructor(
+        @Inject(CONSULTATION_UNIT_OF_WORK)
         private readonly unitOfWork: IConsultationRequestUnitOfWork
     ) {}
 
