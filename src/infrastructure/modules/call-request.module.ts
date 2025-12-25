@@ -9,6 +9,12 @@ import { CallRequestController } from '../../interface/http/call-request.control
 // Repository Implementation
 import { PrismaCallRequestRepository } from '../persistence/call-request/prisma-call-request.repository';
 
+// Unit of Work Implementation
+import {
+    PrismaCallRequestUnitOfWork,
+    CALL_REQUEST_UNIT_OF_WORK,
+} from '../persistence/call-request/prisma-call-request.uow';
+
 // Provider Validation Service
 import { ProviderValidationService } from '../services/provider-validation.service';
 
@@ -70,6 +76,12 @@ import {
             useClass: PrismaCallRequestRepository,
         },
 
+        // Unit of Work
+        {
+            provide: CALL_REQUEST_UNIT_OF_WORK,
+            useClass: PrismaCallRequestUnitOfWork,
+        },
+
         // Provider Validation Service
         {
             provide: 'IProviderValidationService',
@@ -112,6 +124,7 @@ import {
     ],
     exports: [
         'ICallRequestRepository',
+        CALL_REQUEST_UNIT_OF_WORK,
         'IProviderValidationService',
         // Core Use Cases
         CreateCallRequestUseCase,

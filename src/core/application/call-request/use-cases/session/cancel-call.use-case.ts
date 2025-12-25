@@ -4,26 +4,40 @@
 
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { CallRequest } from '../../../../domain/call-request/entities/call-request.entity';
-import {
-    type ICallRequestRepository,
-} from '../../ports/call-request.repository';
+import { CallStatusHistory } from '../../../../domain/call-request/entities/call-status-history.entity';
+import type { ICallRequestUnitOfWork } from '../../../../domain/call-request/ports/call-request.uow';
+import { CALL_REQUEST_UNIT_OF_WORK } from '../../../../domain/call-request/ports/call-request.uow';
 import { CancelCallDto } from '../../dto/call-request.dto';
 
 @Injectable()
 export class CancelCallUseCase {
     constructor(
-        @Inject('ICallRequestRepository')
-        private readonly callRequestRepo: ICallRequestRepository,
+        @Inject(CALL_REQUEST_UNIT_OF_WORK)
+        private readonly callRequestUow: ICallRequestUnitOfWork,
     ) {}
 
     async execute(callRequestId: string, dto?: CancelCallDto): Promise<CallRequest> {
-        const callRequest = await this.callRequestRepo.findById(callRequestId);
-        if (!callRequest) {
-            throw new NotFoundException(`Call request with ID ${callRequestId} not found`);
-        }
+        return await this.callRequestUow.transaction(async (uow) => {
+            const callRequest = await uow.callRequests.findById(callRequestId);
+            if (!callRequest) {
+                throw new NotFoundException(`Call request with ID ${callRequestId} not found`);
+            }
 
-        callRequest.cancel(dto?.reason);
+            const oldStatus = callRequest.status;
+            callRequest.cancel(dto?.reason);
 
-        return await this.callRequestRepo.update(callRequest);
+            const updated = await uow.callRequests.update(callRequest);
+
+            // Create status history record for the cancellation
+            const statusHistory = CallStatusHistory.create({
+                callRequestId: updated.id,
+                fromStatus: oldStatus,
+                toStatus: updated.status,
+                reason: dto?.reason || 'Call cancelled',
+            });
+            await uow.statusHistories.create(statusHistory);
+
+            return updated;
+        });
     }
 }

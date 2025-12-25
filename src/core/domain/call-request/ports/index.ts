@@ -4,3 +4,4 @@
 // ============================================
 
 export * from './call-request.repository';
+export * from './call-request.uow';
