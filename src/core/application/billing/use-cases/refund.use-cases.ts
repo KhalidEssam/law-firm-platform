@@ -5,6 +5,7 @@
 
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Refund } from '../../../domain/billing/entities/refund.entity';
+import { TransactionLog } from '../../../domain/billing/entities/transaction-log.entity';
 import { Money, CurrencyEnum } from '../../../domain/billing/value-objects/money.vo';
 import { RefundStatusEnum } from '../../../domain/billing/value-objects/refund-status.vo';
 import {
@@ -12,6 +13,10 @@ import {
     RefundListOptions,
     RefundStatistics,
 } from '../../../domain/billing/ports/refund.repository';
+import {
+    type IBillingUnitOfWork,
+    BILLING_UNIT_OF_WORK,
+} from '../../../domain/billing/ports/billing.uow';
 import {
     RequestRefundDto,
     ReviewRefundDto,
@@ -121,91 +126,145 @@ export class GetUserRefundsUseCase {
 }
 
 // ============================================
-// APPROVE REFUND
+// APPROVE REFUND (Uses UoW for consistency)
 // ============================================
 @Injectable()
 export class ApproveRefundUseCase {
     constructor(
-        @Inject('IRefundRepository')
-        private readonly refundRepository: IRefundRepository,
+        @Inject(BILLING_UNIT_OF_WORK)
+        private readonly billingUow: IBillingUnitOfWork,
     ) {}
 
+    /**
+     * Approve a pending refund request.
+     * Uses UoW for consistency and future extensibility (e.g., audit logging).
+     */
     async execute(id: string, dto: ReviewRefundDto): Promise<Refund> {
-        const refund = await this.refundRepository.findById(id);
-        if (!refund) {
-            throw new NotFoundException(`Refund with ID ${id} not found`);
-        }
+        return await this.billingUow.transaction(async (uow) => {
+            const refund = await uow.refunds.findById(id);
+            if (!refund) {
+                throw new NotFoundException(`Refund with ID ${id} not found`);
+            }
 
-        if (!refund.status.canBeReviewed()) {
-            throw new BadRequestException(
-                `Cannot approve refund. Current status: ${refund.status.getValue()}`
-            );
-        }
+            if (!refund.status.canBeReviewed()) {
+                throw new BadRequestException(
+                    `Cannot approve refund. Current status: ${refund.status.getValue()}`
+                );
+            }
 
-        const updatedRefund = refund.approve({
-            reviewedBy: dto.reviewedBy,
-            reviewNotes: dto.reviewNotes,
+            const updatedRefund = refund.approve({
+                reviewedBy: dto.reviewedBy,
+                reviewNotes: dto.reviewNotes,
+            });
+
+            return await uow.refunds.update(updatedRefund);
         });
-
-        return await this.refundRepository.update(updatedRefund);
     }
 }
 
 // ============================================
-// REJECT REFUND
+// REJECT REFUND (Uses UoW for consistency)
 // ============================================
 @Injectable()
 export class RejectRefundUseCase {
     constructor(
-        @Inject('IRefundRepository')
-        private readonly refundRepository: IRefundRepository,
+        @Inject(BILLING_UNIT_OF_WORK)
+        private readonly billingUow: IBillingUnitOfWork,
     ) {}
 
+    /**
+     * Reject a pending refund request.
+     * Uses UoW for consistency and future extensibility (e.g., audit logging).
+     */
     async execute(id: string, dto: ReviewRefundDto): Promise<Refund> {
-        const refund = await this.refundRepository.findById(id);
-        if (!refund) {
-            throw new NotFoundException(`Refund with ID ${id} not found`);
-        }
+        return await this.billingUow.transaction(async (uow) => {
+            const refund = await uow.refunds.findById(id);
+            if (!refund) {
+                throw new NotFoundException(`Refund with ID ${id} not found`);
+            }
 
-        if (!refund.status.canBeReviewed()) {
-            throw new BadRequestException(
-                `Cannot reject refund. Current status: ${refund.status.getValue()}`
-            );
-        }
+            if (!refund.status.canBeReviewed()) {
+                throw new BadRequestException(
+                    `Cannot reject refund. Current status: ${refund.status.getValue()}`
+                );
+            }
 
-        const updatedRefund = refund.reject({
-            reviewedBy: dto.reviewedBy,
-            reviewNotes: dto.reviewNotes,
+            const updatedRefund = refund.reject({
+                reviewedBy: dto.reviewedBy,
+                reviewNotes: dto.reviewNotes,
+            });
+
+            return await uow.refunds.update(updatedRefund);
         });
-
-        return await this.refundRepository.update(updatedRefund);
     }
 }
 
 // ============================================
-// PROCESS REFUND
+// PROCESS REFUND (Uses UoW for ACID guarantees)
 // ============================================
 @Injectable()
 export class ProcessRefundUseCase {
     constructor(
-        @Inject('IRefundRepository')
-        private readonly refundRepository: IRefundRepository,
+        @Inject(BILLING_UNIT_OF_WORK)
+        private readonly billingUow: IBillingUnitOfWork,
     ) {}
 
+    /**
+     * Process an approved refund atomically.
+     *
+     * This operation:
+     * 1. Updates refund status to PROCESSED
+     * 2. Creates a TransactionLog entry for the refund
+     * 3. If original transaction exists, marks it as refunded
+     *
+     * All operations are atomic - if any fails, all are rolled back.
+     */
     async execute(id: string, dto: ProcessRefundDto): Promise<Refund> {
-        const refund = await this.refundRepository.findById(id);
-        if (!refund) {
-            throw new NotFoundException(`Refund with ID ${id} not found`);
-        }
+        return await this.billingUow.transaction(async (uow) => {
+            // 1. Find and validate refund
+            const refund = await uow.refunds.findById(id);
+            if (!refund) {
+                throw new NotFoundException(`Refund with ID ${id} not found`);
+            }
 
-        if (!refund.status.canBeProcessed()) {
-            throw new BadRequestException(
-                `Cannot process refund. Current status: ${refund.status.getValue()}`
-            );
-        }
+            if (!refund.status.canBeProcessed()) {
+                throw new BadRequestException(
+                    `Cannot process refund. Current status: ${refund.status.getValue()}`
+                );
+            }
 
-        const updatedRefund = refund.process(dto.refundReference);
-        return await this.refundRepository.update(updatedRefund);
+            // 2. Update refund status
+            const updatedRefund = refund.process(dto.refundReference);
+            await uow.refunds.update(updatedRefund);
+
+            // 3. Create refund transaction log for audit trail
+            const refundTransactionLog = TransactionLog.createRefundTransaction({
+                userId: refund.userId,
+                amount: refund.amount,
+                originalTransactionId: refund.transactionLogId ?? refund.id,
+                metadata: {
+                    refundId: refund.id,
+                    refundReference: dto.refundReference,
+                    reason: refund.reason,
+                },
+            });
+            const createdLog = await uow.transactionLogs.create(refundTransactionLog);
+
+            // 4. Mark the refund transaction as paid (completed)
+            const paidLog = createdLog.markAsPaid();
+            await uow.transactionLogs.update(paidLog);
+
+            // 5. If there's an original transaction, mark it as refunded
+            if (refund.transactionLogId) {
+                const originalTransaction = await uow.transactionLogs.findById(refund.transactionLogId);
+                if (originalTransaction && originalTransaction.status.canBeRefunded()) {
+                    const refundedTransaction = originalTransaction.markAsRefunded();
+                    await uow.transactionLogs.update(refundedTransaction);
+                }
+            }
+
+            return updatedRefund;
+        });
     }
 }
 

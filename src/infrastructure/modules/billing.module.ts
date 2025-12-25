@@ -11,12 +11,14 @@ import { NotificationModule } from '../../interface/notification/notification.mo
 // Controller
 import { BillingController } from '../../interface/http/billing.controller';
 
-// Repositories
+// Repositories & Unit of Work
 import {
     PrismaMembershipInvoiceRepository,
     PrismaTransactionLogRepository,
     PrismaRefundRepository,
     PrismaDisputeRepository,
+    PrismaBillingUnitOfWork,
+    BILLING_UNIT_OF_WORK,
 } from '../persistence/billing';
 
 // MembershipInvoice Use Cases
@@ -111,7 +113,15 @@ import {
     controllers: [BillingController],
     providers: [
         // ============================================
-        // REPOSITORIES
+        // UNIT OF WORK
+        // ============================================
+        {
+            provide: BILLING_UNIT_OF_WORK,
+            useClass: PrismaBillingUnitOfWork,
+        },
+
+        // ============================================
+        // REPOSITORIES (for backward compatibility)
         // ============================================
         {
             provide: 'IMembershipInvoiceRepository',
@@ -214,7 +224,10 @@ import {
         GetCombinedBillingSummaryUseCase,
     ],
     exports: [
-        // Repositories
+        // Unit of Work
+        BILLING_UNIT_OF_WORK,
+
+        // Repositories (for backward compatibility)
         'IMembershipInvoiceRepository',
         'ITransactionLogRepository',
         'IRefundRepository',
