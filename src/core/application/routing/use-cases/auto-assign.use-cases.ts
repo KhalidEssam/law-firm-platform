@@ -1,16 +1,17 @@
 // src/core/application/routing/use-cases/auto-assign.use-cases.ts
 
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../../../prisma/prisma.service';
-import { RequestStatus, VerificationStatus } from '@prisma/client';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import {
     type IRoutingRuleRepository,
     ROUTING_RULE_REPOSITORY,
 } from '../ports/routing-rule.repository';
+import {
+    type IRoutingDataProvider,
+    ROUTING_DATA_PROVIDER,
+} from '../ports/routing-data-provider';
 import { RoutingRule } from '../../../domain/routing/entities/routing-rule.entity';
 import { RoutingStrategy } from '../../../domain/routing/value-objects/routing-strategy.vo';
 import { RequestContext } from '../../../domain/routing/value-objects/routing-conditions.vo';
-import { ProviderInfo } from '../../../domain/routing/value-objects/provider-target.vo';
 import {
     AutoAssignRequestDto,
     AssignmentResult,
@@ -27,7 +28,8 @@ export class AutoAssignRequestUseCase {
     constructor(
         @Inject(ROUTING_RULE_REPOSITORY)
         private readonly ruleRepo: IRoutingRuleRepository,
-        private readonly prisma: PrismaService,
+        @Inject(ROUTING_DATA_PROVIDER)
+        private readonly dataProvider: IRoutingDataProvider,
     ) {}
 
     /**
@@ -78,7 +80,7 @@ export class AutoAssignRequestUseCase {
         }
 
         // Get eligible providers
-        const allProviders = await this.getAvailableProviders(dto.requestType);
+        const allProviders = await this.dataProvider.getProviderInfoForRouting(dto.requestType);
         const eligibleProviders = matchingRule.getEligibleProviders(allProviders);
 
         if (eligibleProviders.length === 0) {
@@ -132,13 +134,15 @@ export class AutoAssignRequestUseCase {
         }
 
         // Perform the assignment in the database
-        await this.assignRequestToProvider(dto.requestId, dto.requestType, selectedProvider.id);
+        await this.dataProvider.assignRequestToProvider({
+            requestId: dto.requestId,
+            requestType: dto.requestType,
+            providerId: selectedProvider.id,
+            assignedAt: new Date(),
+        });
 
         // Get provider name for response
-        const providerUser = await this.prisma.user.findUnique({
-            where: { id: selectedProvider.id },
-            select: { fullName: true, username: true },
-        });
+        const providerUser = await this.dataProvider.getProviderUserDetails(selectedProvider.id);
 
         return {
             success: true,
@@ -150,184 +154,6 @@ export class AutoAssignRequestUseCase {
             strategy: matchingRule.routingStrategy,
         };
     }
-
-    /**
-     * Get all available providers with their current workload
-     */
-    private async getAvailableProviders(requestType: string): Promise<ProviderInfo[]> {
-        // Get all active providers who can accept requests
-        const providerUsers = await this.prisma.providerUser.findMany({
-            where: {
-                isActive: true,
-                canAcceptRequests: true,
-                deletedAt: null,
-                provider: {
-                    isActive: true,
-                    verificationStatus: VerificationStatus.approved,
-                },
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        fullName: true,
-                    },
-                },
-                provider: {
-                    include: {
-                        specializations: {
-                            include: {
-                                specialization: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        // Get active request counts for each provider
-        const providerInfos: ProviderInfo[] = [];
-
-        for (const pu of providerUsers) {
-            const activeRequestCount = await this.getProviderActiveRequestCount(pu.userId);
-
-            // Get average rating if available
-            const rating = await this.getProviderRating(pu.providerId);
-
-            // Get specializations
-            const specializations = pu.provider.specializations.map(
-                ps => ps.specialization.name
-            );
-
-            providerInfos.push({
-                id: pu.userId,
-                isActive: pu.isActive,
-                canAcceptRequests: pu.canAcceptRequests,
-                activeRequestCount,
-                rating,
-                specializations,
-                region: undefined, // Could be added from provider profile
-                isCertified: pu.provider.specializations.some(s => s.isCertified),
-                experienceYears: pu.provider.specializations.reduce(
-                    (max, s) => Math.max(max, s.experienceYears || 0),
-                    0
-                ),
-            });
-        }
-
-        return providerInfos;
-    }
-
-    /**
-     * Get the count of active requests for a provider
-     */
-    private async getProviderActiveRequestCount(providerId: string): Promise<number> {
-        const activeStatuses: RequestStatus[] = [
-            RequestStatus.pending,
-            RequestStatus.assigned,
-            RequestStatus.in_progress,
-            RequestStatus.quote_sent,
-        ];
-
-        const [consultations, opinions, services, litigations, calls] = await Promise.all([
-            this.prisma.consultationRequest.count({
-                where: { assignedProviderId: providerId, status: { in: activeStatuses } },
-            }),
-            this.prisma.legalOpinionRequest.count({
-                where: { assignedProviderId: providerId, status: { in: activeStatuses } },
-            }),
-            this.prisma.serviceRequest.count({
-                where: { assignedProviderId: providerId, status: { in: activeStatuses } },
-            }),
-            this.prisma.litigationCase.count({
-                where: { assignedProviderId: providerId, status: { in: activeStatuses } },
-            }),
-            this.prisma.callRequest.count({
-                where: { assignedProviderId: providerId, status: { in: activeStatuses } },
-            }),
-        ]);
-
-        return consultations + opinions + services + litigations + calls;
-    }
-
-    /**
-     * Get the average rating for a provider
-     */
-    private async getProviderRating(providerId: string): Promise<number | undefined> {
-        const reviews = await this.prisma.providerReview.aggregate({
-            where: { providerId, isPublic: true },
-            _avg: { rating: true },
-        });
-
-        return reviews._avg.rating || undefined;
-    }
-
-    /**
-     * Assign a request to a provider in the database
-     */
-    private async assignRequestToProvider(
-        requestId: string,
-        requestType: string,
-        providerId: string,
-    ): Promise<void> {
-        const now = new Date();
-
-        switch (requestType) {
-            case 'consultation':
-                await this.prisma.consultationRequest.update({
-                    where: { id: requestId },
-                    data: {
-                        assignedProviderId: providerId,
-                        assignedAt: now,
-                        status: RequestStatus.assigned,
-                    },
-                });
-                break;
-
-            case 'legal_opinion':
-                await this.prisma.legalOpinionRequest.update({
-                    where: { id: requestId },
-                    data: {
-                        assignedProviderId: providerId,
-                        status: RequestStatus.assigned,
-                    },
-                });
-                break;
-
-            case 'service':
-                await this.prisma.serviceRequest.update({
-                    where: { id: requestId },
-                    data: {
-                        assignedProviderId: providerId,
-                        status: RequestStatus.assigned,
-                    },
-                });
-                break;
-
-            case 'litigation':
-                await this.prisma.litigationCase.update({
-                    where: { id: requestId },
-                    data: {
-                        assignedProviderId: providerId,
-                        status: RequestStatus.assigned,
-                    },
-                });
-                break;
-
-            case 'call':
-                await this.prisma.callRequest.update({
-                    where: { id: requestId },
-                    data: {
-                        assignedProviderId: providerId,
-                        status: RequestStatus.assigned,
-                    },
-                });
-                break;
-
-            default:
-                throw new BadRequestException(`Unknown request type: ${requestType}`);
-        }
-    }
 }
 
 // ============================================
@@ -336,88 +162,38 @@ export class AutoAssignRequestUseCase {
 
 @Injectable()
 export class ReassignRequestUseCase {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        @Inject(ROUTING_DATA_PROVIDER)
+        private readonly dataProvider: IRoutingDataProvider,
+    ) {}
 
     /**
      * Reassign a request to a different provider
      */
     async execute(dto: ReassignRequestDto): Promise<AssignmentResult> {
         // Verify the new provider exists and is active
-        const provider = await this.prisma.providerUser.findFirst({
-            where: {
-                userId: dto.newProviderId,
-                isActive: true,
-                canAcceptRequests: true,
-            },
-            include: {
-                user: {
-                    select: { fullName: true, username: true },
-                },
-            },
-        });
+        const providerCheck = await this.dataProvider.verifyProviderAvailable(dto.newProviderId);
 
-        if (!provider) {
+        if (!providerCheck.isAvailable) {
             throw new NotFoundException(
                 `Provider with ID ${dto.newProviderId} not found or not available`
             );
         }
 
         // Update the request
-        await this.updateRequestProvider(dto.requestId, dto.requestType, dto.newProviderId);
+        await this.dataProvider.updateRequestProvider({
+            requestId: dto.requestId,
+            requestType: dto.requestType,
+            providerId: dto.newProviderId,
+        });
 
         return {
             success: true,
             requestId: dto.requestId,
             providerId: dto.newProviderId,
-            providerName: provider.user.fullName || provider.user.username || 'Unknown',
+            providerName: providerCheck.fullName || providerCheck.username || 'Unknown',
             reason: dto.reason || 'Manual reassignment',
         };
-    }
-
-    private async updateRequestProvider(
-        requestId: string,
-        requestType: string,
-        providerId: string,
-    ): Promise<void> {
-        switch (requestType) {
-            case 'consultation':
-                await this.prisma.consultationRequest.update({
-                    where: { id: requestId },
-                    data: { assignedProviderId: providerId },
-                });
-                break;
-
-            case 'legal_opinion':
-                await this.prisma.legalOpinionRequest.update({
-                    where: { id: requestId },
-                    data: { assignedProviderId: providerId },
-                });
-                break;
-
-            case 'service':
-                await this.prisma.serviceRequest.update({
-                    where: { id: requestId },
-                    data: { assignedProviderId: providerId },
-                });
-                break;
-
-            case 'litigation':
-                await this.prisma.litigationCase.update({
-                    where: { id: requestId },
-                    data: { assignedProviderId: providerId },
-                });
-                break;
-
-            case 'call':
-                await this.prisma.callRequest.update({
-                    where: { id: requestId },
-                    data: { assignedProviderId: providerId },
-                });
-                break;
-
-            default:
-                throw new BadRequestException(`Unknown request type: ${requestType}`);
-        }
     }
 }
 
@@ -427,141 +203,41 @@ export class ReassignRequestUseCase {
 
 @Injectable()
 export class GetProviderWorkloadUseCase {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        @Inject(ROUTING_DATA_PROVIDER)
+        private readonly dataProvider: IRoutingDataProvider,
+    ) {}
 
     /**
      * Get workload information for all providers
      */
     async execute(): Promise<ProviderWorkload[]> {
-        const providers = await this.prisma.providerUser.findMany({
-            where: {
-                isActive: true,
-                deletedAt: null,
-            },
-            include: {
-                user: {
-                    select: { id: true, fullName: true, username: true },
-                },
-                provider: {
-                    include: {
-                        specializations: {
-                            include: {
-                                specialization: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
+        const providers = await this.dataProvider.getAvailableProviders();
         const workloads: ProviderWorkload[] = [];
 
         for (const p of providers) {
             const [active, pending, inProgress, completedToday, rating] = await Promise.all([
-                this.getActiveRequestCount(p.userId),
-                this.getRequestCountByStatus(p.userId, [RequestStatus.pending]),
-                this.getRequestCountByStatus(p.userId, [RequestStatus.in_progress]),
-                this.getCompletedTodayCount(p.userId),
-                this.getAverageRating(p.providerId),
+                this.dataProvider.getProviderActiveRequestCount(p.userId),
+                this.dataProvider.getProviderRequestCountByStatus(p.userId, ['pending']),
+                this.dataProvider.getProviderRequestCountByStatus(p.userId, ['in_progress']),
+                this.dataProvider.getProviderCompletedTodayCount(p.userId),
+                this.dataProvider.getProviderRating(p.providerId),
             ]);
 
             workloads.push({
                 providerId: p.userId,
-                providerName: p.user.fullName || p.user.username || 'Unknown',
+                providerName: p.fullName || p.username || 'Unknown',
                 activeRequests: active,
                 pendingRequests: pending,
                 inProgressRequests: inProgress,
                 completedToday,
                 rating,
-                specializations: p.provider.specializations.map(s => s.specialization.name),
+                specializations: p.specializations,
                 isAvailable: p.canAcceptRequests,
             });
         }
 
         return workloads.sort((a, b) => a.activeRequests - b.activeRequests);
-    }
-
-    private async getActiveRequestCount(providerId: string): Promise<number> {
-        const activeStatuses: RequestStatus[] = [
-            RequestStatus.pending,
-            RequestStatus.assigned,
-            RequestStatus.in_progress,
-            RequestStatus.quote_sent,
-        ];
-        return this.getRequestCountByStatus(providerId, activeStatuses);
-    }
-
-    private async getRequestCountByStatus(providerId: string, statuses: RequestStatus[]): Promise<number> {
-        const [c, o, s, l, call] = await Promise.all([
-            this.prisma.consultationRequest.count({
-                where: { assignedProviderId: providerId, status: { in: statuses } },
-            }),
-            this.prisma.legalOpinionRequest.count({
-                where: { assignedProviderId: providerId, status: { in: statuses } },
-            }),
-            this.prisma.serviceRequest.count({
-                where: { assignedProviderId: providerId, status: { in: statuses } },
-            }),
-            this.prisma.litigationCase.count({
-                where: { assignedProviderId: providerId, status: { in: statuses } },
-            }),
-            this.prisma.callRequest.count({
-                where: { assignedProviderId: providerId, status: { in: statuses } },
-            }),
-        ]);
-        return c + o + s + l + call;
-    }
-
-    private async getCompletedTodayCount(providerId: string): Promise<number> {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-
-        const [c, o, s, l, call] = await Promise.all([
-            this.prisma.consultationRequest.count({
-                where: {
-                    assignedProviderId: providerId,
-                    status: RequestStatus.completed,
-                    completedAt: { gte: startOfDay },
-                },
-            }),
-            this.prisma.legalOpinionRequest.count({
-                where: {
-                    assignedProviderId: providerId,
-                    status: RequestStatus.completed,
-                    completedAt: { gte: startOfDay },
-                },
-            }),
-            this.prisma.serviceRequest.count({
-                where: {
-                    assignedProviderId: providerId,
-                    status: RequestStatus.completed,
-                    completedAt: { gte: startOfDay },
-                },
-            }),
-            this.prisma.litigationCase.count({
-                where: {
-                    assignedProviderId: providerId,
-                    status: RequestStatus.closed,
-                    closedAt: { gte: startOfDay },
-                },
-            }),
-            this.prisma.callRequest.count({
-                where: {
-                    assignedProviderId: providerId,
-                    status: RequestStatus.completed,
-                    completedAt: { gte: startOfDay },
-                },
-            }),
-        ]);
-        return c + o + s + l + call;
-    }
-
-    private async getAverageRating(providerId: string): Promise<number | undefined> {
-        const result = await this.prisma.providerReview.aggregate({
-            where: { providerId, isPublic: true },
-            _avg: { rating: true },
-        });
-        return result._avg.rating || undefined;
     }
 }
 
@@ -574,7 +250,6 @@ export class GetRoutingStatsUseCase {
     constructor(
         @Inject(ROUTING_RULE_REPOSITORY)
         private readonly ruleRepo: IRoutingRuleRepository,
-        private readonly prisma: PrismaService,
     ) {}
 
     async execute(): Promise<{

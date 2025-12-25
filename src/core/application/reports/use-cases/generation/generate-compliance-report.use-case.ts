@@ -3,13 +3,16 @@
 // ============================================
 
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaService } from '../../../../../prisma/prisma.service';
 import { Report } from '../../../../domain/reports/entities/report.entity';
 import { ReportType } from '../../../../domain/reports/value-objects/report.vo';
 import {
     type IReportRepository,
     REPORT_REPOSITORY,
 } from '../../ports/reports.repository';
+import {
+    type IReportDataProvider,
+    REPORT_DATA_PROVIDER,
+} from '../../ports/report-data-provider';
 import {
     GenerateReportDto,
     ReportResponseDto,
@@ -21,7 +24,8 @@ export class GenerateComplianceReportUseCase {
     constructor(
         @Inject(REPORT_REPOSITORY)
         private readonly reportRepo: IReportRepository,
-        private readonly prisma: PrismaService,
+        @Inject(REPORT_DATA_PROVIDER)
+        private readonly dataProvider: IReportDataProvider,
     ) {}
 
     async execute(dto: GenerateReportDto): Promise<ReportResponseDto> {
@@ -58,33 +62,8 @@ export class GenerateComplianceReportUseCase {
     }
 
     private async generateComplianceData(startDate: Date, endDate: Date): Promise<ComplianceReportData> {
-        // Get audit log data
-        const auditLogs = await this.prisma.auditLog.aggregate({
-            where: {
-                createdAt: { gte: startDate, lte: endDate },
-            },
-            _count: { id: true },
-        });
-
-        const auditByAction = await this.prisma.auditLog.groupBy({
-            by: ['action'],
-            _count: { id: true },
-            where: {
-                createdAt: { gte: startDate, lte: endDate },
-            },
-        });
-
-        const actionCounts: Record<string, number> = {};
-        for (const a of auditByAction) {
-            actionCounts[a.action] = a._count.id;
-        }
-
-        // Get session data for security events
-        const sessions = await this.prisma.session.count({
-            where: {
-                createdAt: { gte: startDate, lte: endDate },
-            },
-        });
+        const dateRange = { startDate, endDate };
+        const complianceStats = await this.dataProvider.getComplianceStats(dateRange);
 
         return {
             period: {
@@ -92,19 +71,19 @@ export class GenerateComplianceReportUseCase {
                 endDate: endDate.toISOString(),
             },
             dataAccess: {
-                totalAccessEvents: auditLogs._count.id,
+                totalAccessEvents: complianceStats.auditStats.totalLogs,
                 byUser: {},
                 byEntityType: {},
             },
             securityEvents: {
-                loginAttempts: sessions,
+                loginAttempts: complianceStats.sessionCount,
                 failedLogins: 0,
                 passwordResets: 0,
                 suspiciousActivities: 0,
             },
             auditTrail: {
-                totalEvents: auditLogs._count.id,
-                byAction: actionCounts,
+                totalEvents: complianceStats.auditStats.totalLogs,
+                byAction: complianceStats.auditStats.byAction,
                 criticalEvents: 0,
             },
             dataRetention: {

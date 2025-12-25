@@ -3,13 +3,16 @@
 // ============================================
 
 import { Injectable, Inject } from '@nestjs/common';
-import { PrismaService } from '../../../../../prisma/prisma.service';
 import { Report } from '../../../../domain/reports/entities/report.entity';
 import { ReportType } from '../../../../domain/reports/value-objects/report.vo';
 import {
     type IReportRepository,
     REPORT_REPOSITORY,
 } from '../../ports/reports.repository';
+import {
+    type IReportDataProvider,
+    REPORT_DATA_PROVIDER,
+} from '../../ports/report-data-provider';
 import {
     GenerateReportDto,
     ReportResponseDto,
@@ -21,7 +24,8 @@ export class GenerateFinancialReportUseCase {
     constructor(
         @Inject(REPORT_REPOSITORY)
         private readonly reportRepo: IReportRepository,
-        private readonly prisma: PrismaService,
+        @Inject(REPORT_DATA_PROVIDER)
+        private readonly dataProvider: IReportDataProvider,
     ) {}
 
     async execute(dto: GenerateReportDto): Promise<ReportResponseDto> {
@@ -62,47 +66,10 @@ export class GenerateFinancialReportUseCase {
     }
 
     private async generateFinancialData(startDate: Date, endDate: Date): Promise<FinancialReportData> {
-        // Get active membership tiers count
-        const activeMemberships = await this.prisma.membership.count({
-            where: {
-                isActive: true,
-            },
+        const stats = await this.dataProvider.getFinancialStats({
+            startDate,
+            endDate,
         });
-
-        // Get transaction data from TransactionLog
-        const transactions = await this.prisma.transactionLog.aggregate({
-            where: {
-                createdAt: { gte: startDate, lte: endDate },
-                status: 'paid',
-            },
-            _count: { id: true },
-            _sum: { amount: true },
-            _avg: { amount: true },
-        });
-
-        // Get membership payments as payout equivalent
-        const payments = await this.prisma.membershipPayment.aggregate({
-            where: {
-                createdAt: { gte: startDate, lte: endDate },
-                status: 'paid',
-            },
-            _count: { id: true },
-            _sum: { amount: true },
-        });
-
-        const pendingPayments = await this.prisma.membershipPayment.aggregate({
-            where: {
-                status: 'pending',
-            },
-            _sum: { amount: true },
-        });
-
-        // Get revenue by service type
-        const revenueByService: Record<string, number> = {};
-        const serviceTypes = ['consultation', 'legal_opinion', 'litigation', 'call'];
-        for (const stype of serviceTypes) {
-            revenueByService[stype] = 0; // Would need to calculate from actual transaction data
-        }
 
         return {
             period: {
@@ -110,25 +77,25 @@ export class GenerateFinancialReportUseCase {
                 endDate: endDate.toISOString(),
             },
             revenue: {
-                total: transactions._sum.amount || 0,
-                byService: revenueByService,
+                total: stats.transactions.totalAmount,
+                byService: stats.revenueByService,
                 byProvider: {},
             },
             subscriptions: {
-                activeCount: activeMemberships,
+                activeCount: stats.activeMemberships,
                 newCount: 0,
                 churnedCount: 0,
                 revenue: 0,
             },
             transactions: {
-                count: transactions._count.id,
-                totalAmount: transactions._sum.amount || 0,
-                averageAmount: transactions._avg.amount || 0,
+                count: stats.transactions.count,
+                totalAmount: stats.transactions.totalAmount,
+                averageAmount: stats.transactions.averageAmount,
             },
             payouts: {
-                count: payments._count.id,
-                totalAmount: payments._sum.amount || 0,
-                pendingAmount: pendingPayments._sum.amount || 0,
+                count: stats.payments.count,
+                totalAmount: stats.payments.totalAmount,
+                pendingAmount: stats.payments.pendingAmount,
             },
         };
     }
