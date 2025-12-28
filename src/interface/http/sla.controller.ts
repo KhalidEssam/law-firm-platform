@@ -340,7 +340,7 @@ export class SLAController {
       urgencyScore: number;
     }>;
   }> {
-    const results = await this.batchCheckStatus.execute(
+    const results = this.batchCheckStatus.execute(
       items.map((item) => ({
         requestId: item.requestId,
         requestType: item.requestType,

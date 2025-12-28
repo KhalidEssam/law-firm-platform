@@ -233,7 +233,7 @@ export class PrismaLegalOpinionRequestRepository
     // Map domain statuses to database statuses
     statuses.map((s) => this.mapDomainStatusToDb(s));
 
-    return this.findAll({ status: dbStatuses as any }, pagination);
+    return this.findAll({ status: statuses as any }, pagination);
   }
 
   async findByPriority(
@@ -445,7 +445,9 @@ export class PrismaLegalOpinionRequestRepository
       const dbStatuses = Array.isArray(filters.status)
         ? filters.status.map((s) => this.mapDomainStatusToDb(s))
         : this.mapDomainStatusToDb(filters.status);
-      where.status = Array.isArray(dbStatuses) ? { in: dbStatuses } : dbStatuses;
+      where.status = Array.isArray(dbStatuses)
+        ? { in: dbStatuses }
+        : dbStatuses;
     }
 
     // Payment status

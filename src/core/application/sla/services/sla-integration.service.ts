@@ -1,7 +1,7 @@
 // src/core/application/sla/services/sla-integration.service.ts
 
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { SLACalculatorService } from '../../../domain/sla/services/sla-calculator.service';
+// import { SLACalculatorService } from '../../../domain/sla/services/sla-calculator.service';
 import { ISLAPolicyRepository } from '../../../domain/sla/ports/sla-policy.repository';
 import { RequestType } from '../../../domain/sla/value-objects/request-type.vo';
 import { Priority } from '../../../domain/sla/value-objects/priority.vo';
@@ -49,15 +49,13 @@ export interface RequestSLAData {
 @Injectable()
 export class SLAIntegrationService {
   private readonly logger = new Logger(SLAIntegrationService.name);
-  // calculatorService reserved for future use
-  private readonly calculatorService: SLACalculatorService;
 
   constructor(
     @Inject('ISLAPolicyRepository')
     private readonly policyRepository: ISLAPolicyRepository,
-  ) {
-    this.calculatorService = new SLACalculatorService();
-  }
+
+    // private readonly calculatorService: SLACalculatorService,
+  ) {}
 
   // ============================================
   // APPLY SLA TO NEW REQUEST

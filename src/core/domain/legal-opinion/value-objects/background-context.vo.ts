@@ -28,7 +28,6 @@ export class BackgroundContext {
     this.value = value.trim();
   }
 
-
   // Factory method
   static create(value: string): BackgroundContext {
     return new BackgroundContext(value);

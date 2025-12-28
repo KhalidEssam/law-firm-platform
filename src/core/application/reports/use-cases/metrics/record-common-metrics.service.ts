@@ -70,7 +70,10 @@ export class RecordCommonMetricsService {
   /**
    * Record SLA breach metric
    */
-  async recordSLABreach(requestType: string, _requestId: string): Promise<void> {
+  async recordSLABreach(
+    requestType: string,
+    _requestId: string,
+  ): Promise<void> {
     const metric = AnalyticsMetric.counter('sla.breaches', 1, {
       requestType,
     });

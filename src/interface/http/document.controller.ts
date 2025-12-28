@@ -65,7 +65,7 @@ export class DocumentController {
   @Get('storage/status')
   @Roles('admin')
   async getStorageStatus() {
-    return this.storageService.getStatus();
+    return await this.storageService.getStatus();
   }
 
   // ============================================

@@ -151,6 +151,7 @@ export class SendMobileOtpUseCase {
   private isValidPhoneNumber(phone: string): boolean {
     // Basic validation: starts with + followed by 10-15 digits
     const phoneRegex = /^\+[1-9]\d{9,14}$/;
+
     return phoneRegex.test(phone);
   }
 

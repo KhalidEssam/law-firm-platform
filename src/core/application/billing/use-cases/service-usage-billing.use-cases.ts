@@ -299,7 +299,10 @@ export class ProcessBatchServiceUsageBillingUseCase {
         }
       }
     } catch (error: unknown) {
-      this.logger.error('Batch billing failed', error instanceof Error ? error.stack : String(error));
+      this.logger.error(
+        'Batch billing failed',
+        error instanceof Error ? error.stack : String(error),
+      );
     }
 
     return result;
