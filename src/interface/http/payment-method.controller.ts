@@ -26,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { Roles } from 'src/auth/roles.decorator';
 import { Permissions } from 'src/auth/permissions.decorator';
+import { StrictRateLimit, StandardRateLimit, RelaxedRateLimit } from '../../common/decorators/throttle.decorator';
 // Use Cases
 import {
   AddPaymentMethodUseCase,

@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build outputs
+dist
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Test
+coverage
+.nyc_output
+
+# Environment files (use secrets in production)
+.env
+.env.local
+.env.*.local
+
+# Documentation
+*.md
+docs
+
+# Misc
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Postman collections
+postman/
+*.postman_collection.json
