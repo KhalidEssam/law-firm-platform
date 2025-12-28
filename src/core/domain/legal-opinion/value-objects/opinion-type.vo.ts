@@ -23,7 +23,7 @@ export class OpinionTypeVO {
     this.value = value;
   }
 
-  private validate(value: OpinionType): void {
+  private validate(_value: OpinionType): void {
     // if (!Object.values(OpinionType).includes(value)) {
     //   throw new DomainException(`Invalid opinion type: ${value}`);
     // }

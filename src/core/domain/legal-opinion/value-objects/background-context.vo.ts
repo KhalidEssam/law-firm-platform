@@ -22,30 +22,12 @@
  */
 export class BackgroundContext {
   private readonly value: string;
-  private static readonly MIN_LENGTH = 100;
-  private static readonly MAX_LENGTH = 5000;
+  // MIN_LENGTH and MAX_LENGTH constants reserved for future validation
 
   private constructor(value: string) {
-    this.validate(value);
     this.value = value.trim();
   }
 
-  private validate(_value: string): void {
-    // if (!value || value.trim().length === 0) {
-    //   throw new DomainException('Background context cannot be empty');
-    // }
-    // const trimmed = value.trim();
-    // if (trimmed.length < BackgroundContext.MIN_LENGTH) {
-    //   throw new DomainException(
-    //     `Background context must be at least ${BackgroundContext.MIN_LENGTH} characters. Please provide more detail about the situation.`
-    //   );
-    // }
-    // if (trimmed.length > BackgroundContext.MAX_LENGTH) {
-    //   throw new DomainException(
-    //     `Background context cannot exceed ${BackgroundContext.MAX_LENGTH} characters`
-    //   );
-    // }
-  }
 
   // Factory method
   static create(value: string): BackgroundContext {

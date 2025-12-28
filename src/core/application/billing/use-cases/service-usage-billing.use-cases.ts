@@ -174,7 +174,7 @@ export class GetBillableUsageByServiceTypeUseCase {
 
   async execute(
     userId: string,
-    serviceType?: ServiceType,
+    _serviceType?: ServiceType,
   ): Promise<{
     consultation: number;
     legalOpinion: number;

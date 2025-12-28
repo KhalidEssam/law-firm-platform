@@ -328,7 +328,7 @@ export class CallRequest {
   /**
    * Cancel the call
    */
-  cancel(reason?: string): void {
+  cancel(_reason?: string): void {
     if (isTerminalStatus(this._status)) {
       throw new Error(`Cannot cancel call in ${this._status} status`);
     }

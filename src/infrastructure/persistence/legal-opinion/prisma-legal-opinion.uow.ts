@@ -337,7 +337,7 @@ class TransactionalLegalOpinionRepository
   }
 
   async findByPriority(
-    priority: OpinionPriority,
+    _priority: OpinionPriority,
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<LegalOpinionRequest>> {
     return this.findAll({}, pagination);

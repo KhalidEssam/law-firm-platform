@@ -28,7 +28,7 @@ export class ConfidentialityLevel {
     this.value = value;
   }
 
-  private validate(value: ConfidentialityLevelEnum): void {
+  private validate(_value: ConfidentialityLevelEnum): void {
     // if (!Object.values(ConfidentialityLevelEnum).includes(value)) {
     //   throw new DomainException(`Invalid confidentiality level: ${value}`);
     // }

@@ -3,18 +3,9 @@
 // src/core/domain/support-ticket/entities/support-ticket.entity.ts
 // ============================================
 
-import {
-  TicketStatus,
-  TicketStatusEnum,
-} from '../value-objects/ticket-status.vo';
-import {
-  TicketCategory,
-  TicketCategoryEnum,
-} from '../value-objects/ticket-category.vo';
-import {
-  Priority,
-  PriorityEnum,
-} from '../../billing/value-objects/priority.vo';
+import { TicketStatus } from '../value-objects/ticket-status.vo';
+import { TicketCategory } from '../value-objects/ticket-category.vo';
+import { Priority } from '../../billing/value-objects/priority.vo';
 
 export interface SupportTicketProps {
   subscriberId: string;

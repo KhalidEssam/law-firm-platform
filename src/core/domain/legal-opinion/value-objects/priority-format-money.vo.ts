@@ -20,7 +20,7 @@ export class OpinionPriorityVO {
     this.value = value;
   }
 
-  private validate(value: OpinionPriority): void {
+  private validate(_value: OpinionPriority): void {
     // if (!Object.values(OpinionPriority).includes(value)) {
     //   throw new DomainException(`Invalid priority: ${value}`);
     // }
@@ -103,7 +103,7 @@ export class DeliveryFormatVO {
     this.value = value;
   }
 
-  private validate(value: DeliveryFormat): void {
+  private validate(_value: DeliveryFormat): void {
     // if (!Object.values(DeliveryFormat).includes(value)) {
     //   throw new DomainException(`Invalid delivery format: ${value}`);
     // }
@@ -163,7 +163,7 @@ export class Money {
     this.currency = currency.toUpperCase();
   }
 
-  private validate(_amount: number, currency: string): void {
+  private validate(_amount: number, _currency: string): void {
     // if (amount < 0) {
     //   throw new DomainException('Amount cannot be negative');
     // }

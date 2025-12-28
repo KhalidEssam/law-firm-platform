@@ -7,7 +7,7 @@ import {
   Injectable,
   Inject,
   NotFoundException,
-  BadRequestException,
+  // BadRequestException - unused
   ConflictException,
 } from '@nestjs/common';
 import { TierService } from '../../../domain/membership/entities/tier-service.entity';

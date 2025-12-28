@@ -7,7 +7,7 @@
 // domain-specific methods for common notification scenarios.
 // ============================================
 
-import { Injectable, Inject, Optional } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import {
   SendNotificationUseCase,
   SendTemplatedNotificationUseCase,

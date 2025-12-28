@@ -97,7 +97,7 @@ export class UpdateOpinionRequestUseCase {
     return this.toDto(updated);
   }
 
-  private toDto(opinion: LegalOpinionRequest): any {
+  private toDto(_opinion: LegalOpinionRequest): any {
     return new CreateOpinionRequestUseCase(this.repository as any).execute(
       {} as any,
     );

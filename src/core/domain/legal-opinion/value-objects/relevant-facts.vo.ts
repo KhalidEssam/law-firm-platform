@@ -27,8 +27,6 @@
  */
 export class RelevantFacts {
   private readonly value: string;
-  private static readonly MIN_LENGTH = 100;
-  private static readonly MAX_LENGTH = 5000;
 
   private constructor(value: string) {
     this.validate(value);

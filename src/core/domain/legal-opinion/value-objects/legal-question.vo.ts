@@ -22,8 +22,6 @@
  */
 export class LegalQuestion {
   private readonly value: string;
-  private static readonly MIN_LENGTH = 50;
-  private static readonly MAX_LENGTH = 2000;
 
   private constructor(value: string) {
     this.validate(value);

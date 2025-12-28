@@ -19,7 +19,7 @@ export class DeliveryFormatVO {
     this.value = value;
   }
 
-  private validate(value: DeliveryFormat): void {
+  private validate(_value: DeliveryFormat): void {
     // if (!Object.values(DeliveryFormat).includes(value)) {
     //   throw new DomainException(`Invalid delivery format: ${value}`);
     // }

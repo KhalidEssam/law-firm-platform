@@ -4,7 +4,7 @@
 // ============================================
 
 import { DisputeStatus } from '../value-objects/dispute-status.vo';
-import { Priority, PriorityEnum } from '../value-objects/priority.vo';
+import { Priority } from '../value-objects/priority.vo';
 
 export interface DisputeRelatedEntity {
   consultationId?: string;

@@ -767,7 +767,7 @@ class TransactionalStatusHistoryRepository
 
 class TransactionalDocumentRepository implements IDocumentRepository {
   constructor(
-    private readonly _prisma: PrismaService | PrismaTransactionClient,
+    // prisma reserved for future implementation
   ) {}
   async create(document: Document): Promise<Document> {
     return document;
@@ -833,7 +833,7 @@ class TransactionalDocumentRepository implements IDocumentRepository {
 
 class TransactionalMessageRepository implements IRequestMessageRepository {
   constructor(
-    private readonly _prisma: PrismaService | PrismaTransactionClient,
+    // prisma reserved for future implementation
   ) {}
   async create(message: RequestMessage): Promise<RequestMessage> {
     return message;
@@ -914,7 +914,7 @@ class TransactionalMessageRepository implements IRequestMessageRepository {
 
 class TransactionalRatingRepository implements IRequestRatingRepository {
   constructor(
-    private readonly _prisma: PrismaService | PrismaTransactionClient,
+    // prisma reserved for future implementation
   ) {}
   async create(rating: RequestRating): Promise<RequestRating> {
     return rating;
@@ -969,7 +969,7 @@ class TransactionalCollaboratorRepository
   implements IRequestCollaboratorRepository
 {
   constructor(
-    private readonly _prisma: PrismaService | PrismaTransactionClient,
+    // prisma reserved for future implementation
   ) {}
   async create(
     collaborator: RequestCollaborator,

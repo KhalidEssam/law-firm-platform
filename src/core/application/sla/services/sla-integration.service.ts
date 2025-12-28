@@ -49,7 +49,7 @@ export interface RequestSLAData {
 @Injectable()
 export class SLAIntegrationService {
   private readonly logger = new Logger(SLAIntegrationService.name);
-  private readonly calculatorService: SLACalculatorService;
+  // calculatorService reserved for future use
 
   constructor(
     @Inject('ISLAPolicyRepository')

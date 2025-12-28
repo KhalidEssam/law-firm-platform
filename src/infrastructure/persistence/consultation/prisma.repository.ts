@@ -22,7 +22,7 @@ import {
   UserId,
   RequestNumber,
   ConsultationTypeVO,
-  ConsultationType,
+  // ConsultationType - unused
   ConsultationStatusVO,
   ConsultationStatus,
   Urgency,

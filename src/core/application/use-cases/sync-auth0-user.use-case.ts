@@ -32,7 +32,7 @@ function parseAuth0Provider(auth0Id: string): {
   providerUserId: string;
 } {
   // Auth0 IDs format: "provider|user_id" (e.g., "google-oauth2|123456789")
-  const [providerPrefix, ...rest] = auth0Id.split('|');
+  const [providerPrefix, ..._rest] = auth0Id.split('|');
   const providerUserId = auth0Id; // Keep the full ID as the provider user ID
 
   // Map Auth0 provider strings to our enum

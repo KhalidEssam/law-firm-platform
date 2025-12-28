@@ -3,7 +3,7 @@
 // ============================================
 
 import { Injectable, Inject } from '@nestjs/common';
-import { Report } from '../../../../domain/reports/entities/report.entity';
+// Report import removed - unused
 import {
   ReportType,
   JobStatus,
