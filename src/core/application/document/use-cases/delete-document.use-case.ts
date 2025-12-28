@@ -93,9 +93,9 @@ export class DeleteDocumentUseCase {
           hardDelete: dto.hardDelete,
         });
         deletedCount++;
-      } catch (error: any) {
+      } catch (error: unknown) {
         this.logger.warn(
-          `Failed to delete document ${document.id}: ${error.message}`,
+          `Failed to delete document ${document.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
       }
     }
