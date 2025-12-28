@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: exoln-lex-config
+  namespace: exoln-lex
+  labels:
+    app.kubernetes.io/name: exoln-lex
+    app.kubernetes.io/component: config
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  LOG_LEVEL: "info"
+  MAIL_PORT: "465"
+  MAIL_FROM_NAME: "Exoln Lex"

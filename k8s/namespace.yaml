@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: exoln-lex
+  labels:
+    app.kubernetes.io/name: exoln-lex
+    app.kubernetes.io/component: namespace
