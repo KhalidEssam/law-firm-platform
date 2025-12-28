@@ -167,7 +167,7 @@ export class GetServiceUsageByIdUseCase {
     private readonly serviceUsageRepo: IServiceUsageRepository,
   ) {}
 
-  async execute(id: string): Promise<ServiceUsage> {
+  async execute(_id: string): Promise<ServiceUsage> {
     const usage = await this.serviceUsageRepo.findById(id);
     if (!usage) {
       throw new NotFoundException('Service usage not found');

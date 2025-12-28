@@ -3,7 +3,7 @@
 // Application Layer - State Management
 // ============================================
 
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
 import { OpinionRequestFilters } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';

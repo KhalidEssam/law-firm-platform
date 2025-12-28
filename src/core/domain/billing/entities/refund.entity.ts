@@ -3,11 +3,8 @@
 // src/core/domain/billing/entities/refund.entity.ts
 // ============================================
 
-import { Money, CurrencyEnum } from '../value-objects/money.vo';
-import {
-  RefundStatus,
-  RefundStatusEnum,
-} from '../value-objects/refund-status.vo';
+import { Money } from '../value-objects/money.vo';
+import { RefundStatus } from '../value-objects/refund-status.vo';
 
 export interface RefundProps {
   userId: string;

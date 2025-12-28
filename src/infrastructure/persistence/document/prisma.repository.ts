@@ -113,7 +113,7 @@ export class PrismaDocumentRepository implements IDocumentRepository {
     return DocumentMapper.toDomain(created);
   }
 
-  async findById(id: string): Promise<Document | null> {
+  async findById(_id: string): Promise<Document | null> {
     const record = await this.prisma.document.findUnique({
       where: { id },
     });
@@ -140,11 +140,11 @@ export class PrismaDocumentRepository implements IDocumentRepository {
     return DocumentMapper.toDomain(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.document.delete({ where: { id } });
   }
 
-  async softDelete(id: string): Promise<void> {
+  async softDelete(_id: string): Promise<void> {
     await this.prisma.document.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -390,7 +390,7 @@ export class PrismaDocumentRepository implements IDocumentRepository {
     };
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(_id: string): Promise<boolean> {
     const count = await this.prisma.document.count({
       where: { id, deletedAt: null },
     });

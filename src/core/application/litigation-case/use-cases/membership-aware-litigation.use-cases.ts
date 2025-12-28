@@ -20,7 +20,9 @@ import {
 
 @Injectable()
 export class CreateLitigationWithMembershipUseCase {
-  private readonly logger = new Logger(CreateLitigationWithMembershipUseCase.name);
+  private readonly logger = new Logger(
+    CreateLitigationWithMembershipUseCase.name,
+  );
 
   constructor(
     private readonly membershipService: MembershipIntegrationService,
@@ -63,7 +65,10 @@ export class CreateLitigationWithMembershipUseCase {
       });
     } catch (error: any) {
       // Log error but don't fail the request
-      this.logger.error('Failed to record service usage', error?.stack || error);
+      this.logger.error(
+        'Failed to record service usage',
+        error?.stack || error,
+      );
     }
 
     // 4. Return case with membership info
@@ -125,7 +130,9 @@ export class CheckLitigationQuotaUseCase {
 
 @Injectable()
 export class CloseLitigationWithUsageTrackingUseCase {
-  private readonly logger = new Logger(CloseLitigationWithUsageTrackingUseCase.name);
+  private readonly logger = new Logger(
+    CloseLitigationWithUsageTrackingUseCase.name,
+  );
 
   constructor(
     private readonly membershipService: MembershipIntegrationService,
@@ -162,7 +169,10 @@ export class CloseLitigationWithUsageTrackingUseCase {
           }
         }
       } catch (error: any) {
-        this.logger.error('Failed to update usage billing', error?.stack || error);
+        this.logger.error(
+          'Failed to update usage billing',
+          error?.stack || error,
+        );
       }
     }
 

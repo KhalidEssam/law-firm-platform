@@ -76,7 +76,11 @@ export class MetricsService {
   }
 
   // Database Metrics
-  recordDbQuery(operation: string, table: string, durationSeconds: number): void {
+  recordDbQuery(
+    operation: string,
+    table: string,
+    durationSeconds: number,
+  ): void {
     this.dbQueryDuration.observe({ operation, table }, durationSeconds);
   }
 
@@ -92,7 +96,10 @@ export class MetricsService {
   // Helper to normalize routes (replace IDs with placeholders)
   private normalizeRoute(route: string): string {
     return route
-      .replace(/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '/:id')
+      .replace(
+        /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+        '/:id',
+      )
       .replace(/\/\d+/g, '/:id')
       .split('?')[0]; // Remove query params
   }

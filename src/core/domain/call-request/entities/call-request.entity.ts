@@ -7,10 +7,7 @@ import {
   canModifyCall,
   isTerminalStatus,
 } from '../value-objects/call-status.vo';
-import {
-  CallPlatform,
-  CallPlatformType,
-} from '../value-objects/call-platform.vo';
+import { CallPlatformType } from '../value-objects/call-platform.vo';
 import { Duration, MAX_CALL_DURATION } from '../value-objects/duration.vo';
 
 export interface CallRequestProps {

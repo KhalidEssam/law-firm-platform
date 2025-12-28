@@ -3,13 +3,7 @@
 // Application Layer - Business Logic
 // ============================================
 
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 // import { ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from '../../../domain/legal-opinion/entities/legal-opinion-request.entity';
 import { BackgroundContext } from '../../../domain/legal-opinion/value-objects/background-context.vo';

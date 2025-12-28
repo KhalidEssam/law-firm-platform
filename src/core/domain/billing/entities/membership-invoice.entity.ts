@@ -4,7 +4,7 @@
 // ============================================
 
 import { randomBytes } from 'crypto';
-import { Money, CurrencyEnum } from '../value-objects/money.vo';
+import { Money } from '../value-objects/money.vo';
 import {
   InvoiceStatus,
   InvoiceStatusEnum,

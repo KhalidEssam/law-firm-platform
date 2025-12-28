@@ -36,29 +36,29 @@ class PaymentMethodTypeMapper {
     PaymentMethodTypeEnum,
     PrismaPaymentMethodType
   > = {
-      [PaymentMethodTypeEnum.CREDIT_CARD]: PrismaPaymentMethodType.credit_card,
-      [PaymentMethodTypeEnum.DEBIT_CARD]: PrismaPaymentMethodType.debit_card,
-      [PaymentMethodTypeEnum.WALLET]: PrismaPaymentMethodType.wallet,
-      [PaymentMethodTypeEnum.BANK_TRANSFER]:
-        PrismaPaymentMethodType.bank_transfer,
-      [PaymentMethodTypeEnum.GOOGLE_PAY]: PrismaPaymentMethodType.wallet,
-      [PaymentMethodTypeEnum.APPLE_PAY]: PrismaPaymentMethodType.wallet,
-      [PaymentMethodTypeEnum.MADA]: PrismaPaymentMethodType.wallet,
-    };
+    [PaymentMethodTypeEnum.CREDIT_CARD]: PrismaPaymentMethodType.credit_card,
+    [PaymentMethodTypeEnum.DEBIT_CARD]: PrismaPaymentMethodType.debit_card,
+    [PaymentMethodTypeEnum.WALLET]: PrismaPaymentMethodType.wallet,
+    [PaymentMethodTypeEnum.BANK_TRANSFER]:
+      PrismaPaymentMethodType.bank_transfer,
+    [PaymentMethodTypeEnum.GOOGLE_PAY]: PrismaPaymentMethodType.wallet,
+    [PaymentMethodTypeEnum.APPLE_PAY]: PrismaPaymentMethodType.wallet,
+    [PaymentMethodTypeEnum.MADA]: PrismaPaymentMethodType.wallet,
+  };
 
   private static readonly toDomainMap: Record<
     PrismaPaymentMethodType,
     PaymentMethodTypeEnum
   > = {
-      [PrismaPaymentMethodType.credit_card]: PaymentMethodTypeEnum.CREDIT_CARD,
-      [PrismaPaymentMethodType.debit_card]: PaymentMethodTypeEnum.DEBIT_CARD,
-      [PrismaPaymentMethodType.wallet]: PaymentMethodTypeEnum.WALLET,
-      [PrismaPaymentMethodType.bank_transfer]:
-        PaymentMethodTypeEnum.BANK_TRANSFER,
-      [PrismaPaymentMethodType.mada]: PaymentMethodTypeEnum.MADA,
-      [PrismaPaymentMethodType.google_pay]: PaymentMethodTypeEnum.GOOGLE_PAY,
-      [PrismaPaymentMethodType.apple_pay]: PaymentMethodTypeEnum.APPLE_PAY,
-    };
+    [PrismaPaymentMethodType.credit_card]: PaymentMethodTypeEnum.CREDIT_CARD,
+    [PrismaPaymentMethodType.debit_card]: PaymentMethodTypeEnum.DEBIT_CARD,
+    [PrismaPaymentMethodType.wallet]: PaymentMethodTypeEnum.WALLET,
+    [PrismaPaymentMethodType.bank_transfer]:
+      PaymentMethodTypeEnum.BANK_TRANSFER,
+    [PrismaPaymentMethodType.mada]: PaymentMethodTypeEnum.MADA,
+    [PrismaPaymentMethodType.google_pay]: PaymentMethodTypeEnum.GOOGLE_PAY,
+    [PrismaPaymentMethodType.apple_pay]: PaymentMethodTypeEnum.APPLE_PAY,
+  };
 
   static toPrisma(type: PaymentMethodType): PrismaPaymentMethodType {
     return this.toPrismaMap[type.getValue() as PaymentMethodTypeEnum];
@@ -75,7 +75,7 @@ class PaymentMethodTypeMapper {
 
 @Injectable()
 export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async save(paymentMethod: PaymentMethod): Promise<PaymentMethod> {
     const data = this.toPrisma(paymentMethod);
@@ -243,10 +243,12 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
     const expiringCards = allCards.filter((pm) => {
       try {
         const details = pm.details;
-        if (!details || typeof details !== 'object' || Array.isArray(details)) return false;
+        if (!details || typeof details !== 'object' || Array.isArray(details))
+          return false;
 
         const detailsObj = details as Record<string, any>;
-        if (!detailsObj.data || typeof detailsObj.data !== 'object') return false;
+        if (!detailsObj.data || typeof detailsObj.data !== 'object')
+          return false;
 
         const expiryMonth = parseInt(detailsObj.data.expiryMonth);
         const expiryYear = parseInt(detailsObj.data.expiryYear);

@@ -163,7 +163,7 @@ export class Money {
     this.currency = currency.toUpperCase();
   }
 
-  private validate(amount: number, currency: string): void {
+  private validate(_amount: number, currency: string): void {
     // if (amount < 0) {
     //   throw new DomainException('Amount cannot be negative');
     // }

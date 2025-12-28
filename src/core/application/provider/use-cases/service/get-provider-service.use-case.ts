@@ -8,7 +8,7 @@ import { IProviderServiceRepository } from '../../ports/repository';
 export class GetProviderServiceUseCase {
   constructor(private readonly repository: IProviderServiceRepository) {}
 
-  async execute(id: string): Promise<ProviderService | null> {
+  async execute(_id: string): Promise<ProviderService | null> {
     return await this.repository.findById(id);
   }
 }

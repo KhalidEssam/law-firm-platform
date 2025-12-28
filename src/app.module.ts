@@ -95,8 +95,6 @@ import { DocumentModule } from './infrastructure/modules/document.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(RequestIdMiddleware, HttpLoggerMiddleware)
-      .forRoutes('*');
+    consumer.apply(RequestIdMiddleware, HttpLoggerMiddleware).forRoutes('*');
   }
 }

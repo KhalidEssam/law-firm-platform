@@ -2,11 +2,7 @@
 
 import { Injectable, Inject } from '@nestjs/common';
 import type { ISLAPolicyRepository } from '../../../domain/sla/ports/sla-policy.repository';
-import {
-  SLACalculatorService,
-  RequestSLAInfo,
-  SLABreachInfo,
-} from '../../../domain/sla/services/sla-calculator.service';
+import { SLACalculatorService } from '../../../domain/sla/services/sla-calculator.service';
 import {
   RequestType,
   isValidRequestType,

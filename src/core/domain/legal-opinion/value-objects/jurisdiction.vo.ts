@@ -50,7 +50,7 @@ export class Jurisdiction {
     this.legalSystem = data.legalSystem;
   }
 
-  private validate(data: JurisdictionData): void {
+  private validate(_data: JurisdictionData): void {
     // if (!data.country || data.country.trim().length === 0) {
     //   throw new DomainException('Jurisdiction must specify a country');
     // }

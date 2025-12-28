@@ -3,7 +3,10 @@
  * Tests the core billing transaction workflows
  */
 
-import { Money, CurrencyEnum } from '../../../domain/billing/value-objects/money.vo';
+import {
+  Money,
+  CurrencyEnum,
+} from '../../../domain/billing/value-objects/money.vo';
 
 // Since we don't have a full test database setup, these are unit-style integration tests
 // that verify the business logic without actual database calls

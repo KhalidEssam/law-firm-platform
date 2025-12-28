@@ -15,7 +15,7 @@ export class DeleteReportUseCase {
     private readonly reportRepo: IReportRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(_id: string): Promise<void> {
     const report = await this.reportRepo.findById(id);
     if (!report) {
       throw new NotFoundException(`Report with ID ${id} not found`);

@@ -14,7 +14,6 @@ import {
   PROVIDER_SPECIALIZATION_REPOSITORY,
 } from '../../../domain/specialization/ports/specialization.repository';
 import { Specialization } from '../../../domain/specialization/entities/specialization.entity';
-import { ProviderSpecialization } from '../../../domain/specialization/entities/provider-specialization.entity';
 
 /**
  * Provider info with specialization data for routing

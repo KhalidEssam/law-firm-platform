@@ -155,7 +155,8 @@ export class PinoLoggerService implements LoggerService {
   }
 
   logResponse(context: LogContext): void {
-    const level = context.statusCode && context.statusCode >= 400 ? 'warn' : 'info';
+    const level =
+      context.statusCode && context.statusCode >= 400 ? 'warn' : 'info';
     this.logger[level]({
       type: 'http_response',
       ...context,
@@ -178,7 +179,11 @@ export class PinoLoggerService implements LoggerService {
     });
   }
 
-  logPerformance(operation: string, duration: number, context?: LogContext): void {
+  logPerformance(
+    operation: string,
+    duration: number,
+    context?: LogContext,
+  ): void {
     const level = duration > 1000 ? 'warn' : 'info';
     this.logger[level]({
       type: 'performance',

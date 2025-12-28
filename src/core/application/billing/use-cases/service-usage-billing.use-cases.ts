@@ -4,18 +4,11 @@
 // src/core/application/billing/use-cases/service-usage-billing.use-cases.ts
 // ============================================
 
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import {
   MembershipIntegrationService,
   ServiceType,
 } from '../../membership/services/membership-integration.service';
-import { CreateMembershipInvoiceUseCase } from './membership-invoice.use-cases';
 import { type IMembershipInvoiceRepository } from '../../../domain/billing/ports/membership-invoice.repository';
 import { MembershipInvoice } from '../../../domain/billing/entities/membership-invoice.entity';
 import {
@@ -252,7 +245,9 @@ export class GetBillableUsageByServiceTypeUseCase {
 
 @Injectable()
 export class ProcessBatchServiceUsageBillingUseCase {
-  private readonly logger = new Logger(ProcessBatchServiceUsageBillingUseCase.name);
+  private readonly logger = new Logger(
+    ProcessBatchServiceUsageBillingUseCase.name,
+  );
 
   constructor(
     private readonly generateInvoice: GenerateServiceUsageInvoiceUseCase,

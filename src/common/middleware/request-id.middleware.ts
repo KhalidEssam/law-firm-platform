@@ -23,7 +23,8 @@ export class RequestIdMiddleware implements NestMiddleware {
     const requestId = (req.headers[REQUEST_ID_HEADER] as string) || uuidv4();
 
     // Correlation ID for tracing across services
-    const correlationId = (req.headers[CORRELATION_ID_HEADER] as string) || requestId;
+    const correlationId =
+      (req.headers[CORRELATION_ID_HEADER] as string) || requestId;
 
     // Attach to request object
     req.requestId = requestId;

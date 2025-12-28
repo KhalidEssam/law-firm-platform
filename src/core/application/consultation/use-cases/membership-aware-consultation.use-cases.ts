@@ -23,7 +23,9 @@ import {
 
 @Injectable()
 export class CreateConsultationWithMembershipUseCase {
-  private readonly logger = new Logger(CreateConsultationWithMembershipUseCase.name);
+  private readonly logger = new Logger(
+    CreateConsultationWithMembershipUseCase.name,
+  );
 
   constructor(
     private readonly membershipService: MembershipIntegrationService,
@@ -66,7 +68,10 @@ export class CreateConsultationWithMembershipUseCase {
       });
     } catch (error: any) {
       // Log error but don't fail the request
-      this.logger.error('Failed to record service usage', error?.stack || error);
+      this.logger.error(
+        'Failed to record service usage',
+        error?.stack || error,
+      );
     }
 
     // 4. Return consultation with membership info
@@ -91,7 +96,9 @@ export class CreateConsultationWithMembershipUseCase {
 
 @Injectable()
 export class CompleteConsultationWithUsageTrackingUseCase {
-  private readonly logger = new Logger(CompleteConsultationWithUsageTrackingUseCase.name);
+  private readonly logger = new Logger(
+    CompleteConsultationWithUsageTrackingUseCase.name,
+  );
 
   constructor(
     private readonly membershipService: MembershipIntegrationService,
@@ -129,7 +136,10 @@ export class CompleteConsultationWithUsageTrackingUseCase {
           }
         }
       } catch (error: any) {
-        this.logger.error('Failed to update usage billing', error?.stack || error);
+        this.logger.error(
+          'Failed to update usage billing',
+          error?.stack || error,
+        );
       }
     }
 

@@ -68,7 +68,7 @@ export class GetRefundByIdUseCase {
     private readonly refundRepository: IRefundRepository,
   ) {}
 
-  async execute(id: string): Promise<Refund> {
+  async execute(_id: string): Promise<Refund> {
     const refund = await this.refundRepository.findById(id);
     if (!refund) {
       throw new NotFoundException(`Refund with ID ${id} not found`);
@@ -151,7 +151,7 @@ export class ApproveRefundUseCase {
    * Approve a pending refund request.
    * Uses UoW for consistency and future extensibility (e.g., audit logging).
    */
-  async execute(id: string, dto: ReviewRefundDto): Promise<Refund> {
+  async execute(_id: string, dto: ReviewRefundDto): Promise<Refund> {
     return await this.billingUow.transaction(async (uow) => {
       const refund = await uow.refunds.findById(id);
       if (!refund) {
@@ -188,7 +188,7 @@ export class RejectRefundUseCase {
    * Reject a pending refund request.
    * Uses UoW for consistency and future extensibility (e.g., audit logging).
    */
-  async execute(id: string, dto: ReviewRefundDto): Promise<Refund> {
+  async execute(_id: string, dto: ReviewRefundDto): Promise<Refund> {
     return await this.billingUow.transaction(async (uow) => {
       const refund = await uow.refunds.findById(id);
       if (!refund) {
@@ -231,7 +231,7 @@ export class ProcessRefundUseCase {
    *
    * All operations are atomic - if any fails, all are rolled back.
    */
-  async execute(id: string, dto: ProcessRefundDto): Promise<Refund> {
+  async execute(_id: string, dto: ProcessRefundDto): Promise<Refund> {
     return await this.billingUow.transaction(async (uow) => {
       // 1. Find and validate refund
       const refund = await uow.refunds.findById(id);
@@ -367,7 +367,7 @@ export class DeleteRefundUseCase {
     private readonly refundRepository: IRefundRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(_id: string): Promise<void> {
     const refund = await this.refundRepository.findById(id);
     if (!refund) {
       throw new NotFoundException(`Refund with ID ${id} not found`);

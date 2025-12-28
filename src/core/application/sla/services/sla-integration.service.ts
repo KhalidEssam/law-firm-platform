@@ -6,7 +6,6 @@ import { ISLAPolicyRepository } from '../../../domain/sla/ports/sla-policy.repos
 import { RequestType } from '../../../domain/sla/value-objects/request-type.vo';
 import { Priority } from '../../../domain/sla/value-objects/priority.vo';
 import { SLAStatus } from '../../../domain/sla/value-objects/sla-status.vo';
-import { SLADeadlines } from '../../../domain/sla/value-objects/sla-deadlines.vo';
 
 // ============================================
 // INTERFACES

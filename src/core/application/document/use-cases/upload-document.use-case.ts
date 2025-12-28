@@ -61,9 +61,24 @@ export class UploadDocumentUseCase {
 
   // Allowed file extensions for security
   private readonly allowedExtensions = [
-    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
-    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
-    '.txt', '.csv', '.rtf', '.odt', '.ods',
+    '.pdf',
+    '.doc',
+    '.docx',
+    '.xls',
+    '.xlsx',
+    '.ppt',
+    '.pptx',
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.svg',
+    '.txt',
+    '.csv',
+    '.rtf',
+    '.odt',
+    '.ods',
   ];
 
   async execute(dto: UploadDocumentDTO): Promise<UploadDocumentResult> {

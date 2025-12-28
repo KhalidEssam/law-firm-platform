@@ -102,7 +102,7 @@ export class PrismaSpecializationRepository
     return SpecializationMapper.toDomain(created);
   }
 
-  async findById(id: string): Promise<Specialization | null> {
+  async findById(_id: string): Promise<Specialization | null> {
     const record = await this.prisma.specialization.findUnique({
       where: { id },
     });
@@ -125,7 +125,7 @@ export class PrismaSpecializationRepository
     return SpecializationMapper.toDomain(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.specialization.delete({ where: { id } });
   }
 
@@ -240,7 +240,7 @@ export class PrismaProviderSpecializationRepository
     return ProviderSpecializationMapper.toDomain(created);
   }
 
-  async findById(id: string): Promise<ProviderSpecialization | null> {
+  async findById(_id: string): Promise<ProviderSpecialization | null> {
     const record = await this.prisma.providerSpecialization.findUnique({
       where: { id },
     });
@@ -272,7 +272,7 @@ export class PrismaProviderSpecializationRepository
     return ProviderSpecializationMapper.toDomain(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.providerSpecialization.delete({ where: { id } });
   }
 
@@ -435,7 +435,7 @@ export class PrismaProviderSpecializationRepository
     });
   }
 
-  async incrementCaseCount(id: string): Promise<ProviderSpecialization> {
+  async incrementCaseCount(_id: string): Promise<ProviderSpecialization> {
     const updated = await this.prisma.providerSpecialization.update({
       where: { id },
       data: {

@@ -17,8 +17,6 @@ import {
   Min,
   Max,
   ValidateNested,
-  IsObject,
-  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';

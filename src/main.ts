@@ -57,11 +57,15 @@ async function bootstrap() {
   if (!corsOrigins || corsOrigins.length === 0) {
     if (nodeEnv === 'production') {
       logger.error('CORS_ORIGIN must be configured in production environment');
-      throw new Error('CORS_ORIGIN environment variable is required in production');
+      throw new Error(
+        'CORS_ORIGIN environment variable is required in production',
+      );
     }
     // Only allow localhost fallback in development
     corsOrigins = ['http://localhost:3000'];
-    logger.warn('Using default CORS origin: http://localhost:3000 (development only)');
+    logger.warn(
+      'Using default CORS origin: http://localhost:3000 (development only)',
+    );
   }
 
   app.enableCors({

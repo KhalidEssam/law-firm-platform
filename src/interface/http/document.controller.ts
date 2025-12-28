@@ -20,12 +20,10 @@ import {
   UnauthorizedException,
   ParseFilePipe,
   MaxFileSizeValidator,
-  FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { Public } from 'src/auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { StrictRateLimit } from '../../common/decorators/throttle.decorator';
 
@@ -95,7 +93,9 @@ export class DocumentController {
   ) {
     // Security: Require authentication for file uploads
     if (!user?.id) {
-      throw new UnauthorizedException('Authentication required for file upload');
+      throw new UnauthorizedException(
+        'Authentication required for file upload',
+      );
     }
 
     if (!file) {
@@ -151,7 +151,9 @@ export class DocumentController {
   ) {
     // Security: Require authentication for file uploads
     if (!user?.id) {
-      throw new UnauthorizedException('Authentication required for file upload');
+      throw new UnauthorizedException(
+        'Authentication required for file upload',
+      );
     }
 
     if (!file) {
