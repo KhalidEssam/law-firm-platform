@@ -1,14 +1,18 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { HttpLoggerMiddleware } from './common/middleware/http-logger.middleware';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './infrastructure/modules/user.module';
 import { HealthModule } from './common/health/health.module';
+import { LoggingModule } from './common/logging';
+import { MetricsModule } from './common/metrics';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 import configuration from './config/configuration';
 
 import { AuthModule } from './auth/auth.module';
@@ -53,6 +57,8 @@ import { DocumentModule } from './infrastructure/modules/document.module';
     ]),
     PrismaModule,
     HealthModule,
+    LoggingModule,
+    MetricsModule,
     AuthModule,
     Auth0Module,
     RolesModule,
@@ -84,10 +90,13 @@ import { DocumentModule } from './infrastructure/modules/document.module';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
+    { provide: APP_INTERCEPTOR, useClass: MetricsInterceptor },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*'); // applies to all routes
+    consumer
+      .apply(RequestIdMiddleware, HttpLoggerMiddleware)
+      .forRoutes('*');
   }
 }
