@@ -131,7 +131,7 @@ export class SendMobileOtpUseCase {
 
   private normalizePhoneNumber(phone: string): string {
     // Remove spaces, dashes, and parentheses
-    let normalized = phone.replace(/[\s\-\(\)]/g, '');
+    let normalized = phone.replace(/[\s\-()]/g, '');
 
     // Ensure it starts with +
     if (!normalized.startsWith('+')) {
