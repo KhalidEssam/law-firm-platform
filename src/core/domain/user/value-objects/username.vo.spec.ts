@@ -23,23 +23,33 @@ describe('Username Value Object', () => {
     });
 
     it('should throw error for empty username', () => {
-      expect(() => Username.create('')).toThrow('Username must be at least 3 characters');
+      expect(() => Username.create('')).toThrow(
+        'Username must be at least 3 characters',
+      );
     });
 
     it('should throw error for null username', () => {
-      expect(() => Username.create(null as any)).toThrow('Username must be at least 3 characters');
+      expect(() => Username.create(null as any)).toThrow(
+        'Username must be at least 3 characters',
+      );
     });
 
     it('should throw error for undefined username', () => {
-      expect(() => Username.create(undefined as any)).toThrow('Username must be at least 3 characters');
+      expect(() => Username.create(undefined as any)).toThrow(
+        'Username must be at least 3 characters',
+      );
     });
 
     it('should throw error for username with 1 character', () => {
-      expect(() => Username.create('a')).toThrow('Username must be at least 3 characters');
+      expect(() => Username.create('a')).toThrow(
+        'Username must be at least 3 characters',
+      );
     });
 
     it('should throw error for username with 2 characters', () => {
-      expect(() => Username.create('ab')).toThrow('Username must be at least 3 characters');
+      expect(() => Username.create('ab')).toThrow(
+        'Username must be at least 3 characters',
+      );
     });
   });
 

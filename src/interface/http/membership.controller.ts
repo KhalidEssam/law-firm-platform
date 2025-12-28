@@ -44,7 +44,7 @@ import {
 // Tier Service Use Cases
 import {
   CreateTierServiceUseCase,
-  GetTierServiceByIdUseCase,
+  // GetTierServiceByIdUseCase,
   GetTierServicesByTierIdUseCase,
   UpdateTierServiceUseCase,
   DeleteTierServiceUseCase,
@@ -89,25 +89,25 @@ import {
 // DTOs
 import {
   CreateMembershipDto,
-  CancelMembershipDto,
+  // CancelMembershipDto,
   RenewMembershipDto,
   ToggleAutoRenewDto,
   ApplyCouponDto,
   ConsumeQuotaDto,
   CreateMembershipTierDto,
   UpdateMembershipTierDto,
-  CreateCouponDto,
-  UpdateCouponDto,
+  // CreateCouponDto,
+  // UpdateCouponDto,
   CreatePaymentDto,
   CompletePaymentDto,
-  ListMembershipsQueryDto,
+  // ListMembershipsQueryDto,
   ListTiersQueryDto,
-  ListCouponsQueryDto,
+  // ListCouponsQueryDto,
   MembershipResponseDto,
   MembershipTierResponseDto,
   QuotaResponseDto,
   PaymentResponseDto,
-  CouponResponseDto,
+  // CouponResponseDto,
   ApplyCouponResponseDto,
 } from '../../core/application/membership/dto/index.dto';
 
@@ -137,7 +137,7 @@ export class MembershipController {
 
     // Tier Service use cases
     private readonly createTierService: CreateTierServiceUseCase,
-    private readonly getTierServiceById: GetTierServiceByIdUseCase,
+    // private readonly getTierServiceById: GetTierServiceByIdUseCase,
     private readonly getTierServicesByTierId: GetTierServicesByTierIdUseCase,
     private readonly updateTierService: UpdateTierServiceUseCase,
     private readonly deleteTierService: DeleteTierServiceUseCase,
@@ -199,7 +199,7 @@ export class MembershipController {
   @Get('me')
   @Roles('user', 'partner', 'platform', 'system admin')
   async getMyMembership(
-    @Req() req: any,
+    @Req() req,
   ): Promise<{ membership: MembershipResponseDto | null }> {
     const userId = req.user.userId;
     const membership = await this.getActiveMembershipByUser.execute(userId);
@@ -234,7 +234,7 @@ export class MembershipController {
   @HttpCode(HttpStatus.OK)
   async cancel(
     @Param('id') id: string,
-    @Body() dto: CancelMembershipDto,
+    // @Body() dto: CancelMembershipDto,
   ): Promise<{ membership: MembershipResponseDto }> {
     const membership = await this.cancelMembership.execute(id);
     return {
@@ -453,7 +453,7 @@ export class MembershipController {
   @Public()
   @HttpCode(HttpStatus.CREATED)
   async createMembershipPayment(
-    @Param('id') id: string,
+    // @Param('id') id: string,
     @Body() dto: CreatePaymentDto,
   ): Promise<{ payment: PaymentResponseDto }> {
     const payment = await this.createPayment.execute({

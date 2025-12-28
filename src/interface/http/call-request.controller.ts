@@ -4,7 +4,7 @@ import {
   Controller,
   Get,
   Post,
-  Put,
+  // Put,
   Patch,
   Delete,
   Body,
@@ -17,7 +17,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Roles } from '../../auth/roles.decorator';
-import { Permissions } from '../../auth/permissions.decorator';
+// import { Permissions } from '../../auth/permissions.decorator';
 
 // Use Cases
 import {
@@ -444,7 +444,7 @@ export class CallRequestController {
     }
   }
 
-  private mapToResponse(callRequest: any): CallRequestResponseDto {
+  private mapToResponse(callRequest): CallRequestResponseDto {
     return {
       id: callRequest.id,
       requestNumber: callRequest.requestNumber,

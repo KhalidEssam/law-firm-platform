@@ -35,17 +35,17 @@ import {
 import {
   CheckSLAStatusUseCase,
   CheckSLABreachesUseCase,
-  GetUrgencyScoreUseCase,
+  // GetUrgencyScoreUseCase,
   BatchCheckSLAStatusUseCase,
 } from '../../core/application/sla/use-cases/sla-tracking.use-cases';
 
 import { SLASchedulerService } from '../../core/application/sla/services/sla-scheduler.service';
 
 import {
-  CreateSLAPolicyDto,
-  UpdateSLAPolicyDto,
+  // CreateSLAPolicyDto,
+  // UpdateSLAPolicyDto,
   SLAPolicyResponseDto,
-  CheckSLAStatusDto,
+  // CheckSLAStatusDto,
   SLAStatusResponseDto,
 } from '../../core/application/sla/dto/sla-policy.dto';
 
@@ -116,7 +116,7 @@ export class SLAController {
     private readonly seedDefaults: SeedDefaultSLAPoliciesUseCase,
     private readonly checkStatus: CheckSLAStatusUseCase,
     private readonly checkBreaches: CheckSLABreachesUseCase,
-    private readonly getUrgencyScore: GetUrgencyScoreUseCase,
+    // private readonly getUrgencyScore: GetUrgencyScoreUseCase,
     private readonly batchCheckStatus: BatchCheckSLAStatusUseCase,
     private readonly schedulerService: SLASchedulerService,
   ) {}
@@ -340,7 +340,7 @@ export class SLAController {
       urgencyScore: number;
     }>;
   }> {
-    const results = this.batchCheckStatus.execute(
+    const results = await this.batchCheckStatus.execute(
       items.map((item) => ({
         requestId: item.requestId,
         requestType: item.requestType,

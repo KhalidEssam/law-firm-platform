@@ -19,7 +19,9 @@ import {
 
 @Injectable()
 export class CreateLegalOpinionWithMembershipUseCase {
-  private readonly logger = new Logger(CreateLegalOpinionWithMembershipUseCase.name);
+  private readonly logger = new Logger(
+    CreateLegalOpinionWithMembershipUseCase.name,
+  );
 
   constructor(
     private readonly membershipService: MembershipIntegrationService,
@@ -62,7 +64,10 @@ export class CreateLegalOpinionWithMembershipUseCase {
       });
     } catch (error: any) {
       // Log error but don't fail the request
-      this.logger.error('Failed to record service usage', error?.stack || error);
+      this.logger.error(
+        'Failed to record service usage',
+        error?.stack || error,
+      );
     }
 
     // 4. Return opinion with membership info
@@ -124,7 +129,9 @@ export class CheckLegalOpinionQuotaUseCase {
 
 @Injectable()
 export class CompleteLegalOpinionWithUsageTrackingUseCase {
-  private readonly logger = new Logger(CompleteLegalOpinionWithUsageTrackingUseCase.name);
+  private readonly logger = new Logger(
+    CompleteLegalOpinionWithUsageTrackingUseCase.name,
+  );
 
   constructor(
     private readonly membershipService: MembershipIntegrationService,
@@ -157,7 +164,10 @@ export class CompleteLegalOpinionWithUsageTrackingUseCase {
           }
         }
       } catch (error: any) {
-        this.logger.error('Failed to update usage billing', error?.stack || error);
+        this.logger.error(
+          'Failed to update usage billing',
+          error?.stack || error,
+        );
       }
     }
   }

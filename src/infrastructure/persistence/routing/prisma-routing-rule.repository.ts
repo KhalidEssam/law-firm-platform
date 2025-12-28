@@ -15,7 +15,7 @@ import {
 } from '../../../core/application/routing/ports/routing-rule.repository';
 import { RoutingRule } from '../../../core/domain/routing/entities/routing-rule.entity';
 import { RequestType } from '../../../core/domain/routing/value-objects/request-type.vo';
-import { RoutingStrategy } from '../../../core/domain/routing/value-objects/routing-strategy.vo';
+// import { RoutingStrategy } from '../../../core/domain/routing/value-objects/routing-strategy.vo';
 import { RoutingConditionsData } from '../../../core/domain/routing/value-objects/routing-conditions.vo';
 import { ProviderTargetData } from '../../../core/domain/routing/value-objects/provider-target.vo';
 

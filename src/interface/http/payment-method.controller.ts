@@ -8,7 +8,6 @@ import {
   Get,
   Post,
   Put,
-  Patch,
   Delete,
   Body,
   Param,
@@ -16,7 +15,6 @@ import {
   Req,
   HttpCode,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -26,7 +24,6 @@ import {
 } from '@nestjs/swagger';
 import { Roles } from 'src/auth/roles.decorator';
 import { Permissions } from 'src/auth/permissions.decorator';
-import { StrictRateLimit, StandardRateLimit, RelaxedRateLimit } from '../../common/decorators/throttle.decorator';
 // Use Cases
 import {
   AddPaymentMethodUseCase,
@@ -54,7 +51,7 @@ import {
   AddPaymentMethodDto,
   UpdatePaymentMethodDto,
   VerifyPaymentMethodDto,
-  ResetFailedAttemptsDto,
+  // ResetFailedAttemptsDto,
   GetMyPaymentMethodsDto,
   ListPaymentMethodsDto,
   GetExpiringPaymentMethodsDto,

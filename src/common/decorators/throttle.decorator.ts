@@ -83,10 +83,7 @@ export function BulkRateLimit() {
  * Use sparingly - only for health checks or internal endpoints
  */
 export function NoRateLimit() {
-  return applyDecorators(
-    SkipThrottle(),
-    SetMetadata('rateLimit', 'none'),
-  );
+  return applyDecorators(SkipThrottle(), SetMetadata('rateLimit', 'none'));
 }
 
 /**

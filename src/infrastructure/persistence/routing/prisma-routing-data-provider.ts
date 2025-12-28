@@ -369,9 +369,8 @@ export class PrismaRoutingDataProvider implements IRoutingDataProvider {
     }
   }
 
-  async getProviderInfoForRouting(
-    requestType: string,
-  ): Promise<ProviderInfo[]> {
+  async getProviderInfoForRouting() // requestType: string,
+  : Promise<ProviderInfo[]> {
     const providers = await this.getAvailableProviders();
     const providerInfos: ProviderInfo[] = [];
 

@@ -252,7 +252,9 @@ export class GetBillableUsageByServiceTypeUseCase {
 
 @Injectable()
 export class ProcessBatchServiceUsageBillingUseCase {
-  private readonly logger = new Logger(ProcessBatchServiceUsageBillingUseCase.name);
+  private readonly logger = new Logger(
+    ProcessBatchServiceUsageBillingUseCase.name,
+  );
 
   constructor(
     private readonly generateInvoice: GenerateServiceUsageInvoiceUseCase,

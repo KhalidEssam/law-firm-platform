@@ -47,9 +47,15 @@ describe('User Entity', () => {
       });
       const afterCreate = new Date();
 
-      expect(user.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreate.getTime());
-      expect(user.createdAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime());
-      expect(user.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCreate.getTime());
+      expect(user.createdAt.getTime()).toBeGreaterThanOrEqual(
+        beforeCreate.getTime(),
+      );
+      expect(user.createdAt.getTime()).toBeLessThanOrEqual(
+        afterCreate.getTime(),
+      );
+      expect(user.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        beforeCreate.getTime(),
+      );
     });
   });
 
@@ -232,7 +238,9 @@ describe('User Entity', () => {
           pointsBalance: 50,
         });
 
-        expect(() => user.deductPoints(100)).toThrow('Insufficient points balance');
+        expect(() => user.deductPoints(100)).toThrow(
+          'Insufficient points balance',
+        );
       });
 
       it('should check if user has enough points', () => {
@@ -255,9 +263,9 @@ describe('User Entity', () => {
           username: createValidUsername(),
         });
 
-        const updatedUser = user.addWalletFunds(100.50);
+        const updatedUser = user.addWalletFunds(100.5);
 
-        expect(updatedUser.walletBalance).toBe(100.50);
+        expect(updatedUser.walletBalance).toBe(100.5);
       });
 
       it('should throw when adding negative wallet funds', () => {
@@ -266,7 +274,9 @@ describe('User Entity', () => {
           username: createValidUsername(),
         });
 
-        expect(() => user.addWalletFunds(-10)).toThrow('Amount cannot be negative');
+        expect(() => user.addWalletFunds(-10)).toThrow(
+          'Amount cannot be negative',
+        );
       });
 
       it('should deduct wallet funds', () => {
@@ -288,7 +298,9 @@ describe('User Entity', () => {
           walletBalance: 50,
         });
 
-        expect(() => user.deductWalletFunds(100)).toThrow('Insufficient wallet balance');
+        expect(() => user.deductWalletFunds(100)).toThrow(
+          'Insufficient wallet balance',
+        );
       });
 
       it('should check if user has enough wallet funds', () => {

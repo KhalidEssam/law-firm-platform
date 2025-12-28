@@ -14,7 +14,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  // UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import {

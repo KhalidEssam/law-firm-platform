@@ -15,18 +15,18 @@ import { LitigationCase } from '../../../domain/litigation-case/entities/litigat
 import { LitigationStatusHistory } from '../../../domain/litigation-case/entities/litigation-status-history.entity';
 import {
   CaseId,
-  CaseNumber,
+  // CaseNumber,
   UserId,
   CaseType,
   CaseSubtype,
   CaseTitle,
   CaseDescription,
-  CaseStatus,
+  // CaseStatus,
   CourtName,
   CaseDetails,
   Money,
   QuoteDetails,
-  PaymentReference,
+  // PaymentReference,
 } from '../../../domain/litigation-case/value-objects/litigation-case.vo';
 import {
   type ILitigationUnitOfWork,

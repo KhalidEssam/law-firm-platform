@@ -36,11 +36,15 @@ describe('Email Value Object', () => {
     });
 
     it('should throw error for undefined email', () => {
-      expect(() => Email.create(undefined as any)).toThrow('Invalid email format');
+      expect(() => Email.create(undefined as any)).toThrow(
+        'Invalid email format',
+      );
     });
 
     it('should throw error for email without @', () => {
-      expect(() => Email.create('testexample.com')).toThrow('Invalid email format');
+      expect(() => Email.create('testexample.com')).toThrow(
+        'Invalid email format',
+      );
     });
 
     it('should throw error for email without domain', () => {
@@ -48,15 +52,21 @@ describe('Email Value Object', () => {
     });
 
     it('should throw error for email without local part', () => {
-      expect(() => Email.create('@example.com')).toThrow('Invalid email format');
+      expect(() => Email.create('@example.com')).toThrow(
+        'Invalid email format',
+      );
     });
 
     it('should throw error for email with spaces', () => {
-      expect(() => Email.create('test @example.com')).toThrow('Invalid email format');
+      expect(() => Email.create('test @example.com')).toThrow(
+        'Invalid email format',
+      );
     });
 
     it('should throw error for email with invalid TLD', () => {
-      expect(() => Email.create('test@example.c')).toThrow('Invalid email format');
+      expect(() => Email.create('test@example.c')).toThrow(
+        'Invalid email format',
+      );
     });
   });
 
