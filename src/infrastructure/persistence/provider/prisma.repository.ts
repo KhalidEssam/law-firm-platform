@@ -289,11 +289,11 @@ export class PrismaProviderProfileRepository
     return ProviderProfileMapper.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.providerProfile.delete({ where: { id } });
   }
 
-  async softDelete(_id: string): Promise<void> {
+  async softDelete(id: string): Promise<void> {
     await this.prisma.providerProfile.update({
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
@@ -413,11 +413,11 @@ export class PrismaProviderUserRepository implements IProviderUserRepository {
     return ProviderUserMapper.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.providerUser.delete({ where: { id } });
   }
 
-  async softDelete(_id: string): Promise<void> {
+  async softDelete(id: string): Promise<void> {
     await this.prisma.providerUser.update({
       where: { id },
       data: { deletedAt: new Date(), isActive: false },
@@ -475,7 +475,7 @@ export class PrismaProviderServiceRepository
     return ProviderServiceMapper.toDomain(created);
   }
 
-  async findById(_id: string): Promise<ProviderService | null> {
+  async findById(id: string): Promise<ProviderService | null> {
     const service = await this.prisma.providerService.findUnique({
       where: { id },
     });
@@ -521,7 +521,7 @@ export class PrismaProviderServiceRepository
     return ProviderServiceMapper.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.providerService.delete({ where: { id } });
   }
 
@@ -575,7 +575,7 @@ export class PrismaProviderScheduleRepository
     return ProviderScheduleMapper.toDomain(created);
   }
 
-  async findById(_id: string): Promise<ProviderSchedule | null> {
+  async findById(id: string): Promise<ProviderSchedule | null> {
     const schedule = await this.prisma.providerSchedule.findUnique({
       where: { id },
     });
@@ -639,7 +639,7 @@ export class PrismaProviderScheduleRepository
     return ProviderScheduleMapper.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.providerSchedule.delete({ where: { id } });
   }
 

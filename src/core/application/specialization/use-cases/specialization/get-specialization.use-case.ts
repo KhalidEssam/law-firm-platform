@@ -14,7 +14,7 @@ export class GetSpecializationUseCase {
     private readonly repository: ISpecializationRepository,
   ) {}
 
-  async execute(_id: string): Promise<Specialization> {
+  async execute(id: string): Promise<Specialization> {
     const specialization = await this.repository.findById(id);
 
     if (!specialization) {

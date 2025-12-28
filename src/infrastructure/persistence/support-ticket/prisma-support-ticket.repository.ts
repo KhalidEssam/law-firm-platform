@@ -54,7 +54,7 @@ export class PrismaSupportTicketRepository implements ISupportTicketRepository {
   // ============================================
   // READ
   // ============================================
-  async findById(_id: string): Promise<SupportTicket | null> {
+  async findById(id: string): Promise<SupportTicket | null> {
     const found = await this.prisma.supportTicket.findUnique({
       where: { id, deletedAt: null },
     });
@@ -139,7 +139,7 @@ export class PrismaSupportTicketRepository implements ISupportTicketRepository {
     return this.toDomain(updated);
   }
 
-  async startProgress(_id: string): Promise<SupportTicket> {
+  async startProgress(id: string): Promise<SupportTicket> {
     const updated = await this.prisma.supportTicket.update({
       where: { id },
       data: {
@@ -150,7 +150,7 @@ export class PrismaSupportTicketRepository implements ISupportTicketRepository {
     return this.toDomain(updated);
   }
 
-  async resolve(_id: string): Promise<SupportTicket> {
+  async resolve(id: string): Promise<SupportTicket> {
     const updated = await this.prisma.supportTicket.update({
       where: { id },
       data: {
@@ -162,7 +162,7 @@ export class PrismaSupportTicketRepository implements ISupportTicketRepository {
     return this.toDomain(updated);
   }
 
-  async close(_id: string): Promise<SupportTicket> {
+  async close(id: string): Promise<SupportTicket> {
     const updated = await this.prisma.supportTicket.update({
       where: { id },
       data: {
@@ -173,7 +173,7 @@ export class PrismaSupportTicketRepository implements ISupportTicketRepository {
     return this.toDomain(updated);
   }
 
-  async reopen(_id: string): Promise<SupportTicket> {
+  async reopen(id: string): Promise<SupportTicket> {
     const updated = await this.prisma.supportTicket.update({
       where: { id },
       data: {
@@ -202,7 +202,7 @@ export class PrismaSupportTicketRepository implements ISupportTicketRepository {
   // ============================================
   // DELETE
   // ============================================
-  async softDelete(_id: string): Promise<void> {
+  async softDelete(id: string): Promise<void> {
     await this.prisma.supportTicket.update({
       where: { id },
       data: {
@@ -212,7 +212,7 @@ export class PrismaSupportTicketRepository implements ISupportTicketRepository {
     });
   }
 
-  async hardDelete(_id: string): Promise<void> {
+  async hardDelete(id: string): Promise<void> {
     await this.prisma.supportTicket.delete({
       where: { id },
     });

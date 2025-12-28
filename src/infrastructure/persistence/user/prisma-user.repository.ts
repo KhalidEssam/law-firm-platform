@@ -215,7 +215,7 @@ export class PrismaUserRepository implements IUserRepository {
   // READ
   // ============================================
 
-  async findById(_id: string): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: { id, deletedAt: null },
     });

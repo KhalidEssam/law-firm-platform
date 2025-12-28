@@ -97,7 +97,7 @@ export class PrismaNotificationPreferenceRepository
   // ============================================
   // READ
   // ============================================
-  async findById(_id: string): Promise<NotificationPreference | null> {
+  async findById(id: string): Promise<NotificationPreference | null> {
     const found = await this.prisma.notificationPreference.findUnique({
       where: { id },
     });
@@ -167,7 +167,7 @@ export class PrismaNotificationPreferenceRepository
     return this.toDomain(updated);
   }
 
-  async enable(_id: string): Promise<NotificationPreference> {
+  async enable(id: string): Promise<NotificationPreference> {
     const updated = await this.prisma.notificationPreference.update({
       where: { id },
       data: {
@@ -178,7 +178,7 @@ export class PrismaNotificationPreferenceRepository
     return this.toDomain(updated);
   }
 
-  async disable(_id: string): Promise<NotificationPreference> {
+  async disable(id: string): Promise<NotificationPreference> {
     const updated = await this.prisma.notificationPreference.update({
       where: { id },
       data: {
@@ -228,7 +228,7 @@ export class PrismaNotificationPreferenceRepository
   // ============================================
   // DELETE
   // ============================================
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.notificationPreference.delete({
       where: { id },
     });

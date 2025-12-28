@@ -96,7 +96,7 @@ export class GetTierServiceByIdUseCase {
     private readonly tierServiceRepo: ITierServiceRepository,
   ) {}
 
-  async execute(_id: string): Promise<TierService> {
+  async execute(id: string): Promise<TierService> {
     const tierService = await this.tierServiceRepo.findById(id);
     if (!tierService) {
       throw new NotFoundException('Tier service not found');
@@ -154,7 +154,7 @@ export class UpdateTierServiceUseCase {
     private readonly tierServiceRepo: ITierServiceRepository,
   ) {}
 
-  async execute(_id: string, dto: UpdateTierServiceDto): Promise<TierService> {
+  async execute(id: string, dto: UpdateTierServiceDto): Promise<TierService> {
     const tierService = await this.tierServiceRepo.findById(id);
     if (!tierService) {
       throw new NotFoundException('Tier service not found');
@@ -197,7 +197,7 @@ export class DeleteTierServiceUseCase {
     private readonly tierServiceRepo: ITierServiceRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const tierService = await this.tierServiceRepo.findById(id);
     if (!tierService) {
       throw new NotFoundException('Tier service not found');

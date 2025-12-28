@@ -68,7 +68,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
   // ============================================
   // READ
   // ============================================
-  async findById(_id: string): Promise<Notification | null> {
+  async findById(id: string): Promise<Notification | null> {
     const found = await this.prisma.notification.findUnique({
       where: { id },
     });
@@ -139,7 +139,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
     return this.toDomain(updated);
   }
 
-  async markAsRead(_id: string): Promise<Notification> {
+  async markAsRead(id: string): Promise<Notification> {
     const updated = await this.prisma.notification.update({
       where: { id },
       data: {
@@ -150,7 +150,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
     return this.toDomain(updated);
   }
 
-  async markAsUnread(_id: string): Promise<Notification> {
+  async markAsUnread(id: string): Promise<Notification> {
     const updated = await this.prisma.notification.update({
       where: { id },
       data: {
@@ -175,7 +175,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
   // ============================================
   // DELETE
   // ============================================
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.notification.delete({
       where: { id },
     });

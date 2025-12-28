@@ -21,7 +21,7 @@ export class DeleteSpecializationUseCase {
     private readonly providerSpecializationRepository: IProviderSpecializationRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const specialization = await this.repository.findById(id);
 
     if (!specialization) {

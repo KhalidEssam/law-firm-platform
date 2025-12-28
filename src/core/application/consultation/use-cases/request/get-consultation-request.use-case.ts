@@ -14,7 +14,7 @@ import { ConsultationRequestResponseDTO } from '../../consultation request.dtos'
 export class GetConsultationRequestUseCase {
   constructor(private readonly repository: IConsultationRequestRepository) {}
 
-  async execute(_id: string): Promise<ConsultationRequestResponseDTO> {
+  async execute(id: string): Promise<ConsultationRequestResponseDTO> {
     const consultationId = ConsultationId.create(id);
     const consultation = await this.repository.findById(consultationId);
 

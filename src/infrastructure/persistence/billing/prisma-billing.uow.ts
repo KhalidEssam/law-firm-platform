@@ -179,7 +179,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(created);
   }
 
-  async findById(_id: string): Promise<Refund | null> {
+  async findById(id: string): Promise<Refund | null> {
     const found = await this.prisma.refund.findUnique({ where: { id } });
     return found ? this.toDomain(found) : null;
   }
@@ -242,7 +242,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async approve(_id: string, reviewData: RefundReviewData): Promise<Refund> {
+  async approve(id: string, reviewData: RefundReviewData): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -256,7 +256,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async reject(_id: string, reviewData: RefundReviewData): Promise<Refund> {
+  async reject(id: string, reviewData: RefundReviewData): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -270,7 +270,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async process(_id: string, refundReference: string): Promise<Refund> {
+  async process(id: string, refundReference: string): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -283,7 +283,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.refund.delete({ where: { id } });
   }
 
@@ -463,7 +463,7 @@ class TransactionalDisputeRepository implements IDisputeRepository {
     return this.toDomain(created);
   }
 
-  async findById(_id: string): Promise<Dispute | null> {
+  async findById(id: string): Promise<Dispute | null> {
     const found = await this.prisma.dispute.findUnique({ where: { id } });
     return found ? this.toDomain(found) : null;
   }
@@ -544,7 +544,7 @@ class TransactionalDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async startReview(_id: string): Promise<Dispute> {
+  async startReview(id: string): Promise<Dispute> {
     const updated = await this.prisma.dispute.update({
       where: { id },
       data: {
@@ -588,7 +588,7 @@ class TransactionalDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async close(_id: string): Promise<Dispute> {
+  async close(id: string): Promise<Dispute> {
     const updated = await this.prisma.dispute.update({
       where: { id },
       data: {
@@ -599,7 +599,7 @@ class TransactionalDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async updatePriority(_id: string, priority: PriorityEnum): Promise<Dispute> {
+  async updatePriority(id: string, priority: PriorityEnum): Promise<Dispute> {
     const updated = await this.prisma.dispute.update({
       where: { id },
       data: {
@@ -610,7 +610,7 @@ class TransactionalDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.dispute.delete({ where: { id } });
   }
 
@@ -911,7 +911,7 @@ class TransactionalTransactionLogRepository
     return this.toDomain(created);
   }
 
-  async findById(_id: string): Promise<TransactionLog | null> {
+  async findById(id: string): Promise<TransactionLog | null> {
     const found = await this.prisma.transactionLog.findUnique({
       where: { id },
     });
@@ -963,7 +963,7 @@ class TransactionalTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsPaid(_id: string): Promise<TransactionLog> {
+  async markAsPaid(id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: { status: PaymentStatusMapper.toPrisma(PaymentStatusEnum.PAID) },
@@ -971,7 +971,7 @@ class TransactionalTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsFailed(_id: string): Promise<TransactionLog> {
+  async markAsFailed(id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: { status: PaymentStatusMapper.toPrisma(PaymentStatusEnum.FAILED) },
@@ -979,7 +979,7 @@ class TransactionalTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsRefunded(_id: string): Promise<TransactionLog> {
+  async markAsRefunded(id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: {
@@ -989,7 +989,7 @@ class TransactionalTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsPartiallyRefunded(_id: string): Promise<TransactionLog> {
+  async markAsPartiallyRefunded(id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: {
@@ -1001,7 +1001,7 @@ class TransactionalTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.transactionLog.delete({ where: { id } });
   }
 
@@ -1227,7 +1227,7 @@ class TransactionalMembershipInvoiceRepository
     return this.toDomain(created);
   }
 
-  async findById(_id: string): Promise<MembershipInvoice | null> {
+  async findById(id: string): Promise<MembershipInvoice | null> {
     const found = await this.prisma.membershipInvoice.findUnique({
       where: { id },
     });
@@ -1282,7 +1282,7 @@ class TransactionalMembershipInvoiceRepository
     return this.toDomain(updated);
   }
 
-  async markAsPaid(_id: string): Promise<MembershipInvoice> {
+  async markAsPaid(id: string): Promise<MembershipInvoice> {
     const updated = await this.prisma.membershipInvoice.update({
       where: { id },
       data: {
@@ -1293,7 +1293,7 @@ class TransactionalMembershipInvoiceRepository
     return this.toDomain(updated);
   }
 
-  async markAsOverdue(_id: string): Promise<MembershipInvoice> {
+  async markAsOverdue(id: string): Promise<MembershipInvoice> {
     const updated = await this.prisma.membershipInvoice.update({
       where: { id },
       data: {
@@ -1304,7 +1304,7 @@ class TransactionalMembershipInvoiceRepository
     return this.toDomain(updated);
   }
 
-  async cancel(_id: string): Promise<MembershipInvoice> {
+  async cancel(id: string): Promise<MembershipInvoice> {
     const updated = await this.prisma.membershipInvoice.update({
       where: { id },
       data: {
@@ -1315,7 +1315,7 @@ class TransactionalMembershipInvoiceRepository
     return this.toDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.membershipInvoice.delete({ where: { id } });
   }
 

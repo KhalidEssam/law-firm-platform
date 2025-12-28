@@ -13,7 +13,7 @@ export class GetCallRequestByIdUseCase {
     private readonly callRequestRepo: ICallRequestRepository,
   ) {}
 
-  async execute(_id: string): Promise<CallRequest> {
+  async execute(id: string): Promise<CallRequest> {
     const callRequest = await this.callRequestRepo.findById(id);
     if (!callRequest) {
       throw new NotFoundException(`Call request with ID ${id} not found`);

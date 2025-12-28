@@ -43,7 +43,7 @@ export class PrismaMembershipInvoiceRepository
   // ============================================
   // READ
   // ============================================
-  async findById(_id: string): Promise<MembershipInvoice | null> {
+  async findById(id: string): Promise<MembershipInvoice | null> {
     const found = await this.prisma.membershipInvoice.findUnique({
       where: { id },
     });
@@ -101,7 +101,7 @@ export class PrismaMembershipInvoiceRepository
     return this.toDomain(updated);
   }
 
-  async markAsPaid(_id: string): Promise<MembershipInvoice> {
+  async markAsPaid(id: string): Promise<MembershipInvoice> {
     const updated = await this.prisma.membershipInvoice.update({
       where: { id },
       data: {
@@ -112,7 +112,7 @@ export class PrismaMembershipInvoiceRepository
     return this.toDomain(updated);
   }
 
-  async markAsOverdue(_id: string): Promise<MembershipInvoice> {
+  async markAsOverdue(id: string): Promise<MembershipInvoice> {
     const updated = await this.prisma.membershipInvoice.update({
       where: { id },
       data: {
@@ -123,7 +123,7 @@ export class PrismaMembershipInvoiceRepository
     return this.toDomain(updated);
   }
 
-  async cancel(_id: string): Promise<MembershipInvoice> {
+  async cancel(id: string): Promise<MembershipInvoice> {
     const updated = await this.prisma.membershipInvoice.update({
       where: { id },
       data: {
@@ -137,7 +137,7 @@ export class PrismaMembershipInvoiceRepository
   // ============================================
   // DELETE
   // ============================================
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.membershipInvoice.delete({
       where: { id },
     });

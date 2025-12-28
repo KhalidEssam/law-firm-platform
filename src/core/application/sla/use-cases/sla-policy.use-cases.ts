@@ -176,7 +176,7 @@ export class GetSLAPolicyUseCase {
     private readonly policyRepository: ISLAPolicyRepository,
   ) {}
 
-  async execute(_id: string): Promise<SLAPolicyResponseDto> {
+  async execute(id: string): Promise<SLAPolicyResponseDto> {
     const policy = await this.policyRepository.findById(id);
     if (!policy) {
       throw new NotFoundException(`SLA Policy not found: ${id}`);
@@ -290,7 +290,7 @@ export class DeleteSLAPolicyUseCase {
     private readonly policyRepository: ISLAPolicyRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const policy = await this.policyRepository.findById(id);
     if (!policy) {
       throw new NotFoundException(`SLA Policy not found: ${id}`);
@@ -311,7 +311,7 @@ export class DeactivateSLAPolicyUseCase {
     private readonly policyRepository: ISLAPolicyRepository,
   ) {}
 
-  async execute(_id: string): Promise<SLAPolicyResponseDto> {
+  async execute(id: string): Promise<SLAPolicyResponseDto> {
     const policy = await this.policyRepository.findById(id);
     if (!policy) {
       throw new NotFoundException(`SLA Policy not found: ${id}`);
@@ -334,7 +334,7 @@ export class ActivateSLAPolicyUseCase {
     private readonly policyRepository: ISLAPolicyRepository,
   ) {}
 
-  async execute(_id: string): Promise<SLAPolicyResponseDto> {
+  async execute(id: string): Promise<SLAPolicyResponseDto> {
     const policy = await this.policyRepository.findById(id);
     if (!policy) {
       throw new NotFoundException(`SLA Policy not found: ${id}`);

@@ -325,7 +325,7 @@ export class DeleteNotificationPreferencesUseCase {
     private readonly preferenceRepository: INotificationPreferenceRepository,
   ) {}
 
-  async byId(_id: string): Promise<void> {
+  async byId(id: string): Promise<void> {
     await this.preferenceRepository.delete(id);
   }
 
