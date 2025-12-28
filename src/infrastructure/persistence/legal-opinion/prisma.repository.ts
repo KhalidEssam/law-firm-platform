@@ -76,7 +76,7 @@ export class PrismaLegalOpinionRequestRepository
 
   async update(opinion: LegalOpinionRequest): Promise<LegalOpinionRequest> {
     const data = this.toPrisma(opinion);
-    const { id, ...updateData } = data;
+    const { id: _id, ...updateData } = data;
 
     const updated = await this.prisma.legalOpinionRequest.update({
       where: { id: opinion.id.getValue() },
@@ -149,7 +149,7 @@ export class PrismaLegalOpinionRequestRepository
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -383,7 +383,7 @@ export class PrismaLegalOpinionRequestRepository
   ): Promise<LegalOpinionRequest[]> {
     const updates = opinions.map((opinion) => {
       const data = this.toPrisma(opinion);
-      const { id, ...updateData } = data;
+      const { id: _id, ...updateData } = data;
 
       return this.prisma.legalOpinionRequest.update({
         where: { id: opinion.id.getValue() },
@@ -564,9 +564,7 @@ export class PrismaLegalOpinionRequestRepository
   /**
    * Map Database Status to Domain Status
    */
-  private mapDbStatusToDomain(
-    dbStatus: PrismaRequestStatus | string,
-  ): OpinionStatus {
+  private mapDbStatusToDomain(dbStatus: string): OpinionStatus {
     const statusMap: Record<string, OpinionStatus> = {
       [PrismaRequestStatus.pending]: OpinionStatus.SUBMITTED,
 
