@@ -9,6 +9,7 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import {
   MembershipIntegrationService,
@@ -251,6 +252,8 @@ export class GetBillableUsageByServiceTypeUseCase {
 
 @Injectable()
 export class ProcessBatchServiceUsageBillingUseCase {
+  private readonly logger = new Logger(ProcessBatchServiceUsageBillingUseCase.name);
+
   constructor(
     private readonly generateInvoice: GenerateServiceUsageInvoiceUseCase,
     @Inject('IMembershipRepository')
@@ -301,7 +304,7 @@ export class ProcessBatchServiceUsageBillingUseCase {
         }
       }
     } catch (error: any) {
-      console.error('Batch billing failed:', error);
+      this.logger.error('Batch billing failed', error?.stack || error);
     }
 
     return result;

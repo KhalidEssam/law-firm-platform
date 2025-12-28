@@ -119,7 +119,12 @@ export class SupportTicket {
 
   private static generateTicketNumber(): string {
     const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    // Use cryptographically secure random bytes instead of Math.random()
+    const randomBytes = crypto.getRandomValues(new Uint8Array(2));
+    const random = Array.from(randomBytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase();
     return `TKT-${timestamp}-${random}`;
   }
 

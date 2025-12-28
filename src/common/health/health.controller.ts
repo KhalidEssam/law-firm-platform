@@ -25,8 +25,8 @@ export class HealthController {
     let dbStatus: 'connected' | 'disconnected' = 'disconnected';
 
     try {
-      // Use $executeRaw for a simple health check query
-      await (this.prisma as any).$queryRawUnsafe('SELECT 1');
+      // Use $queryRaw with template literal for safe query
+      await this.prisma.$queryRaw`SELECT 1`;
       dbStatus = 'connected';
     } catch {
       dbStatus = 'disconnected';
@@ -56,7 +56,7 @@ export class HealthController {
     let databaseReady = false;
 
     try {
-      await (this.prisma as any).$queryRawUnsafe('SELECT 1');
+      await this.prisma.$queryRaw`SELECT 1`;
       databaseReady = true;
     } catch {
       databaseReady = false;

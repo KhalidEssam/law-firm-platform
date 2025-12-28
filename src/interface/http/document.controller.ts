@@ -17,6 +17,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UnauthorizedException,
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
@@ -26,6 +27,7 @@ import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { StrictRateLimit } from '../../common/decorators/throttle.decorator';
 
 // Use Cases
 import {
@@ -73,6 +75,7 @@ export class DocumentController {
   // ============================================
 
   @Post('upload')
+  @StrictRateLimit() // 5 requests per minute - prevent abuse
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.CREATED)
   async upload(
@@ -90,12 +93,17 @@ export class DocumentController {
     @Body('description') description?: string,
     @CurrentUser() user?: { id: string },
   ) {
+    // Security: Require authentication for file uploads
+    if (!user?.id) {
+      throw new UnauthorizedException('Authentication required for file upload');
+    }
+
     if (!file) {
       throw new BadRequestException('File is required');
     }
 
     const result = await this.uploadDocument.execute({
-      uploadedBy: user?.id || 'anonymous',
+      uploadedBy: user.id,
       file: {
         buffer: file.buffer,
         originalName: file.originalname,
@@ -123,6 +131,7 @@ export class DocumentController {
   }
 
   @Post('upload/:requestType/:requestId')
+  @StrictRateLimit() // 5 requests per minute - prevent abuse
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.CREATED)
   async uploadToRequest(
@@ -140,12 +149,17 @@ export class DocumentController {
     @Body('description') description?: string,
     @CurrentUser() user?: { id: string },
   ) {
+    // Security: Require authentication for file uploads
+    if (!user?.id) {
+      throw new UnauthorizedException('Authentication required for file upload');
+    }
+
     if (!file) {
       throw new BadRequestException('File is required');
     }
 
     const result = await this.uploadDocument.execute({
-      uploadedBy: user?.id || 'anonymous',
+      uploadedBy: user.id,
       file: {
         buffer: file.buffer,
         originalName: file.originalname,

@@ -8,6 +8,7 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+import * as path from 'path';
 import { Document } from '../../../domain/document/entities/document.entity';
 import type { IDocumentRepository } from '../../../domain/document/ports/document.repository';
 import { DOCUMENT_REPOSITORY } from '../../../domain/document/ports/document.repository';
@@ -58,8 +59,23 @@ export class UploadDocumentUseCase {
     private readonly storageService: DocumentStorageService,
   ) {}
 
+  // Allowed file extensions for security
+  private readonly allowedExtensions = [
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
+    '.txt', '.csv', '.rtf', '.odt', '.ods',
+  ];
+
   async execute(dto: UploadDocumentDTO): Promise<UploadDocumentResult> {
-    // Validate file type
+    // Validate file extension (prevents double extension attacks like .php.jpg)
+    const fileExtension = path.extname(dto.file.originalName).toLowerCase();
+    if (!this.allowedExtensions.includes(fileExtension)) {
+      throw new BadRequestException(
+        `File extension ${fileExtension} is not allowed. Allowed extensions: ${this.allowedExtensions.join(', ')}`,
+      );
+    }
+
+    // Validate file type (MIME type)
     if (!isValidFileType(dto.file.mimeType)) {
       throw new BadRequestException(
         `File type ${dto.file.mimeType} is not allowed`,

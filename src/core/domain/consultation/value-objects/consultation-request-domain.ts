@@ -2,6 +2,8 @@
 // CONSULTATION REQUEST MODULE - DOMAIN LAYER
 // ============================================
 
+import { randomInt } from 'crypto';
+
 // ============================================
 // VALUE OBJECTS
 // ============================================
@@ -29,9 +31,8 @@ export class RequestNumber {
   static generate(): RequestNumber {
     const date = new Date();
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const random = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, '0');
+    // Use cryptographically secure random number
+    const random = randomInt(0, 10000).toString().padStart(4, '0');
     return new RequestNumber(`CR-${dateStr}-${random}`);
   }
 
