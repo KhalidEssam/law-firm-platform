@@ -114,11 +114,11 @@ export class PrismaReportRepository implements IReportRepository {
     return ReportMapper.toDomain(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.report.delete({ where: { id } });
   }
 
-  async findById(id: string): Promise<Report | null> {
+  async findById(_id: string): Promise<Report | null> {
     const report = await this.prisma.report.findUnique({ where: { id } });
     return report ? ReportMapper.toDomain(report) : null;
   }
@@ -310,7 +310,7 @@ export class PrismaAnalyticsMetricRepository
     return result.count;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.analyticsMetric.delete({ where: { id } });
   }
 
@@ -321,7 +321,7 @@ export class PrismaAnalyticsMetricRepository
     return result.count;
   }
 
-  async findById(id: string): Promise<AnalyticsMetric | null> {
+  async findById(_id: string): Promise<AnalyticsMetric | null> {
     const metric = await this.prisma.analyticsMetric.findUnique({
       where: { id },
     });

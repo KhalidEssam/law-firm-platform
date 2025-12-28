@@ -35,7 +35,7 @@ export class RelevantFacts {
     this.value = value.trim();
   }
 
-  private validate(value: string): void {
+  private validate(_value: string): void {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Relevant facts cannot be empty');
     // }

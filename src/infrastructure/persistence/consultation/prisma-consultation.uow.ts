@@ -9,7 +9,6 @@ import {
   RequestStatus as PrismaRequestStatus,
   Priority as PrismaPriority,
   SLAStatus as PrismaSLAStatus,
-  MessageType as PrismaMessageType,
 } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {

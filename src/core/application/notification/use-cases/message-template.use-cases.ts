@@ -9,11 +9,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  MessageTemplate,
-  CreateMessageTemplateInput,
-  UpdateMessageTemplateInput,
-} from '../../../domain/notification/entities/message-template.entity';
+import { MessageTemplate } from '../../../domain/notification/entities/message-template.entity';
 import {
   type IMessageTemplateRepository,
   MessageTemplateListOptions,
@@ -114,7 +110,7 @@ export class GetMessageTemplateUseCase {
     private readonly templateRepository: IMessageTemplateRepository,
   ) {}
 
-  async byId(id: string): Promise<MessageTemplate> {
+  async byId(_id: string): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
@@ -202,7 +198,7 @@ export class UpdateMessageTemplateUseCase {
     private readonly templateRepository: IMessageTemplateRepository,
   ) {}
 
-  async execute(id: string, dto: UpdateTemplateDto): Promise<MessageTemplate> {
+  async execute(_id: string, dto: UpdateTemplateDto): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
@@ -221,7 +217,7 @@ export class UpdateMessageTemplateUseCase {
     return await this.templateRepository.update(updated);
   }
 
-  async activate(id: string): Promise<MessageTemplate> {
+  async activate(_id: string): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
@@ -229,7 +225,7 @@ export class UpdateMessageTemplateUseCase {
     return await this.templateRepository.activate(id);
   }
 
-  async deactivate(id: string): Promise<MessageTemplate> {
+  async deactivate(_id: string): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
@@ -248,7 +244,7 @@ export class DeleteMessageTemplateUseCase {
     private readonly templateRepository: IMessageTemplateRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(_id: string): Promise<void> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);

@@ -30,7 +30,7 @@ export class LegalQuestion {
     this.value = value.trim();
   }
 
-  private validate(value: string): void {
+  private validate(_value: string): void {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Legal question cannot be empty');
     // }

@@ -61,7 +61,7 @@ export class GetMembershipInvoiceByIdUseCase {
     private readonly invoiceRepository: IMembershipInvoiceRepository,
   ) {}
 
-  async execute(id: string): Promise<MembershipInvoice> {
+  async execute(_id: string): Promise<MembershipInvoice> {
     const invoice = await this.invoiceRepository.findById(id);
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
@@ -156,7 +156,7 @@ export class MarkInvoicePaidUseCase {
     private readonly invoiceRepository: IMembershipInvoiceRepository,
   ) {}
 
-  async execute(id: string): Promise<MembershipInvoice> {
+  async execute(_id: string): Promise<MembershipInvoice> {
     const invoice = await this.invoiceRepository.findById(id);
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
@@ -183,7 +183,7 @@ export class MarkInvoiceOverdueUseCase {
     private readonly invoiceRepository: IMembershipInvoiceRepository,
   ) {}
 
-  async execute(id: string): Promise<MembershipInvoice> {
+  async execute(_id: string): Promise<MembershipInvoice> {
     const invoice = await this.invoiceRepository.findById(id);
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
@@ -210,7 +210,7 @@ export class CancelMembershipInvoiceUseCase {
     private readonly invoiceRepository: IMembershipInvoiceRepository,
   ) {}
 
-  async execute(id: string): Promise<MembershipInvoice> {
+  async execute(_id: string): Promise<MembershipInvoice> {
     const invoice = await this.invoiceRepository.findById(id);
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
@@ -297,7 +297,7 @@ export class DeleteMembershipInvoiceUseCase {
     private readonly invoiceRepository: IMembershipInvoiceRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(_id: string): Promise<void> {
     const invoice = await this.invoiceRepository.findById(id);
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);

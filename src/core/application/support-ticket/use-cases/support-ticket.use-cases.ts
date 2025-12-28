@@ -10,10 +10,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { SupportTicket } from '../../../domain/support-ticket/entities/support-ticket.entity';
-import {
-  TicketStatus,
-  TicketStatusEnum,
-} from '../../../domain/support-ticket/value-objects/ticket-status.vo';
+import { TicketStatusEnum } from '../../../domain/support-ticket/value-objects/ticket-status.vo';
 import {
   TicketCategory,
   TicketCategoryEnum,
@@ -71,7 +68,7 @@ export class GetSupportTicketByIdUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(id: string): Promise<SupportTicket> {
+  async execute(_id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -192,7 +189,7 @@ export class AssignTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(id: string, dto: AssignTicketDto): Promise<SupportTicket> {
+  async execute(_id: string, dto: AssignTicketDto): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -219,7 +216,7 @@ export class StartTicketProgressUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(id: string): Promise<SupportTicket> {
+  async execute(_id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -246,7 +243,7 @@ export class ResolveTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(id: string): Promise<SupportTicket> {
+  async execute(_id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -273,7 +270,7 @@ export class CloseTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(id: string): Promise<SupportTicket> {
+  async execute(_id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -300,7 +297,7 @@ export class ReopenTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(id: string): Promise<SupportTicket> {
+  async execute(_id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -534,7 +531,7 @@ export class DeleteSupportTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(_id: string): Promise<void> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, Inject, ConflictException } from '@nestjs/common';
 import { User } from '../../domain/user/entities/user.entity';
 import { type IUserRepository } from '../../domain/user/ports/user.repository';
 import { Auth0Service } from '../../../infrastructure/persistence/auth0/auth0.service';

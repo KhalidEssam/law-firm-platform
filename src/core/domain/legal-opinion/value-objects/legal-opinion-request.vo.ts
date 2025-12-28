@@ -23,7 +23,7 @@
 //     this.value = value;
 //   }
 
-//   private validate(value: string): void {
+//   private validate(_value: string): void {
 //     // if (!value) {
 //     //   throw new DomainException('OpinionRequestId cannot be empty');
 //     // }

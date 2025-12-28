@@ -58,7 +58,6 @@ import {
   VerifyMobileOtpDto,
   SendOtpResponseDto,
   VerifyOtpResponseDto,
-  // WhatsAppStatusResponseDto,
 } from 'application/dtos';
 import { Public } from 'src/auth/decorators/public.decorator';
 

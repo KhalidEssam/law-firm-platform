@@ -5,7 +5,6 @@
 import {
   ConsultationId,
   UserId,
-  ConsultationStatus,
   ConsultationStatusVO,
 } from '../value-objects/consultation-request-domain';
 

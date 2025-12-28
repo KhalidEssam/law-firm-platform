@@ -121,7 +121,7 @@ export class GetMembershipByIdUseCase {
     private readonly membershipRepo: IMembershipRepository,
   ) {}
 
-  async execute(id: string): Promise<Membership> {
+  async execute(_id: string): Promise<Membership> {
     const membership = await this.membershipRepo.findById(id);
     if (!membership) {
       throw new NotFoundException('Membership not found');

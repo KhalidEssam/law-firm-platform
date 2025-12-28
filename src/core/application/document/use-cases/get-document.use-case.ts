@@ -20,7 +20,7 @@ export class GetDocumentUseCase {
     private readonly storageService: DocumentStorageService,
   ) {}
 
-  async execute(id: string): Promise<Document> {
+  async execute(_id: string): Promise<Document> {
     const document = await this.repository.findById(id);
 
     if (!document) {
@@ -72,7 +72,7 @@ export class GetDocumentUseCase {
     });
   }
 
-  async getSignedUrl(id: string, expiresIn?: number): Promise<string | null> {
+  async getSignedUrl(_id: string, expiresIn?: number): Promise<string | null> {
     const document = await this.repository.findById(id);
 
     if (!document) {
@@ -97,7 +97,7 @@ export class GetDocumentUseCase {
     return this.repository.getStatistics(options);
   }
 
-  async exists(id: string): Promise<boolean> {
+  async exists(_id: string): Promise<boolean> {
     return this.repository.exists(id);
   }
 }

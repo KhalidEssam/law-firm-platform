@@ -207,7 +207,7 @@ export class PrismaMembershipRepository implements IMembershipRepository {
   // READ
   // ============================================
 
-  async findById(id: string): Promise<Membership | null> {
+  async findById(_id: string): Promise<Membership | null> {
     const membership = await this.prisma.membership.findUnique({
       where: { id },
     });
@@ -346,7 +346,7 @@ export class PrismaMembershipRepository implements IMembershipRepository {
   // DELETE
   // ============================================
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.membership.delete({
       where: { id },
     });
@@ -723,7 +723,7 @@ export class PrismaMembershipPaymentRepository
     return this.mapToDomain(created);
   }
 
-  async findById(id: string): Promise<MembershipPayment | null> {
+  async findById(_id: string): Promise<MembershipPayment | null> {
     const payment = await this.prisma.membershipPayment.findUnique({
       where: { id },
     });
@@ -948,7 +948,7 @@ export class PrismaMembershipCouponRepository
     return this.mapToDomain(created);
   }
 
-  async findById(id: string): Promise<MembershipCoupon | null> {
+  async findById(_id: string): Promise<MembershipCoupon | null> {
     const coupon = await this.prisma.membershipCoupon.findUnique({
       where: { id },
     });
@@ -1037,7 +1037,7 @@ export class PrismaMembershipCouponRepository
     return this.mapToDomain(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.membershipCoupon.delete({
       where: { id },
     });
@@ -1094,7 +1094,7 @@ export class PrismaMembershipCouponRedemptionRepository
     return this.mapToDomain(created);
   }
 
-  async findById(id: string): Promise<MembershipCouponRedemption | null> {
+  async findById(_id: string): Promise<MembershipCouponRedemption | null> {
     const redemption = await this.prisma.membershipCouponRedemption.findUnique({
       where: { id },
     });
@@ -1132,7 +1132,7 @@ export class PrismaMembershipCouponRedemptionRepository
     return count > 0;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.membershipCouponRedemption.delete({
       where: { id },
     });
@@ -1208,7 +1208,7 @@ export class PrismaMembershipQuotaUsageRepository
     return this.mapToDomain(created);
   }
 
-  async findById(id: string): Promise<MembershipQuotaUsage | null> {
+  async findById(_id: string): Promise<MembershipQuotaUsage | null> {
     const quota = await this.prisma.membershipQuotaUsage.findUnique({
       where: { id },
     });
@@ -1402,7 +1402,7 @@ export class PrismaTierServiceRepository implements ITierServiceRepository {
     return this.mapToDomain(created);
   }
 
-  async findById(id: string): Promise<TierService | null> {
+  async findById(_id: string): Promise<TierService | null> {
     const tierService = await this.prisma.tierService.findUnique({
       where: { id },
     });
@@ -1468,7 +1468,7 @@ export class PrismaTierServiceRepository implements ITierServiceRepository {
     return this.mapToDomain(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.tierService.delete({
       where: { id },
     });
@@ -1581,7 +1581,7 @@ export class PrismaServiceUsageRepository implements IServiceUsageRepository {
     return this.mapToDomain(created);
   }
 
-  async findById(id: string): Promise<ServiceUsage | null> {
+  async findById(_id: string): Promise<ServiceUsage | null> {
     const usage = await this.prisma.serviceUsage.findUnique({
       where: { id },
     });
@@ -1745,7 +1745,7 @@ export class PrismaServiceUsageRepository implements IServiceUsageRepository {
     return usages.map((u) => this.mapToDomain(u));
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.serviceUsage.delete({
       where: { id },
     });
@@ -1820,7 +1820,7 @@ export class PrismaMembershipChangeLogRepository
     return this.mapToDomain(created);
   }
 
-  async findById(id: string): Promise<MembershipChangeLog | null> {
+  async findById(_id: string): Promise<MembershipChangeLog | null> {
     const changeLog = await this.prisma.membershipChangeLog.findUnique({
       where: { id },
     });

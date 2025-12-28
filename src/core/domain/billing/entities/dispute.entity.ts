@@ -3,10 +3,7 @@
 // src/core/domain/billing/entities/dispute.entity.ts
 // ============================================
 
-import {
-  DisputeStatus,
-  DisputeStatusEnum,
-} from '../value-objects/dispute-status.vo';
+import { DisputeStatus } from '../value-objects/dispute-status.vo';
 import { Priority, PriorityEnum } from '../value-objects/priority.vo';
 
 export interface DisputeRelatedEntity {

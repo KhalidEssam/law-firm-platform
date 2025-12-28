@@ -95,7 +95,7 @@ export class PrismaMembershipPaymentRepository
     return this.toDomain(created);
   }
 
-  async findById(id: string): Promise<MembershipPayment | null> {
+  async findById(_id: string): Promise<MembershipPayment | null> {
     const payment = await this.prisma.membershipPayment.findUnique({
       where: { id },
     });

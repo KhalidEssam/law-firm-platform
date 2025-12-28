@@ -46,7 +46,7 @@ export class PrismaRefundRepository implements IRefundRepository {
   // ============================================
   // READ
   // ============================================
-  async findById(id: string): Promise<Refund | null> {
+  async findById(_id: string): Promise<Refund | null> {
     const found = await this.prisma.refund.findUnique({
       where: { id },
     });
@@ -114,7 +114,7 @@ export class PrismaRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async approve(id: string, reviewData: RefundReviewData): Promise<Refund> {
+  async approve(_id: string, reviewData: RefundReviewData): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -128,7 +128,7 @@ export class PrismaRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async reject(id: string, reviewData: RefundReviewData): Promise<Refund> {
+  async reject(_id: string, reviewData: RefundReviewData): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -142,7 +142,7 @@ export class PrismaRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async process(id: string, refundReference: string): Promise<Refund> {
+  async process(_id: string, refundReference: string): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -158,7 +158,7 @@ export class PrismaRefundRepository implements IRefundRepository {
   // ============================================
   // DELETE
   // ============================================
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.refund.delete({
       where: { id },
     });

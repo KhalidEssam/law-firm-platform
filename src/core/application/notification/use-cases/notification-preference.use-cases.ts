@@ -3,7 +3,7 @@
 // src/core/application/notification/use-cases/notification-preference.use-cases.ts
 // ============================================
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   NotificationPreference,
   UserNotificationPreferences,
@@ -325,7 +325,7 @@ export class DeleteNotificationPreferencesUseCase {
     private readonly preferenceRepository: INotificationPreferenceRepository,
   ) {}
 
-  async byId(id: string): Promise<void> {
+  async byId(_id: string): Promise<void> {
     await this.preferenceRepository.delete(id);
   }
 

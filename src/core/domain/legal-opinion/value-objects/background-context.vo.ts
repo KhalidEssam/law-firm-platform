@@ -30,7 +30,7 @@ export class BackgroundContext {
     this.value = value.trim();
   }
 
-  private validate(value: string): void {
+  private validate(_value: string): void {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Background context cannot be empty');
     // }

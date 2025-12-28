@@ -3,15 +3,9 @@
 // src/core/domain/billing/entities/transaction-log.entity.ts
 // ============================================
 
-import { Money, CurrencyEnum } from '../value-objects/money.vo';
-import {
-  TransactionType,
-  TransactionTypeEnum,
-} from '../value-objects/transaction-type.vo';
-import {
-  PaymentStatus,
-  PaymentStatusEnum,
-} from '../value-objects/payment-status.vo';
+import { Money } from '../value-objects/money.vo';
+import { TransactionType } from '../value-objects/transaction-type.vo';
+import { PaymentStatus } from '../value-objects/payment-status.vo';
 
 export interface TransactionLogProps {
   userId: string;

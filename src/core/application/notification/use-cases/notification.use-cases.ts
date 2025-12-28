@@ -4,10 +4,7 @@
 // ============================================
 
 import { Injectable, NotFoundException, Inject, Logger } from '@nestjs/common';
-import {
-  Notification,
-  CreateNotificationInput,
-} from '../../../domain/notification/entities/notification.entity';
+import { Notification } from '../../../domain/notification/entities/notification.entity';
 import {
   type INotificationRepository,
   NotificationListOptions,
@@ -222,7 +219,7 @@ export class GetNotificationsUseCase {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async byId(id: string): Promise<Notification> {
+  async byId(_id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);
@@ -307,7 +304,7 @@ export class MarkNotificationUseCase {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async asRead(id: string): Promise<Notification> {
+  async asRead(_id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);
@@ -315,7 +312,7 @@ export class MarkNotificationUseCase {
     return await this.notificationRepository.markAsRead(id);
   }
 
-  async asUnread(id: string): Promise<Notification> {
+  async asUnread(_id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);
@@ -338,7 +335,7 @@ export class DeleteNotificationUseCase {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async byId(id: string, userId?: string): Promise<void> {
+  async byId(_id: string, userId?: string): Promise<void> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);

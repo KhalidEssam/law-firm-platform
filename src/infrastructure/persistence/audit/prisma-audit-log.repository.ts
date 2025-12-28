@@ -104,7 +104,7 @@ export class PrismaAuditLogRepository implements IAuditLogRepository {
     return created.map(this.mapToDomain);
   }
 
-  async findById(id: string): Promise<AuditLog | null> {
+  async findById(_id: string): Promise<AuditLog | null> {
     const record = await this.prisma.auditLog.findUnique({
       where: { id },
     });

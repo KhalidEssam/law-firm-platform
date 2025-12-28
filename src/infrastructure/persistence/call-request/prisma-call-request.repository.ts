@@ -124,14 +124,14 @@ export class PrismaCallRequestRepository implements ICallRequestRepository {
     return this.mapToDomain(updated);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.callRequest.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
   }
 
-  async hardDelete(id: string): Promise<void> {
+  async hardDelete(_id: string): Promise<void> {
     await this.prisma.callRequest.delete({
       where: { id },
     });
@@ -141,7 +141,7 @@ export class PrismaCallRequestRepository implements ICallRequestRepository {
   // QUERY OPERATIONS
   // ============================================
 
-  async findById(id: string): Promise<CallRequest | null> {
+  async findById(_id: string): Promise<CallRequest | null> {
     const data = await this.prisma.callRequest.findUnique({
       where: { id, deletedAt: null },
     });
@@ -434,7 +434,7 @@ export class PrismaCallRequestRepository implements ICallRequestRepository {
   // EXISTENCE CHECKS
   // ============================================
 
-  async exists(id: string): Promise<boolean> {
+  async exists(_id: string): Promise<boolean> {
     const count = await this.prisma.callRequest.count({
       where: { id, deletedAt: null },
     });

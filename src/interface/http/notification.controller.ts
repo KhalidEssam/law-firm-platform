@@ -48,7 +48,6 @@ import {
 } from '../../core/application/notification/use-cases/notification-preference.use-cases';
 
 import { NotificationChannel } from '../../core/domain/notification/value-objects/notification-channel.enum';
-// import { NotificationType } from '../../core/domain/notification/value-objects/notification-type.enum';
 import { Public } from 'src/auth/decorators/public.decorator';
 
 // ============================================

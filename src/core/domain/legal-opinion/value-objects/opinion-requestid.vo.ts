@@ -3,7 +3,7 @@
 // Unique identifier for Legal Opinion Requests
 // ============================================
 
-import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 // import { DomainException } from '../shared/domain-exception';
 
 /**
@@ -23,11 +23,12 @@ export class OpinionRequestId {
     this.value = value;
   }
 
-  private validate(value: string): void {
-    // if (!value) {
+  private validate(_value: string): void {
+    // Validation disabled - uncomment when DomainException is available
+    // if (!_value) {
     //   throw new DomainException('OpinionRequestId cannot be empty');
     // }
-    // if (!uuidValidate(value)) {
+    // if (!uuidValidate(_value)) {
     //   throw new DomainException('OpinionRequestId must be a valid UUID');
     // }
   }

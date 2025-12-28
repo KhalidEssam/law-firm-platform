@@ -47,7 +47,7 @@ export class PrismaMessageTemplateRepository
   // ============================================
   // READ
   // ============================================
-  async findById(id: string): Promise<MessageTemplate | null> {
+  async findById(_id: string): Promise<MessageTemplate | null> {
     const found = await this.prisma.messageTemplate.findUnique({
       where: { id },
     });
@@ -134,7 +134,7 @@ export class PrismaMessageTemplateRepository
     return this.toDomain(updated);
   }
 
-  async activate(id: string): Promise<MessageTemplate> {
+  async activate(_id: string): Promise<MessageTemplate> {
     const updated = await this.prisma.messageTemplate.update({
       where: { id },
       data: {
@@ -145,7 +145,7 @@ export class PrismaMessageTemplateRepository
     return this.toDomain(updated);
   }
 
-  async deactivate(id: string): Promise<MessageTemplate> {
+  async deactivate(_id: string): Promise<MessageTemplate> {
     const updated = await this.prisma.messageTemplate.update({
       where: { id },
       data: {
@@ -159,7 +159,7 @@ export class PrismaMessageTemplateRepository
   // ============================================
   // DELETE
   // ============================================
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.messageTemplate.delete({
       where: { id },
     });

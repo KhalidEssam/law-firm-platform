@@ -49,7 +49,7 @@ export class PrismaTransactionLogRepository
   // ============================================
   // READ
   // ============================================
-  async findById(id: string): Promise<TransactionLog | null> {
+  async findById(_id: string): Promise<TransactionLog | null> {
     const found = await this.prisma.transactionLog.findUnique({
       where: { id },
     });
@@ -104,7 +104,7 @@ export class PrismaTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsPaid(id: string): Promise<TransactionLog> {
+  async markAsPaid(_id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: {
@@ -114,7 +114,7 @@ export class PrismaTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsFailed(id: string): Promise<TransactionLog> {
+  async markAsFailed(_id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: {
@@ -124,7 +124,7 @@ export class PrismaTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsRefunded(id: string): Promise<TransactionLog> {
+  async markAsRefunded(_id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: {
@@ -134,7 +134,7 @@ export class PrismaTransactionLogRepository
     return this.toDomain(updated);
   }
 
-  async markAsPartiallyRefunded(id: string): Promise<TransactionLog> {
+  async markAsPartiallyRefunded(_id: string): Promise<TransactionLog> {
     const updated = await this.prisma.transactionLog.update({
       where: { id },
       data: {
@@ -149,7 +149,7 @@ export class PrismaTransactionLogRepository
   // ============================================
   // DELETE
   // ============================================
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     await this.prisma.transactionLog.delete({
       where: { id },
     });
