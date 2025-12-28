@@ -163,14 +163,21 @@ export class WhatsAppService
     }
   }
 
-  private getDisconnectStatusCode(error: any): number | undefined {
-    // Handle @hapi/boom errors
-    if (error?.output?.statusCode) {
-      return error.output.statusCode;
-    }
-    // Handle regular errors with statusCode
-    if (error?.statusCode) {
-      return error.statusCode;
+  private getDisconnectStatusCode(error: unknown): number | undefined {
+    // Handle @hapi/boom errors and regular errors with statusCode
+    if (error && typeof error === 'object') {
+      const err = error as Record<string, unknown>;
+      // Handle @hapi/boom errors (output.statusCode)
+      if (err.output && typeof err.output === 'object') {
+        const output = err.output as Record<string, unknown>;
+        if (typeof output.statusCode === 'number') {
+          return output.statusCode;
+        }
+      }
+      // Handle regular errors with statusCode
+      if (typeof err.statusCode === 'number') {
+        return err.statusCode;
+      }
     }
     return undefined;
   }

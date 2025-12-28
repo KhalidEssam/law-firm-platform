@@ -107,9 +107,9 @@ export class VerifyDocumentUseCase {
           notes: dto.notes,
         });
         verified++;
-      } catch (error: any) {
+      } catch (error: unknown) {
         this.logger.warn(
-          `Failed to verify document ${documentId}: ${error.message}`,
+          `Failed to verify document ${documentId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         );
         failed.push(documentId);
       }

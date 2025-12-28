@@ -66,11 +66,11 @@ export class CreateConsultationWithMembershipUseCase {
         serviceType: ServiceType.CONSULTATION,
         requestId: consultation.id,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Log error but don't fail the request
       this.logger.error(
         'Failed to record service usage',
-        error?.stack || error,
+        error instanceof Error ? error.stack : String(error),
       );
     }
 
@@ -135,10 +135,10 @@ export class CompleteConsultationWithUsageTrackingUseCase {
             );
           }
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         this.logger.error(
           'Failed to update usage billing',
-          error?.stack || error,
+          error instanceof Error ? error.stack : String(error),
         );
       }
     }

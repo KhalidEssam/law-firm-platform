@@ -50,6 +50,7 @@ export interface RequestSLAData {
 export class SLAIntegrationService {
   private readonly logger = new Logger(SLAIntegrationService.name);
   // calculatorService reserved for future use
+  private readonly calculatorService: SLACalculatorService;
 
   constructor(
     @Inject('ISLAPolicyRepository')
@@ -90,8 +91,10 @@ export class SLAIntegrationService {
       }
 
       return this.calculateSLAFromPolicy(policy, reqPriority, createdAt);
-    } catch (error) {
-      this.logger.error(`Failed to apply SLA: ${error.message}`, error.stack);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to apply SLA: ${message}`, stack);
       return null;
     }
   }

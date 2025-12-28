@@ -176,11 +176,11 @@ export class UploadDocumentUseCase {
         success: true,
         document: savedDocument,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Document upload failed:', error);
       return {
         success: false,
-        error: error.message || 'Upload failed',
+        error: error instanceof Error ? error.message : 'Upload failed',
       };
     }
   }

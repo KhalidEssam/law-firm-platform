@@ -147,13 +147,13 @@ export class CloudinaryStorageService implements IStorageProvider {
           createdAt: result.created_at,
         },
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error('Cloudinary upload failed:', error);
       return {
         success: false,
         fileUrl: '',
         provider: StorageProvider.CLOUDINARY,
-        error: error.message || 'Upload failed',
+        error: error instanceof Error ? error.message : 'Upload failed',
       };
     }
   }
@@ -185,7 +185,7 @@ export class CloudinaryStorageService implements IStorageProvider {
       }
 
       return success;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(`Cloudinary deletion failed for ${publicId}:`, error);
       return false;
     }

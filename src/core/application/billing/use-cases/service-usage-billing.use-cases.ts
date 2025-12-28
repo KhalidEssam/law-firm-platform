@@ -291,15 +291,15 @@ export class ProcessBatchServiceUsageBillingUseCase {
             result.totalInvoiced += invoice.amount.amount;
             result.invoiceIds.push(invoice.id);
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           result.errors.push({
             membershipId: membership.id,
-            error: error.message || 'Unknown error',
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       }
-    } catch (error: any) {
-      this.logger.error('Batch billing failed', error?.stack || error);
+    } catch (error: unknown) {
+      this.logger.error('Batch billing failed', error instanceof Error ? error.stack : String(error));
     }
 
     return result;
