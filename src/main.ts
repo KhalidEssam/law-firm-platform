@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
+import compression from 'compression';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -13,6 +15,24 @@ async function bootstrap() {
   });
 
   const configService = app.get(ConfigService);
+
+  // Security Headers (helmet)
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          scriptSrc: ["'self'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Allow embedding for Swagger UI
+    }),
+  );
+
+  // Compression
+  app.use(compression());
 
   // Global Validation Pipe
   app.useGlobalPipes(
