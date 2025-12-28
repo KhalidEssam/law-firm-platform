@@ -4,16 +4,16 @@ import type { IUserRepository } from '../../domain/user/ports/user.repository';
 
 @Injectable()
 export class GetUserByUsernameUseCase {
-    constructor(
-        @Inject('IUserRepository')
-        private readonly userRepository: IUserRepository,
-    ) { }
+  constructor(
+    @Inject('IUserRepository')
+    private readonly userRepository: IUserRepository,
+  ) {}
 
-    async execute(username: string): Promise<User> {
-        const user = await this.userRepository.findByUsername(username);
-        if (!user) {
-            throw new NotFoundException(`User with username ${username} not found`);
-        }
-        return user;
+  async execute(username: string): Promise<User> {
+    const user = await this.userRepository.findByUsername(username);
+    if (!user) {
+      throw new NotFoundException(`User with username ${username} not found`);
     }
+    return user;
+  }
 }

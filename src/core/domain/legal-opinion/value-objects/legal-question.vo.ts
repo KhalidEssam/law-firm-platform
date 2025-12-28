@@ -7,14 +7,14 @@
 
 /**
  * LegalQuestion - The specific legal question requiring an opinion
- * 
+ *
  * Business Rules:
  * - Must be between 50 and 2000 characters
  * - Should be clear and specific
  * - Can contain multiple questions
  * - Must be phrased as a question
  * - Cannot be empty or whitespace only
- * 
+ *
  * Examples:
  * - "Is our company liable for damages if we terminate this contract early?"
  * - "What are the legal implications of using this software license commercially?"
@@ -34,21 +34,17 @@ export class LegalQuestion {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Legal question cannot be empty');
     // }
-
     // const trimmed = value.trim();
-
     // if (trimmed.length < LegalQuestion.MIN_LENGTH) {
     //   throw new DomainException(
     //     `Legal question must be at least ${LegalQuestion.MIN_LENGTH} characters. Please provide more detail.`
     //   );
     // }
-
     // if (trimmed.length > LegalQuestion.MAX_LENGTH) {
     //   throw new DomainException(
     //     `Legal question cannot exceed ${LegalQuestion.MAX_LENGTH} characters`
     //   );
     // }
-
     // // Business rule: Should contain at least one question mark
     // if (!trimmed.includes('?')) {
     //   throw new DomainException(
@@ -77,9 +73,9 @@ export class LegalQuestion {
     // Split by question marks and filter empty strings
     return this.value
       .split('?')
-      .map(q => q.trim())
-      .filter(q => q.length > 0)
-      .map(q => q + '?');
+      .map((q) => q.trim())
+      .filter((q) => q.length > 0)
+      .map((q) => q + '?');
   }
 
   // Count number of questions

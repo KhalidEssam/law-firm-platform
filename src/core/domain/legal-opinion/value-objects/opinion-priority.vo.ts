@@ -6,10 +6,10 @@
 // import { DomainException } from '../shared/domain-exception';
 
 export enum OpinionPriority {
-  STANDARD = 'standard',     // 7-10 business days
-  EXPEDITED = 'expedited',   // 3-5 business days
-  RUSH = 'rush',             // 24-48 hours
-  URGENT = 'urgent',         // Within 24 hours
+  STANDARD = 'standard', // 7-10 business days
+  EXPEDITED = 'expedited', // 3-5 business days
+  RUSH = 'rush', // 24-48 hours
+  URGENT = 'urgent', // Within 24 hours
 }
 
 export class OpinionPriorityVO {
@@ -68,7 +68,10 @@ export class OpinionPriorityVO {
   }
 
   isUrgent(): boolean {
-    return this.value === OpinionPriority.URGENT || this.value === OpinionPriority.RUSH;
+    return (
+      this.value === OpinionPriority.URGENT ||
+      this.value === OpinionPriority.RUSH
+    );
   }
 
   equals(other: OpinionPriorityVO): boolean {
@@ -80,4 +83,3 @@ export class OpinionPriorityVO {
     return this.value;
   }
 }
-

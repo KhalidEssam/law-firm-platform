@@ -15,15 +15,15 @@ import { ServiceType } from '../value-objects/service-type.vo';
 // ============================================
 
 export interface FindProviderProfileOptions {
-    includeDeleted?: boolean;
+  includeDeleted?: boolean;
 }
 
 export interface ListProviderProfilesOptions {
-    verificationStatus?: VerificationStatus;
-    isActive?: boolean;
-    includeDeleted?: boolean;
-    limit?: number;
-    offset?: number;
+  verificationStatus?: VerificationStatus;
+  isActive?: boolean;
+  includeDeleted?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -31,26 +31,40 @@ export interface ListProviderProfilesOptions {
  * Repository interface for ProviderProfile aggregate root
  */
 export interface IProviderProfileRepository {
-    // Create
-    create(profile: ProviderProfile): Promise<ProviderProfile>;
+  // Create
+  create(profile: ProviderProfile): Promise<ProviderProfile>;
 
-    // Read
-    findById(id: string, options?: FindProviderProfileOptions): Promise<ProviderProfile | null>;
-    findByUserId(userId: string, options?: FindProviderProfileOptions): Promise<ProviderProfile | null>;
-    findByLicenseNumber(licenseNumber: string): Promise<ProviderProfile | null>;
-    list(options?: ListProviderProfilesOptions): Promise<ProviderProfile[]>;
-    count(options?: Omit<ListProviderProfilesOptions, 'limit' | 'offset'>): Promise<number>;
+  // Read
+  findById(
+    id: string,
+    options?: FindProviderProfileOptions,
+  ): Promise<ProviderProfile | null>;
+  findByUserId(
+    userId: string,
+    options?: FindProviderProfileOptions,
+  ): Promise<ProviderProfile | null>;
+  findByLicenseNumber(licenseNumber: string): Promise<ProviderProfile | null>;
+  list(options?: ListProviderProfilesOptions): Promise<ProviderProfile[]>;
+  count(
+    options?: Omit<ListProviderProfilesOptions, 'limit' | 'offset'>,
+  ): Promise<number>;
 
-    // Update
-    update(profile: ProviderProfile): Promise<ProviderProfile>;
+  // Update
+  update(profile: ProviderProfile): Promise<ProviderProfile>;
 
-    // Delete
-    delete(id: string): Promise<void>;
-    softDelete(id: string): Promise<void>;
+  // Delete
+  delete(id: string): Promise<void>;
+  softDelete(id: string): Promise<void>;
 
-    // Business operations
-    findApprovedAndActive(options?: { limit?: number; offset?: number }): Promise<ProviderProfile[]>;
-    findPendingVerification(options?: { limit?: number; offset?: number }): Promise<ProviderProfile[]>;
+  // Business operations
+  findApprovedAndActive(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<ProviderProfile[]>;
+  findPendingVerification(options?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<ProviderProfile[]>;
 }
 
 // ============================================
@@ -58,17 +72,17 @@ export interface IProviderProfileRepository {
 // ============================================
 
 export interface FindProviderUserOptions {
-    includeDeleted?: boolean;
+  includeDeleted?: boolean;
 }
 
 export interface ListProviderUsersOptions {
-    providerId?: string;
-    userId?: string;
-    isActive?: boolean;
-    canAcceptRequests?: boolean;
-    includeDeleted?: boolean;
-    limit?: number;
-    offset?: number;
+  providerId?: string;
+  userId?: string;
+  isActive?: boolean;
+  canAcceptRequests?: boolean;
+  includeDeleted?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -76,30 +90,35 @@ export interface ListProviderUsersOptions {
  * Repository interface for ProviderUser entity
  */
 export interface IProviderUserRepository {
-    // Create
-    create(providerUser: ProviderUser): Promise<ProviderUser>;
+  // Create
+  create(providerUser: ProviderUser): Promise<ProviderUser>;
 
-    // Read
-    findById(id: string, options?: FindProviderUserOptions): Promise<ProviderUser | null>;
-    findByProviderAndUser(
-        providerId: string,
-        userId: string,
-        options?: FindProviderUserOptions
-    ): Promise<ProviderUser | null>;
-    list(options?: ListProviderUsersOptions): Promise<ProviderUser[]>;
-    count(options?: Omit<ListProviderUsersOptions, 'limit' | 'offset'>): Promise<number>;
+  // Read
+  findById(
+    id: string,
+    options?: FindProviderUserOptions,
+  ): Promise<ProviderUser | null>;
+  findByProviderAndUser(
+    providerId: string,
+    userId: string,
+    options?: FindProviderUserOptions,
+  ): Promise<ProviderUser | null>;
+  list(options?: ListProviderUsersOptions): Promise<ProviderUser[]>;
+  count(
+    options?: Omit<ListProviderUsersOptions, 'limit' | 'offset'>,
+  ): Promise<number>;
 
-    // Update
-    update(providerUser: ProviderUser): Promise<ProviderUser>;
+  // Update
+  update(providerUser: ProviderUser): Promise<ProviderUser>;
 
-    // Delete
-    delete(id: string): Promise<void>;
-    softDelete(id: string): Promise<void>;
+  // Delete
+  delete(id: string): Promise<void>;
+  softDelete(id: string): Promise<void>;
 
-    // Business operations
-    findActiveUsersByProvider(providerId: string): Promise<ProviderUser[]>;
-    findUsersWhoCanAcceptRequests(providerId: string): Promise<ProviderUser[]>;
-    existsByProviderAndUser(providerId: string, userId: string): Promise<boolean>;
+  // Business operations
+  findActiveUsersByProvider(providerId: string): Promise<ProviderUser[]>;
+  findUsersWhoCanAcceptRequests(providerId: string): Promise<ProviderUser[]>;
+  existsByProviderAndUser(providerId: string, userId: string): Promise<boolean>;
 }
 
 // ============================================
@@ -107,12 +126,12 @@ export interface IProviderUserRepository {
 // ============================================
 
 export interface ListProviderServicesOptions {
-    providerId?: string;
-    serviceType?: ServiceType;
-    category?: string;
-    isActive?: boolean;
-    limit?: number;
-    offset?: number;
+  providerId?: string;
+  serviceType?: ServiceType;
+  category?: string;
+  isActive?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -120,24 +139,32 @@ export interface ListProviderServicesOptions {
  * Repository interface for ProviderService entity
  */
 export interface IProviderServiceRepository {
-    // Create
-    create(service: ProviderService): Promise<ProviderService>;
+  // Create
+  create(service: ProviderService): Promise<ProviderService>;
 
-    // Read
-    findById(id: string): Promise<ProviderService | null>;
-    list(options?: ListProviderServicesOptions): Promise<ProviderService[]>;
-    count(options?: Omit<ListProviderServicesOptions, 'limit' | 'offset'>): Promise<number>;
+  // Read
+  findById(id: string): Promise<ProviderService | null>;
+  list(options?: ListProviderServicesOptions): Promise<ProviderService[]>;
+  count(
+    options?: Omit<ListProviderServicesOptions, 'limit' | 'offset'>,
+  ): Promise<number>;
 
-    // Update
-    update(service: ProviderService): Promise<ProviderService>;
+  // Update
+  update(service: ProviderService): Promise<ProviderService>;
 
-    // Delete
-    delete(id: string): Promise<void>;
+  // Delete
+  delete(id: string): Promise<void>;
 
-    // Business operations
-    findActiveServicesByProvider(providerId: string): Promise<ProviderService[]>;
-    findByProviderAndServiceType(providerId: string, serviceType: ServiceType): Promise<ProviderService[]>;
-    existsByProviderAndServiceType(providerId: string, serviceType: ServiceType): Promise<boolean>;
+  // Business operations
+  findActiveServicesByProvider(providerId: string): Promise<ProviderService[]>;
+  findByProviderAndServiceType(
+    providerId: string,
+    serviceType: ServiceType,
+  ): Promise<ProviderService[]>;
+  existsByProviderAndServiceType(
+    providerId: string,
+    serviceType: ServiceType,
+  ): Promise<boolean>;
 }
 
 // ============================================
@@ -145,11 +172,11 @@ export interface IProviderServiceRepository {
 // ============================================
 
 export interface ListProviderSchedulesOptions {
-    providerId?: string;
-    dayOfWeek?: number;
-    isAvailable?: boolean;
-    limit?: number;
-    offset?: number;
+  providerId?: string;
+  dayOfWeek?: number;
+  isAvailable?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -157,25 +184,35 @@ export interface ListProviderSchedulesOptions {
  * Repository interface for ProviderSchedule entity
  */
 export interface IProviderScheduleRepository {
-    // Create
-    create(schedule: ProviderSchedule): Promise<ProviderSchedule>;
+  // Create
+  create(schedule: ProviderSchedule): Promise<ProviderSchedule>;
 
-    // Read
-    findById(id: string): Promise<ProviderSchedule | null>;
-    findByProviderAndDay(providerId: string, dayOfWeek: number): Promise<ProviderSchedule | null>;
-    list(options?: ListProviderSchedulesOptions): Promise<ProviderSchedule[]>;
-    count(options?: Omit<ListProviderSchedulesOptions, 'limit' | 'offset'>): Promise<number>;
+  // Read
+  findById(id: string): Promise<ProviderSchedule | null>;
+  findByProviderAndDay(
+    providerId: string,
+    dayOfWeek: number,
+  ): Promise<ProviderSchedule | null>;
+  list(options?: ListProviderSchedulesOptions): Promise<ProviderSchedule[]>;
+  count(
+    options?: Omit<ListProviderSchedulesOptions, 'limit' | 'offset'>,
+  ): Promise<number>;
 
-    // Update
-    update(schedule: ProviderSchedule): Promise<ProviderSchedule>;
+  // Update
+  update(schedule: ProviderSchedule): Promise<ProviderSchedule>;
 
-    // Delete
-    delete(id: string): Promise<void>;
+  // Delete
+  delete(id: string): Promise<void>;
 
-    // Business operations
-    findAllByProvider(providerId: string): Promise<ProviderSchedule[]>;
-    findAvailableSchedulesByProvider(providerId: string): Promise<ProviderSchedule[]>;
-    existsByProviderAndDay(providerId: string, dayOfWeek: number): Promise<boolean>;
+  // Business operations
+  findAllByProvider(providerId: string): Promise<ProviderSchedule[]>;
+  findAvailableSchedulesByProvider(
+    providerId: string,
+  ): Promise<ProviderSchedule[]>;
+  existsByProviderAndDay(
+    providerId: string,
+    dayOfWeek: number,
+  ): Promise<boolean>;
 }
 
 // ============================================
@@ -183,22 +220,28 @@ export interface IProviderScheduleRepository {
 // ============================================
 
 export interface IProviderUnitOfWork {
-    providerProfiles: IProviderProfileRepository;
-    providerUsers: IProviderUserRepository;
-    providerServices: IProviderServiceRepository;
-    providerSchedules: IProviderScheduleRepository;
+  providerProfiles: IProviderProfileRepository;
+  providerUsers: IProviderUserRepository;
+  providerServices: IProviderServiceRepository;
+  providerSchedules: IProviderScheduleRepository;
 
-    begin(): Promise<void>;
-    commit(): Promise<void>;
-    rollback(): Promise<void>;
+  begin(): Promise<void>;
+  commit(): Promise<void>;
+  rollback(): Promise<void>;
 }
 
 // ============================================
 // REPOSITORY TOKENS FOR DI
 // ============================================
 
-export const PROVIDER_PROFILE_REPOSITORY = Symbol('PROVIDER_PROFILE_REPOSITORY');
+export const PROVIDER_PROFILE_REPOSITORY = Symbol(
+  'PROVIDER_PROFILE_REPOSITORY',
+);
 export const PROVIDER_USER_REPOSITORY = Symbol('PROVIDER_USER_REPOSITORY');
-export const PROVIDER_SERVICE_REPOSITORY = Symbol('PROVIDER_SERVICE_REPOSITORY');
-export const PROVIDER_SCHEDULE_REPOSITORY = Symbol('PROVIDER_SCHEDULE_REPOSITORY');
+export const PROVIDER_SERVICE_REPOSITORY = Symbol(
+  'PROVIDER_SERVICE_REPOSITORY',
+);
+export const PROVIDER_SCHEDULE_REPOSITORY = Symbol(
+  'PROVIDER_SCHEDULE_REPOSITORY',
+);
 export const PROVIDER_UNIT_OF_WORK = Symbol('PROVIDER_UNIT_OF_WORK');

@@ -11,8 +11,8 @@ import { PrismaCallRequestRepository } from '../persistence/call-request/prisma-
 
 // Unit of Work Implementation
 import {
-    PrismaCallRequestUnitOfWork,
-    CALL_REQUEST_UNIT_OF_WORK,
+  PrismaCallRequestUnitOfWork,
+  CALL_REQUEST_UNIT_OF_WORK,
 } from '../persistence/call-request/prisma-call-request.uow';
 
 // Provider Validation Service
@@ -28,6 +28,67 @@ import { RoutingModule } from './routing.module';
 
 // Core Use Cases
 import {
+  CreateCallRequestUseCase,
+  GetCallRequestByIdUseCase,
+  GetCallRequestsUseCase,
+  AssignProviderUseCase,
+  ScheduleCallUseCase,
+  RescheduleCallUseCase,
+  StartCallUseCase,
+  EndCallUseCase,
+  CancelCallUseCase,
+  MarkNoShowUseCase,
+  UpdateCallLinkUseCase,
+  GetSubscriberCallsUseCase,
+  GetProviderCallsUseCase,
+  GetUpcomingCallsUseCase,
+  GetOverdueCallsUseCase,
+  GetCallMinutesSummaryUseCase,
+  CheckProviderAvailabilityUseCase,
+  GetScheduledCallsUseCase,
+} from '../../core/application/call-request/use-cases/call-request.use-cases';
+
+// Membership-Aware Use Cases
+import {
+  CreateCallRequestWithMembershipUseCase,
+  EndCallWithUsageTrackingUseCase,
+  CheckCallQuotaUseCase,
+} from '../../core/application/call-request/use-cases/membership';
+
+// Routing-Aware Use Cases
+import { CreateCallRequestWithRoutingUseCase } from '../../core/application/call-request/use-cases/routing';
+
+@Module({
+  imports: [
+    PrismaModule,
+    ProviderModule, // For provider validation (ProviderUser/ProviderProfile repositories)
+    forwardRef(() => NotificationModule), // For sending notifications
+    forwardRef(() => MembershipModule), // For quota checking/consumption
+    forwardRef(() => RoutingModule), // For auto-assignment
+  ],
+  controllers: [CallRequestController],
+  providers: [
+    // Repository
+    {
+      provide: 'ICallRequestRepository',
+      useClass: PrismaCallRequestRepository,
+    },
+
+    // Unit of Work
+    {
+      provide: CALL_REQUEST_UNIT_OF_WORK,
+      useClass: PrismaCallRequestUnitOfWork,
+    },
+
+    // Provider Validation Service
+    {
+      provide: 'IProviderValidationService',
+      useClass: ProviderValidationService,
+    },
+
+    // ============================================
+    // CORE USE CASES
+    // ============================================
     CreateCallRequestUseCase,
     GetCallRequestByIdUseCase,
     GetCallRequestsUseCase,
@@ -46,100 +107,37 @@ import {
     GetCallMinutesSummaryUseCase,
     CheckProviderAvailabilityUseCase,
     GetScheduledCallsUseCase,
-} from '../../core/application/call-request/use-cases/call-request.use-cases';
 
-// Membership-Aware Use Cases
-import {
+    // ============================================
+    // MEMBERSHIP-AWARE USE CASES
+    // ============================================
     CreateCallRequestWithMembershipUseCase,
     EndCallWithUsageTrackingUseCase,
     CheckCallQuotaUseCase,
-} from '../../core/application/call-request/use-cases/membership';
 
-// Routing-Aware Use Cases
-import {
+    // ============================================
+    // ROUTING-AWARE USE CASES
+    // ============================================
     CreateCallRequestWithRoutingUseCase,
-} from '../../core/application/call-request/use-cases/routing';
-
-@Module({
-    imports: [
-        PrismaModule,
-        ProviderModule, // For provider validation (ProviderUser/ProviderProfile repositories)
-        forwardRef(() => NotificationModule), // For sending notifications
-        forwardRef(() => MembershipModule), // For quota checking/consumption
-        forwardRef(() => RoutingModule), // For auto-assignment
-    ],
-    controllers: [CallRequestController],
-    providers: [
-        // Repository
-        {
-            provide: 'ICallRequestRepository',
-            useClass: PrismaCallRequestRepository,
-        },
-
-        // Unit of Work
-        {
-            provide: CALL_REQUEST_UNIT_OF_WORK,
-            useClass: PrismaCallRequestUnitOfWork,
-        },
-
-        // Provider Validation Service
-        {
-            provide: 'IProviderValidationService',
-            useClass: ProviderValidationService,
-        },
-
-        // ============================================
-        // CORE USE CASES
-        // ============================================
-        CreateCallRequestUseCase,
-        GetCallRequestByIdUseCase,
-        GetCallRequestsUseCase,
-        AssignProviderUseCase,
-        ScheduleCallUseCase,
-        RescheduleCallUseCase,
-        StartCallUseCase,
-        EndCallUseCase,
-        CancelCallUseCase,
-        MarkNoShowUseCase,
-        UpdateCallLinkUseCase,
-        GetSubscriberCallsUseCase,
-        GetProviderCallsUseCase,
-        GetUpcomingCallsUseCase,
-        GetOverdueCallsUseCase,
-        GetCallMinutesSummaryUseCase,
-        CheckProviderAvailabilityUseCase,
-        GetScheduledCallsUseCase,
-
-        // ============================================
-        // MEMBERSHIP-AWARE USE CASES
-        // ============================================
-        CreateCallRequestWithMembershipUseCase,
-        EndCallWithUsageTrackingUseCase,
-        CheckCallQuotaUseCase,
-
-        // ============================================
-        // ROUTING-AWARE USE CASES
-        // ============================================
-        CreateCallRequestWithRoutingUseCase,
-    ],
-    exports: [
-        'ICallRequestRepository',
-        CALL_REQUEST_UNIT_OF_WORK,
-        'IProviderValidationService',
-        // Core Use Cases
-        CreateCallRequestUseCase,
-        GetCallRequestByIdUseCase,
-        GetCallRequestsUseCase,
-        ScheduleCallUseCase,
-        StartCallUseCase,
-        EndCallUseCase,
-        GetCallMinutesSummaryUseCase,
-        // Membership-Aware Use Cases
-        CreateCallRequestWithMembershipUseCase,
-        EndCallWithUsageTrackingUseCase,
-        CheckCallQuotaUseCase,
-        // Routing-Aware Use Cases
-        CreateCallRequestWithRoutingUseCase,
-    ],
+  ],
+  exports: [
+    'ICallRequestRepository',
+    CALL_REQUEST_UNIT_OF_WORK,
+    'IProviderValidationService',
+    // Core Use Cases
+    CreateCallRequestUseCase,
+    GetCallRequestByIdUseCase,
+    GetCallRequestsUseCase,
+    ScheduleCallUseCase,
+    StartCallUseCase,
+    EndCallUseCase,
+    GetCallMinutesSummaryUseCase,
+    // Membership-Aware Use Cases
+    CreateCallRequestWithMembershipUseCase,
+    EndCallWithUsageTrackingUseCase,
+    CheckCallQuotaUseCase,
+    // Routing-Aware Use Cases
+    CreateCallRequestWithRoutingUseCase,
+  ],
 })
 export class CallRequestModule {}

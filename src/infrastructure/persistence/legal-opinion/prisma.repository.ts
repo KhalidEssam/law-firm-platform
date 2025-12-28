@@ -6,14 +6,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
-
   Prisma,
-
   RequestStatus as PrismaRequestStatus,
-
   PaymentStatus as PrismaPaymentStatus,
-
-} from'@prisma/client';
+} from '@prisma/client';
 
 import {
   ILegalOpinionRequestRepository,
@@ -59,8 +55,9 @@ import { DeliveryFormat } from 'src/core/domain/legal-opinion/value-objects/deli
 
 @Injectable()
 export class PrismaLegalOpinionRequestRepository
-  implements ILegalOpinionRequestRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  implements ILegalOpinionRequestRepository
+{
+  constructor(private readonly prisma: PrismaService) {}
 
   // ============================================
   // BASIC CRUD OPERATIONS
@@ -284,22 +281,20 @@ export class PrismaLegalOpinionRequestRepository
     // Payment stats
     const paidCount = await this.prisma.legalOpinionRequest.count({
       where: { ...where, paymentStatus: PrismaPaymentStatus.paid },
-
     });
 
     const unpaidCount = await this.prisma.legalOpinionRequest.count({
-
       where: { ...where, paymentStatus: { in: [PrismaPaymentStatus.pending] } },
-
     });
-
-
 
     // Revenue statistics
 
     const revenueStats = await this.prisma.legalOpinionRequest.aggregate({
-
-      where: { ...where, quoteAmount: { not: null }, paymentStatus: PrismaPaymentStatus.paid },
+      where: {
+        ...where,
+        quoteAmount: { not: null },
+        paymentStatus: PrismaPaymentStatus.paid,
+      },
       _sum: { quoteAmount: true },
       _avg: { quoteAmount: true },
     });
@@ -316,7 +311,7 @@ export class PrismaLegalOpinionRequestRepository
       },
     });
 
-    let averageCompletionTime = 0;
+    const averageCompletionTime = 0;
     if (completedOpinions.length > 0) {
       const totalHours = completedOpinions.reduce((sum, opinion) => {
         if (opinion.submittedAt && opinion.completedAt) {
@@ -356,7 +351,12 @@ export class PrismaLegalOpinionRequestRepository
     return this.prisma.legalOpinionRequest.count({
       where: {
         assignedProviderId: lawyerId.getValue(),
-        status: { in: [PrismaRequestStatus.in_progress, PrismaRequestStatus.quote_accepted] },
+        status: {
+          in: [
+            PrismaRequestStatus.in_progress,
+            PrismaRequestStatus.quote_accepted,
+          ],
+        },
         deletedAt: null,
       },
     });
@@ -446,17 +446,14 @@ export class PrismaLegalOpinionRequestRepository
       const dbStatuses = Array.isArray(filters.status)
         ? filters.status.map((s) => this.mapDomainStatusToDb(s))
         : this.mapDomainStatusToDb(filters.status);
-      //Fix this 
+      //Fix this
     }
 
     // Payment status
     if (filters.isPaid !== undefined) {
-     where.paymentStatus = filters.isPaid
-
+      where.paymentStatus = filters.isPaid
         ? PrismaPaymentStatus.paid
-
         : { in: [PrismaPaymentStatus.pending] };
-
     }
 
     // Search term (search in subject and description)
@@ -533,10 +530,10 @@ export class PrismaLegalOpinionRequestRepository
    * COMPLETED → completed
    * CANCELLED → cancelled
    */
- private mapDomainStatusToDb(status: OpinionStatus | string): PrismaRequestStatus {
-
+  private mapDomainStatusToDb(
+    status: OpinionStatus | string,
+  ): PrismaRequestStatus {
     const statusMap: Record<string, PrismaRequestStatus> = {
-
       [OpinionStatus.DRAFT]: PrismaRequestStatus.pending,
 
       [OpinionStatus.SUBMITTED]: PrismaRequestStatus.pending,
@@ -560,21 +557,18 @@ export class PrismaLegalOpinionRequestRepository
       [OpinionStatus.CANCELLED]: PrismaRequestStatus.cancelled,
 
       [OpinionStatus.REJECTED]: PrismaRequestStatus.cancelled,
-
     };
 
- 
-
-    return statusMap[status as string] || PrismaRequestStatus.pending;
+    return statusMap[status] || PrismaRequestStatus.pending;
   }
 
   /**
    * Map Database Status to Domain Status
    */
-   private mapDbStatusToDomain(dbStatus: PrismaRequestStatus | string): OpinionStatus {
-
+  private mapDbStatusToDomain(
+    dbStatus: PrismaRequestStatus | string,
+  ): OpinionStatus {
     const statusMap: Record<string, OpinionStatus> = {
-
       [PrismaRequestStatus.pending]: OpinionStatus.SUBMITTED,
 
       [PrismaRequestStatus.quote_sent]: OpinionStatus.ASSIGNED,
@@ -634,7 +628,9 @@ export class PrismaLegalOpinionRequestRepository
         opinion.estimatedCost?.getCurrency() ||
         opinion.finalCost?.getCurrency() ||
         'SAR',
-      paymentStatus: opinion.isPaid ? PrismaPaymentStatus.paid : PrismaPaymentStatus.pending,
+      paymentStatus: opinion.isPaid
+        ? PrismaPaymentStatus.paid
+        : PrismaPaymentStatus.pending,
       paymentReference: opinion.paymentReference || null,
       submittedAt: opinion.submittedAt || new Date(),
       completedAt: opinion.completedAt || null,
@@ -724,13 +720,18 @@ export class PrismaLegalOpinionRequestRepository
       // Timestamps
       submittedAt: data.submittedAt,
       assignedAt:
-        data.status === PrismaRequestStatus.quote_sent || data.status === PrismaRequestStatus.in_progress
+        data.status === PrismaRequestStatus.quote_sent ||
+        data.status === PrismaRequestStatus.in_progress
           ? data.updatedAt
           : undefined,
       researchStartedAt:
-        data.status === PrismaRequestStatus.in_progress ? data.updatedAt : undefined,
+        data.status === PrismaRequestStatus.in_progress
+          ? data.updatedAt
+          : undefined,
       draftCompletedAt:
-        data.status === PrismaRequestStatus.completed ? data.completedAt : undefined,
+        data.status === PrismaRequestStatus.completed
+          ? data.completedAt
+          : undefined,
       completedAt: data.completedAt,
       expectedCompletionDate: data.quoteValidUntil,
 

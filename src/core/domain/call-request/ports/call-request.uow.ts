@@ -4,50 +4,59 @@
 // ============================================
 
 import { IBaseUnitOfWork } from '../../shared/ports/base-unit-of-work.interface';
-import { ICallRequestRepository, PaginatedResult, PaginationOptions } from './call-request.repository';
-import { CallStatusHistory, StatusHistoryId } from '../entities/call-status-history.entity';
+import {
+  ICallRequestRepository,
+  PaginatedResult,
+  PaginationOptions,
+} from './call-request.repository';
+import {
+  CallStatusHistory,
+  StatusHistoryId,
+} from '../entities/call-status-history.entity';
 
 /**
  * Repository interface for Call Status History operations.
  */
 export interface ICallStatusHistoryRepository {
-    /**
-     * Creates a new status history record.
-     */
-    create(history: CallStatusHistory): Promise<CallStatusHistory>;
+  /**
+   * Creates a new status history record.
+   */
+  create(history: CallStatusHistory): Promise<CallStatusHistory>;
 
-    /**
-     * Creates multiple status history records atomically.
-     */
-    createMany(histories: CallStatusHistory[]): Promise<CallStatusHistory[]>;
+  /**
+   * Creates multiple status history records atomically.
+   */
+  createMany(histories: CallStatusHistory[]): Promise<CallStatusHistory[]>;
 
-    /**
-     * Finds a status history record by ID.
-     */
-    findById(id: StatusHistoryId): Promise<CallStatusHistory | null>;
+  /**
+   * Finds a status history record by ID.
+   */
+  findById(id: StatusHistoryId): Promise<CallStatusHistory | null>;
 
-    /**
-     * Finds all status history records for a call request.
-     */
-    findByCallRequestId(
-        callRequestId: string,
-        pagination?: PaginationOptions,
-    ): Promise<PaginatedResult<CallStatusHistory>>;
+  /**
+   * Finds all status history records for a call request.
+   */
+  findByCallRequestId(
+    callRequestId: string,
+    pagination?: PaginationOptions,
+  ): Promise<PaginatedResult<CallStatusHistory>>;
 
-    /**
-     * Gets the most recent status history for a call request.
-     */
-    findLatestByCallRequestId(callRequestId: string): Promise<CallStatusHistory | null>;
+  /**
+   * Gets the most recent status history for a call request.
+   */
+  findLatestByCallRequestId(
+    callRequestId: string,
+  ): Promise<CallStatusHistory | null>;
 
-    /**
-     * Counts status changes for a call request.
-     */
-    countByCallRequestId(callRequestId: string): Promise<number>;
+  /**
+   * Counts status changes for a call request.
+   */
+  countByCallRequestId(callRequestId: string): Promise<number>;
 
-    /**
-     * Deletes a status history record.
-     */
-    delete(id: StatusHistoryId): Promise<void>;
+  /**
+   * Deletes a status history record.
+   */
+  delete(id: StatusHistoryId): Promise<void>;
 }
 
 /**
@@ -112,17 +121,18 @@ export interface ICallStatusHistoryRepository {
  * });
  * ```
  */
-export interface ICallRequestUnitOfWork extends IBaseUnitOfWork<ICallRequestUnitOfWork> {
-    /**
-     * Repository for call request operations within the transaction.
-     */
-    readonly callRequests: ICallRequestRepository;
+export interface ICallRequestUnitOfWork
+  extends IBaseUnitOfWork<ICallRequestUnitOfWork> {
+  /**
+   * Repository for call request operations within the transaction.
+   */
+  readonly callRequests: ICallRequestRepository;
 
-    /**
-     * Repository for status history operations within the transaction.
-     * Used to create audit trail for all status changes.
-     */
-    readonly statusHistories: ICallStatusHistoryRepository;
+  /**
+   * Repository for status history operations within the transaction.
+   * Used to create audit trail for all status changes.
+   */
+  readonly statusHistories: ICallStatusHistoryRepository;
 }
 
 /**

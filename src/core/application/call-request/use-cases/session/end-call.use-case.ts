@@ -11,33 +11,35 @@ import { EndCallDto } from '../../dto/call-request.dto';
 
 @Injectable()
 export class EndCallUseCase {
-    constructor(
-        @Inject(CALL_REQUEST_UNIT_OF_WORK)
-        private readonly callRequestUow: ICallRequestUnitOfWork,
-    ) {}
+  constructor(
+    @Inject(CALL_REQUEST_UNIT_OF_WORK)
+    private readonly callRequestUow: ICallRequestUnitOfWork,
+  ) {}
 
-    async execute(callRequestId: string, dto?: EndCallDto): Promise<CallRequest> {
-        return await this.callRequestUow.transaction(async (uow) => {
-            const callRequest = await uow.callRequests.findById(callRequestId);
-            if (!callRequest) {
-                throw new NotFoundException(`Call request with ID ${callRequestId} not found`);
-            }
+  async execute(callRequestId: string, dto?: EndCallDto): Promise<CallRequest> {
+    return await this.callRequestUow.transaction(async (uow) => {
+      const callRequest = await uow.callRequests.findById(callRequestId);
+      if (!callRequest) {
+        throw new NotFoundException(
+          `Call request with ID ${callRequestId} not found`,
+        );
+      }
 
-            const oldStatus = callRequest.status;
-            callRequest.endCall(dto?.recordingUrl);
+      const oldStatus = callRequest.status;
+      callRequest.endCall(dto?.recordingUrl);
 
-            const updated = await uow.callRequests.update(callRequest);
+      const updated = await uow.callRequests.update(callRequest);
 
-            // Create status history record for the call completion
-            const statusHistory = CallStatusHistory.create({
-                callRequestId: updated.id,
-                fromStatus: oldStatus,
-                toStatus: updated.status,
-                reason: 'Call completed',
-            });
-            await uow.statusHistories.create(statusHistory);
+      // Create status history record for the call completion
+      const statusHistory = CallStatusHistory.create({
+        callRequestId: updated.id,
+        fromStatus: oldStatus,
+        toStatus: updated.status,
+        reason: 'Call completed',
+      });
+      await uow.statusHistories.create(statusHistory);
 
-            return updated;
-        });
-    }
+      return updated;
+    });
+  }
 }

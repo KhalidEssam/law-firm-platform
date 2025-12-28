@@ -8,7 +8,7 @@
 
 // /**
 //  * OpinionRequestId - Unique identifier for a legal opinion request
-//  * 
+//  *
 //  * Business Rules:
 //  * - Must be a valid UUID v4
 //  * - Immutable once created
@@ -27,7 +27,7 @@
 //     // if (!value) {
 //     //   throw new DomainException('OpinionRequestId cannot be empty');
 //     // }
-    
+
 //     // if (!uuidValidate(value)) {
 //     //   throw new DomainException('OpinionRequestId must be a valid UUID');
 //     // }

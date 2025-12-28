@@ -7,25 +7,27 @@ import { type IPaymentMethodRepository } from '../../../../domain/payment-method
 import { PaymentMethodId } from '../../../../domain/payment-method/value-objects/payment-method.vo';
 
 export interface HardDeletePaymentMethodCommand {
-    paymentMethodId: string;
+  paymentMethodId: string;
 }
 
 @Injectable()
 export class HardDeletePaymentMethodUseCase {
-    constructor(
-        @Inject('IPaymentMethodRepository')
-        private readonly repository: IPaymentMethodRepository,
-    ) {}
+  constructor(
+    @Inject('IPaymentMethodRepository')
+    private readonly repository: IPaymentMethodRepository,
+  ) {}
 
-    async execute(command: HardDeletePaymentMethodCommand): Promise<void> {
-        const exists = await this.repository.exists(
-            PaymentMethodId.create(command.paymentMethodId),
-        );
+  async execute(command: HardDeletePaymentMethodCommand): Promise<void> {
+    const exists = await this.repository.exists(
+      PaymentMethodId.create(command.paymentMethodId),
+    );
 
-        if (!exists) {
-            throw new NotFoundException('Payment method not found');
-        }
-
-        await this.repository.hardDelete(PaymentMethodId.create(command.paymentMethodId));
+    if (!exists) {
+      throw new NotFoundException('Payment method not found');
     }
+
+    await this.repository.hardDelete(
+      PaymentMethodId.create(command.paymentMethodId),
+    );
+  }
 }

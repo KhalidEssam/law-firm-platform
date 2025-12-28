@@ -3,12 +3,7 @@
 // Application Layer - State Management
 // ============================================
 
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
 import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
@@ -34,14 +29,19 @@ export class SetEstimatedCostUseCase {
   ) {}
 
   async execute(command: SetEstimatedCostCommand): Promise<any> {
-    const opinion = await this.repository.findById(OpinionRequestId.create(command.opinionRequestId));
-    
+    const opinion = await this.repository.findById(
+      OpinionRequestId.create(command.opinionRequestId),
+    );
+
     if (!opinion) {
       throw new NotFoundException('Opinion request not found');
     }
 
     // Set estimated cost
-    const cost = Money.create(command.estimatedCost.amount, command.estimatedCost.currency);
+    const cost = Money.create(
+      command.estimatedCost.amount,
+      command.estimatedCost.currency,
+    );
     opinion.setEstimatedCost(cost);
 
     // Save
@@ -54,10 +54,12 @@ export class SetEstimatedCostUseCase {
     return {
       id: opinion.id.getValue(),
       opinionNumber: opinion.opinionNumber.toString(),
-      estimatedCost: opinion.estimatedCost ? {
-        amount: opinion.estimatedCost.getAmount(),
-        currency: opinion.estimatedCost.getCurrency(),
-      } : undefined,
+      estimatedCost: opinion.estimatedCost
+        ? {
+            amount: opinion.estimatedCost.getAmount(),
+            currency: opinion.estimatedCost.getCurrency(),
+          }
+        : undefined,
       updatedAt: opinion.updatedAt.toISOString(),
     };
   }

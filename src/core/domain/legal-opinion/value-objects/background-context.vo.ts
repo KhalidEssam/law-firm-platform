@@ -7,14 +7,14 @@
 
 /**
  * BackgroundContext - Detailed background information about the situation
- * 
+ *
  * Business Rules:
  * - Must be between 100 and 5000 characters
  * - Should provide relevant business/personal context
  * - Should explain why the opinion is needed
  * - Cannot be empty or whitespace only
  * - Should be objective and factual
- * 
+ *
  * Purpose:
  * - Helps lawyer understand the broader situation
  * - Provides context for interpreting the legal question
@@ -34,15 +34,12 @@ export class BackgroundContext {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Background context cannot be empty');
     // }
-
     // const trimmed = value.trim();
-
     // if (trimmed.length < BackgroundContext.MIN_LENGTH) {
     //   throw new DomainException(
     //     `Background context must be at least ${BackgroundContext.MIN_LENGTH} characters. Please provide more detail about the situation.`
     //   );
     // }
-
     // if (trimmed.length > BackgroundContext.MAX_LENGTH) {
     //   throw new DomainException(
     //     `Background context cannot exceed ${BackgroundContext.MAX_LENGTH} characters`
@@ -75,13 +72,15 @@ export class BackgroundContext {
 
   // Get first paragraph (useful for previews)
   getFirstParagraph(): string {
-    const paragraphs = this.value.split('\n\n').filter(p => p.trim().length > 0);
+    const paragraphs = this.value
+      .split('\n\n')
+      .filter((p) => p.trim().length > 0);
     return paragraphs[0] || this.value;
   }
 
   // Count paragraphs
   getParagraphCount(): number {
-    return this.value.split('\n\n').filter(p => p.trim().length > 0).length;
+    return this.value.split('\n\n').filter((p) => p.trim().length > 0).length;
   }
 
   // Value object equality

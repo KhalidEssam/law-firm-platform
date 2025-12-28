@@ -26,54 +26,54 @@ import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases
 import { SendMobileOtpUseCase } from 'src/core/application/use-cases/send-mobile-otp.use-case';
 import { VerifyMobileOtpUseCase } from 'src/core/application/use-cases/verify-mobile-otp.use-case';
 import {
+  GetUserIdentitiesUseCase,
+  SetPrimaryIdentityUseCase,
+  UnlinkIdentityUseCase,
+} from 'src/core/application/use-cases/user-identities.use-case';
+@Module({
+  controllers: [UserController],
+  providers: [
+    // Infrastructure dependencies
+    PrismaService,
+    Auth0Service,
+    { provide: 'IUserRepository', useClass: PrismaUserRepository },
+    { provide: 'IOtpRepository', useClass: PrismaOtpRepository },
+    { provide: 'IWhatsAppService', useClass: WhatsAppService },
+
+    // Use Cases
+    CreateUserUseCase,
+    GetUserByIdUseCase,
+    GetUserByEmailUseCase,
+    GetUserByUsernameUseCase,
+    GetUserByAuth0IdUseCase,
+    ListUsersUseCase,
+    UpdateUserProfileUseCase,
+    VerifyEmailUseCase,
+    VerifyMobileUseCase,
+    UpdateProfileStatusUseCase,
+    DeleteUserUseCase,
+    RestoreUserUseCase,
+    SearchUsersUseCase,
+    SyncAuth0UserUseCase,
+    CheckEmailAvailabilityUseCase,
+    CheckUsernameAvailabilityUseCase,
+
+    // Identity Management Use Cases
     GetUserIdentitiesUseCase,
     SetPrimaryIdentityUseCase,
     UnlinkIdentityUseCase,
-} from 'src/core/application/use-cases/user-identities.use-case';
-@Module({
-    controllers: [UserController],
-    providers: [
-        // Infrastructure dependencies
-        PrismaService,
-        Auth0Service,
-        { provide: 'IUserRepository', useClass: PrismaUserRepository },
-        { provide: 'IOtpRepository', useClass: PrismaOtpRepository },
-        { provide: 'IWhatsAppService', useClass: WhatsAppService },
 
-        // Use Cases
-        CreateUserUseCase,
-        GetUserByIdUseCase,
-        GetUserByEmailUseCase,
-        GetUserByUsernameUseCase,
-        GetUserByAuth0IdUseCase,
-        ListUsersUseCase,
-        UpdateUserProfileUseCase,
-        VerifyEmailUseCase,
-        VerifyMobileUseCase,
-        UpdateProfileStatusUseCase,
-        DeleteUserUseCase,
-        RestoreUserUseCase,
-        SearchUsersUseCase,
-        SyncAuth0UserUseCase,
-        CheckEmailAvailabilityUseCase,
-        CheckUsernameAvailabilityUseCase,
-
-        // Identity Management Use Cases
-        GetUserIdentitiesUseCase,
-        SetPrimaryIdentityUseCase,
-        UnlinkIdentityUseCase,
-
-        // Mobile OTP Use Cases
-        SendMobileOtpUseCase,
-        VerifyMobileOtpUseCase,
-    ],
-    exports: [
-        'IUserRepository',
-        'IOtpRepository',
-        'IWhatsAppService',
-        GetUserByIdUseCase,
-        GetUserByAuth0IdUseCase,
-        SyncAuth0UserUseCase,
-    ],
+    // Mobile OTP Use Cases
+    SendMobileOtpUseCase,
+    VerifyMobileOtpUseCase,
+  ],
+  exports: [
+    'IUserRepository',
+    'IOtpRepository',
+    'IWhatsAppService',
+    GetUserByIdUseCase,
+    GetUserByAuth0IdUseCase,
+    SyncAuth0UserUseCase,
+  ],
 })
-export class UserModule { }
+export class UserModule {}

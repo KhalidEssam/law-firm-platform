@@ -3,7 +3,7 @@ import { RolesController } from './roles.controller';
 import { AuthModule } from '../../auth/auth.module';
 
 @Module({
-    imports: [AuthModule], // imports AuthService & ROLE_PROVIDER through CoreModule
-    controllers: [RolesController],
+  imports: [AuthModule], // imports AuthService & ROLE_PROVIDER through CoreModule
+  controllers: [RolesController],
 })
-export class RolesModule { }
+export class RolesModule {}

@@ -19,11 +19,9 @@ export class Money {
     // if (amount < 0) {
     //   throw new DomainException('Amount cannot be negative');
     // }
-
     // if (!currency || currency.trim().length === 0) {
     //   throw new DomainException('Currency is required');
     // }
-
     // if (currency.length !== 3) {
     //   throw new DomainException('Currency must be 3-letter ISO code (e.g., SAR, USD)');
     // }
@@ -96,9 +94,9 @@ export class Money {
 
   private ensureSameCurrency(other: Money): void {
     if (this.currency !== other.currency) {
-    //   throw new DomainException(
-    //     `Cannot operate on different currencies: ${this.currency} and ${other.currency}`
-    //   );
+      //   throw new DomainException(
+      //     `Cannot operate on different currencies: ${this.currency} and ${other.currency}`
+      //   );
     }
   }
 

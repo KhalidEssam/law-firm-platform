@@ -7,26 +7,26 @@ import { type IPaymentMethodRepository } from '../../../../domain/payment-method
 import { PaymentMethodId } from '../../../../domain/payment-method/value-objects/payment-method.vo';
 
 export interface MarkPaymentMethodAsUsedCommand {
-    paymentMethodId: string;
+  paymentMethodId: string;
 }
 
 @Injectable()
 export class MarkPaymentMethodAsUsedUseCase {
-    constructor(
-        @Inject('IPaymentMethodRepository')
-        private readonly repository: IPaymentMethodRepository,
-    ) {}
+  constructor(
+    @Inject('IPaymentMethodRepository')
+    private readonly repository: IPaymentMethodRepository,
+  ) {}
 
-    async execute(command: MarkPaymentMethodAsUsedCommand): Promise<void> {
-        const paymentMethod = await this.repository.findById(
-            PaymentMethodId.create(command.paymentMethodId),
-        );
+  async execute(command: MarkPaymentMethodAsUsedCommand): Promise<void> {
+    const paymentMethod = await this.repository.findById(
+      PaymentMethodId.create(command.paymentMethodId),
+    );
 
-        if (!paymentMethod) {
-            throw new NotFoundException('Payment method not found');
-        }
-
-        paymentMethod.markAsUsed();
-        await this.repository.update(paymentMethod);
+    if (!paymentMethod) {
+      throw new NotFoundException('Payment method not found');
     }
+
+    paymentMethod.markAsUsed();
+    await this.repository.update(paymentMethod);
+  }
 }

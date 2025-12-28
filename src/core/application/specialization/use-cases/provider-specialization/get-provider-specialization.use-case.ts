@@ -9,36 +9,39 @@ import { PROVIDER_SPECIALIZATION_REPOSITORY } from '../../../../domain/specializ
 
 @Injectable()
 export class GetProviderSpecializationUseCase {
-    constructor(
-        @Inject(PROVIDER_SPECIALIZATION_REPOSITORY)
-        private readonly repository: IProviderSpecializationRepository,
-    ) {}
+  constructor(
+    @Inject(PROVIDER_SPECIALIZATION_REPOSITORY)
+    private readonly repository: IProviderSpecializationRepository,
+  ) {}
 
-    async execute(id: string): Promise<ProviderSpecialization> {
-        const providerSpecialization = await this.repository.findById(id);
+  async execute(id: string): Promise<ProviderSpecialization> {
+    const providerSpecialization = await this.repository.findById(id);
 
-        if (!providerSpecialization) {
-            throw new NotFoundException(`Provider specialization with ID "${id}" not found`);
-        }
-
-        return providerSpecialization;
+    if (!providerSpecialization) {
+      throw new NotFoundException(
+        `Provider specialization with ID "${id}" not found`,
+      );
     }
 
-    async executeByProviderAndSpecialization(
-        providerId: string,
-        specializationId: string
-    ): Promise<ProviderSpecialization> {
-        const providerSpecialization = await this.repository.findByProviderAndSpecialization(
-            providerId,
-            specializationId
-        );
+    return providerSpecialization;
+  }
 
-        if (!providerSpecialization) {
-            throw new NotFoundException(
-                `Provider specialization not found for provider "${providerId}" and specialization "${specializationId}"`
-            );
-        }
+  async executeByProviderAndSpecialization(
+    providerId: string,
+    specializationId: string,
+  ): Promise<ProviderSpecialization> {
+    const providerSpecialization =
+      await this.repository.findByProviderAndSpecialization(
+        providerId,
+        specializationId,
+      );
 
-        return providerSpecialization;
+    if (!providerSpecialization) {
+      throw new NotFoundException(
+        `Provider specialization not found for provider "${providerId}" and specialization "${specializationId}"`,
+      );
     }
+
+    return providerSpecialization;
+  }
 }

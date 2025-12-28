@@ -3,11 +3,7 @@
 // Application Layer - State Management
 // ============================================
 
-import {
-  Injectable,
-  Inject,
-  NotFoundException
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
 import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
@@ -39,7 +35,7 @@ export class RequestRevisionUseCase {
     }
 
     // Request revision
-    opinion.requestRevision( command.reason);
+    opinion.requestRevision(command.reason);
 
     // Save
     const updated = await this.repository.update(opinion);

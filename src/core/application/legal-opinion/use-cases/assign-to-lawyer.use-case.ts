@@ -1,12 +1,14 @@
-
-import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
 import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
 import { UserId } from 'src/core/domain/consultation/value-objects/consultation-request-domain';
-
-
-
 
 // ============================================
 // ASSIGN TO LAWYER USE CASE
@@ -26,8 +28,10 @@ export class AssignToLawyerUseCase {
   ) {}
 
   async execute(command: AssignToLawyerCommand): Promise<any> {
-    const opinion = await this.repository.findById(OpinionRequestId.create(command.opinionRequestId));
-    
+    const opinion = await this.repository.findById(
+      OpinionRequestId.create(command.opinionRequestId),
+    );
+
     if (!opinion) {
       throw new NotFoundException('Opinion request not found');
     }

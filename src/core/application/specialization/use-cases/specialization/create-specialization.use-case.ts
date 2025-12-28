@@ -8,39 +8,41 @@ import type { ISpecializationRepository } from '../../../../domain/specializatio
 import { SPECIALIZATION_REPOSITORY } from '../../../../domain/specialization/ports/specialization.repository';
 
 export interface CreateSpecializationDTO {
-    name: string;
-    nameAr: string;
-    description?: string;
-    descriptionAr?: string;
-    category: string;
-    isActive?: boolean;
+  name: string;
+  nameAr: string;
+  description?: string;
+  descriptionAr?: string;
+  category: string;
+  isActive?: boolean;
 }
 
 @Injectable()
 export class CreateSpecializationUseCase {
-    constructor(
-        @Inject(SPECIALIZATION_REPOSITORY)
-        private readonly repository: ISpecializationRepository,
-    ) {}
+  constructor(
+    @Inject(SPECIALIZATION_REPOSITORY)
+    private readonly repository: ISpecializationRepository,
+  ) {}
 
-    async execute(dto: CreateSpecializationDTO): Promise<Specialization> {
-        // Check if specialization with same name exists
-        const existingByName = await this.repository.existsByName(dto.name);
-        if (existingByName) {
-            throw new ConflictException(`Specialization with name "${dto.name}" already exists`);
-        }
-
-        const specialization = Specialization.create({
-            name: dto.name,
-            nameAr: dto.nameAr,
-            description: dto.description,
-            descriptionAr: dto.descriptionAr,
-            category: dto.category.toLowerCase(),
-            isActive: dto.isActive ?? true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        });
-
-        return await this.repository.create(specialization);
+  async execute(dto: CreateSpecializationDTO): Promise<Specialization> {
+    // Check if specialization with same name exists
+    const existingByName = await this.repository.existsByName(dto.name);
+    if (existingByName) {
+      throw new ConflictException(
+        `Specialization with name "${dto.name}" already exists`,
+      );
     }
+
+    const specialization = Specialization.create({
+      name: dto.name,
+      nameAr: dto.nameAr,
+      description: dto.description,
+      descriptionAr: dto.descriptionAr,
+      category: dto.category.toLowerCase(),
+      isActive: dto.isActive ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    return await this.repository.create(specialization);
+  }
 }

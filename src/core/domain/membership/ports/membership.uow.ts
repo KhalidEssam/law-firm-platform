@@ -5,11 +5,11 @@
 
 import { IBaseUnitOfWork } from '../../shared/ports/base-unit-of-work.interface';
 import {
-    IMembershipRepository,
-    IMembershipTierRepository,
-    IMembershipCouponRepository,
-    IMembershipCouponRedemptionRepository,
-    IMembershipQuotaUsageRepository,
+  IMembershipRepository,
+  IMembershipTierRepository,
+  IMembershipCouponRepository,
+  IMembershipCouponRedemptionRepository,
+  IMembershipQuotaUsageRepository,
 } from '../../../application/membership/ports/repository';
 
 /**
@@ -59,34 +59,35 @@ import {
  * });
  * ```
  */
-export interface IMembershipUnitOfWork extends IBaseUnitOfWork<IMembershipUnitOfWork> {
-    /**
-     * Repository for membership operations within the transaction.
-     */
-    readonly memberships: IMembershipRepository;
+export interface IMembershipUnitOfWork
+  extends IBaseUnitOfWork<IMembershipUnitOfWork> {
+  /**
+   * Repository for membership operations within the transaction.
+   */
+  readonly memberships: IMembershipRepository;
 
-    /**
-     * Repository for membership tier operations within the transaction.
-     * Used to check quota limits and tier validation.
-     */
-    readonly tiers: IMembershipTierRepository;
+  /**
+   * Repository for membership tier operations within the transaction.
+   * Used to check quota limits and tier validation.
+   */
+  readonly tiers: IMembershipTierRepository;
 
-    /**
-     * Repository for coupon operations within the transaction.
-     */
-    readonly coupons: IMembershipCouponRepository;
+  /**
+   * Repository for coupon operations within the transaction.
+   */
+  readonly coupons: IMembershipCouponRepository;
 
-    /**
-     * Repository for coupon redemption operations within the transaction.
-     * Critical for preventing duplicate redemptions.
-     */
-    readonly redemptions: IMembershipCouponRedemptionRepository;
+  /**
+   * Repository for coupon redemption operations within the transaction.
+   * Critical for preventing duplicate redemptions.
+   */
+  readonly redemptions: IMembershipCouponRedemptionRepository;
 
-    /**
-     * Repository for quota usage operations within the transaction.
-     * Critical for preventing race conditions in quota consumption.
-     */
-    readonly quotaUsage: IMembershipQuotaUsageRepository;
+  /**
+   * Repository for quota usage operations within the transaction.
+   * Critical for preventing race conditions in quota consumption.
+   */
+  readonly quotaUsage: IMembershipQuotaUsageRepository;
 }
 
 /**

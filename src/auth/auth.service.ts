@@ -7,25 +7,29 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthDomainService {
-  constructor(@Inject('IAuthRepository') private readonly authRepo: IAuthRepository) { }
+  constructor(
+    @Inject('IAuthRepository') private readonly authRepo: IAuthRepository,
+  ) {}
 
-  async loginWithAuth0(externalId: string, email: string, roles: string[]): Promise<Auth> {
+  async loginWithAuth0(
+    externalId: string,
+    email: string,
+    roles: string[],
+  ): Promise<Auth> {
     let user = await this.authRepo.findByExternalId(externalId);
 
     if (!user) {
-      user = new Auth(
-        crypto.randomUUID(),
-        externalId,
-        email,
-        roles,
-      );
+      user = new Auth(crypto.randomUUID(), externalId, email, roles);
       await this.authRepo.save(user);
     }
 
     return user;
   }
 
-  async attachTokens(auth: Auth, tokens: Tokens): Promise<{ auth: Auth; tokens: Tokens }> {
+  async attachTokens(
+    auth: Auth,
+    tokens: Tokens,
+  ): Promise<{ auth: Auth; tokens: Tokens }> {
     // optional: persist refresh tokens
     return { auth, tokens };
   }

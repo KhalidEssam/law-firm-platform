@@ -4,51 +4,62 @@
 // ============================================
 
 import { IBaseUnitOfWork } from '../../shared/ports/base-unit-of-work.interface';
-import { ILitigationCaseRepository, PaginatedResult, PaginationParams } from '../port/litigation-case.repository';
-import { LitigationStatusHistory, StatusHistoryId } from '../entities/litigation-status-history.entity';
+import {
+  ILitigationCaseRepository,
+  PaginatedResult,
+  PaginationParams,
+} from '../port/litigation-case.repository';
+import {
+  LitigationStatusHistory,
+  StatusHistoryId,
+} from '../entities/litigation-status-history.entity';
 import { CaseId } from '../value-objects/litigation-case.vo';
 
 /**
  * Repository interface for Litigation Status History operations.
  */
 export interface ILitigationStatusHistoryRepository {
-    /**
-     * Creates a new status history record.
-     */
-    create(history: LitigationStatusHistory): Promise<LitigationStatusHistory>;
+  /**
+   * Creates a new status history record.
+   */
+  create(history: LitigationStatusHistory): Promise<LitigationStatusHistory>;
 
-    /**
-     * Creates multiple status history records atomically.
-     */
-    createMany(histories: LitigationStatusHistory[]): Promise<LitigationStatusHistory[]>;
+  /**
+   * Creates multiple status history records atomically.
+   */
+  createMany(
+    histories: LitigationStatusHistory[],
+  ): Promise<LitigationStatusHistory[]>;
 
-    /**
-     * Finds a status history record by ID.
-     */
-    findById(id: StatusHistoryId): Promise<LitigationStatusHistory | null>;
+  /**
+   * Finds a status history record by ID.
+   */
+  findById(id: StatusHistoryId): Promise<LitigationStatusHistory | null>;
 
-    /**
-     * Finds all status history records for a litigation case.
-     */
-    findByLitigationCaseId(
-        litigationCaseId: CaseId,
-        pagination?: PaginationParams,
-    ): Promise<PaginatedResult<LitigationStatusHistory>>;
+  /**
+   * Finds all status history records for a litigation case.
+   */
+  findByLitigationCaseId(
+    litigationCaseId: CaseId,
+    pagination?: PaginationParams,
+  ): Promise<PaginatedResult<LitigationStatusHistory>>;
 
-    /**
-     * Gets the most recent status history for a case.
-     */
-    findLatestByLitigationCaseId(litigationCaseId: CaseId): Promise<LitigationStatusHistory | null>;
+  /**
+   * Gets the most recent status history for a case.
+   */
+  findLatestByLitigationCaseId(
+    litigationCaseId: CaseId,
+  ): Promise<LitigationStatusHistory | null>;
 
-    /**
-     * Counts status changes for a case.
-     */
-    countByLitigationCaseId(litigationCaseId: CaseId): Promise<number>;
+  /**
+   * Counts status changes for a case.
+   */
+  countByLitigationCaseId(litigationCaseId: CaseId): Promise<number>;
 
-    /**
-     * Deletes a status history record.
-     */
-    delete(id: StatusHistoryId): Promise<void>;
+  /**
+   * Deletes a status history record.
+   */
+  delete(id: StatusHistoryId): Promise<void>;
 }
 
 /**
@@ -103,17 +114,18 @@ export interface ILitigationStatusHistoryRepository {
  * });
  * ```
  */
-export interface ILitigationUnitOfWork extends IBaseUnitOfWork<ILitigationUnitOfWork> {
-    /**
-     * Repository for litigation case operations within the transaction.
-     */
-    readonly cases: ILitigationCaseRepository;
+export interface ILitigationUnitOfWork
+  extends IBaseUnitOfWork<ILitigationUnitOfWork> {
+  /**
+   * Repository for litigation case operations within the transaction.
+   */
+  readonly cases: ILitigationCaseRepository;
 
-    /**
-     * Repository for status history operations within the transaction.
-     * Used to create audit trail for all status changes.
-     */
-    readonly statusHistories: ILitigationStatusHistoryRepository;
+  /**
+   * Repository for status history operations within the transaction.
+   * Used to create audit trail for all status changes.
+   */
+  readonly statusHistories: ILitigationStatusHistoryRepository;
 }
 
 /**

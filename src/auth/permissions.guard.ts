@@ -6,29 +6,29 @@ import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
-    constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
-    canActivate(context: ExecutionContext): boolean {
-        // ✅ Check if route is public
-        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-            context.getHandler(),
-            context.getClass(),
-        ]);
-        if (isPublic) return true;
+  canActivate(context: ExecutionContext): boolean {
+    // ✅ Check if route is public
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) return true;
 
-        const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
-            PERMISSIONS_KEY,
-            [context.getHandler(), context.getClass()],
-        );
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+      PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
-        if (!requiredPermissions) return true; // no permissions required
+    if (!requiredPermissions) return true; // no permissions required
 
-        const { user } = context.switchToHttp().getRequest();
+    const { user } = context.switchToHttp().getRequest();
 
-        if (!user?.permissions) return false;
+    if (!user?.permissions) return false;
 
-        return requiredPermissions.every((permission) =>
-            user.permissions.includes(permission)
-        );
-    }
+    return requiredPermissions.every((permission) =>
+      user.permissions.includes(permission),
+    );
+  }
 }

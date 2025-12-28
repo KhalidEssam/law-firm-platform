@@ -7,13 +7,13 @@
 
 /**
  * Jurisdiction - The legal jurisdiction applicable to the opinion
- * 
+ *
  * Business Rules:
  * - Must specify country and optionally state/province/region
  * - Cannot be empty
  * - Must be a recognized legal jurisdiction
  * - Immutable once set
- * 
+ *
  * Importance:
  * - Different jurisdictions have different laws
  * - Determines which legal framework applies
@@ -54,20 +54,16 @@ export class Jurisdiction {
     // if (!data.country || data.country.trim().length === 0) {
     //   throw new DomainException('Jurisdiction must specify a country');
     // }
-
     // if (data.country.trim().length < 2) {
     //   throw new DomainException('Country name must be at least 2 characters');
     // }
-
     // if (data.country.trim().length > 100) {
     //   throw new DomainException('Country name is too long');
     // }
-
     // // Validate region if provided
     // if (data.region && data.region.trim().length > 100) {
     //   throw new DomainException('Region name is too long');
     // }
-
     // // Validate city if provided
     // if (data.city && data.city.trim().length > 100) {
     //   throw new DomainException('City name is too long');
@@ -160,16 +156,18 @@ export class Jurisdiction {
       'Syria',
       'Yemen',
     ];
-    
-    return middleEastCountries.some(country => 
-      this.country.toLowerCase() === country.toLowerCase()
+
+    return middleEastCountries.some(
+      (country) => this.country.toLowerCase() === country.toLowerCase(),
     );
   }
 
   // Check if requires Sharia law expertise
   requiresShareExpertise(): boolean {
-    return this.legalSystem === LegalSystem.SHARIA_LAW ||
-           this.legalSystem === LegalSystem.MIXED;
+    return (
+      this.legalSystem === LegalSystem.SHARIA_LAW ||
+      this.legalSystem === LegalSystem.MIXED
+    );
   }
 
   // Value object equality
