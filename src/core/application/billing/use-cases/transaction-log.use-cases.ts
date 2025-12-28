@@ -320,7 +320,10 @@ export class MarkTransactionRefundedUseCase {
     private readonly transactionRepository: ITransactionLogRepository,
   ) {}
 
-  async execute(_id: string, refundReference?: string): Promise<TransactionLog> {
+  async execute(
+    id: string,
+    refundReference?: string,
+  ): Promise<TransactionLog> {
     const transaction = await this.transactionRepository.findById(id);
     if (!transaction) {
       throw new NotFoundException(`Transaction with ID ${id} not found`);
