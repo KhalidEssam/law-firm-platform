@@ -3,17 +3,11 @@
 // Application Layer - State Management
 // ============================================
 
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
 import { OpinionRequestFilters } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { PaginationParams } from 'src/infrastructure/persistence/consultation/prisma.repository';
-
 
 // ============================================
 // LIST OPINION REQUESTS USE CASE
@@ -43,10 +37,18 @@ export class ListOpinionRequestsUseCase {
       status: query.filters?.status,
       isPaid: query.filters?.isPaid,
       searchTerm: query.filters?.searchTerm,
-      submittedFrom: query.filters?.submittedFrom ? new Date(query.filters.submittedFrom) : undefined,
-      submittedTo: query.filters?.submittedTo ? new Date(query.filters.submittedTo) : undefined,
-      completedFrom: query.filters?.completedFrom ? new Date(query.filters.completedFrom) : undefined,
-      completedTo: query.filters?.completedTo ? new Date(query.filters.completedTo) : undefined,
+      submittedFrom: query.filters?.submittedFrom
+        ? new Date(query.filters.submittedFrom)
+        : undefined,
+      submittedTo: query.filters?.submittedTo
+        ? new Date(query.filters.submittedTo)
+        : undefined,
+      completedFrom: query.filters?.completedFrom
+        ? new Date(query.filters.completedFrom)
+        : undefined,
+      completedTo: query.filters?.completedTo
+        ? new Date(query.filters.completedTo)
+        : undefined,
     };
 
     const pagination: PaginationParams = {
@@ -59,7 +61,7 @@ export class ListOpinionRequestsUseCase {
     const result = await this.repository.findAll(filters, pagination);
 
     return {
-      data: result.data.map(opinion => this.toDto(opinion)),
+      data: result.data.map((opinion) => this.toDto(opinion)),
       pagination: result.pagination,
     };
   }

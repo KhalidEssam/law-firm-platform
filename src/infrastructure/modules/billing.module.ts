@@ -13,16 +13,136 @@ import { BillingController } from '../../interface/http/billing.controller';
 
 // Repositories & Unit of Work
 import {
-    PrismaMembershipInvoiceRepository,
-    PrismaTransactionLogRepository,
-    PrismaRefundRepository,
-    PrismaDisputeRepository,
-    PrismaBillingUnitOfWork,
-    BILLING_UNIT_OF_WORK,
+  PrismaMembershipInvoiceRepository,
+  PrismaTransactionLogRepository,
+  PrismaRefundRepository,
+  PrismaDisputeRepository,
+  PrismaBillingUnitOfWork,
+  BILLING_UNIT_OF_WORK,
 } from '../persistence/billing';
 
 // MembershipInvoice Use Cases
 import {
+  CreateMembershipInvoiceUseCase,
+  GetMembershipInvoiceByIdUseCase,
+  GetMembershipInvoiceByNumberUseCase,
+  ListMembershipInvoicesUseCase,
+  GetInvoicesByMembershipUseCase,
+  MarkInvoicePaidUseCase,
+  MarkInvoiceOverdueUseCase,
+  CancelMembershipInvoiceUseCase,
+  GetOverdueInvoicesUseCase,
+  GetInvoicesDueSoonUseCase,
+  GetUnpaidInvoicesByMembershipUseCase,
+  GetTotalUnpaidAmountUseCase,
+  DeleteMembershipInvoiceUseCase,
+} from '../../core/application/billing/use-cases/membership-invoice.use-cases';
+
+// TransactionLog Use Cases
+import {
+  CreateTransactionLogUseCase,
+  CreateSubscriptionPaymentUseCase,
+  CreateWalletTopupUseCase,
+  CreateServicePaymentUseCase,
+  GetTransactionLogByIdUseCase,
+  GetTransactionByReferenceUseCase,
+  ListTransactionLogsUseCase,
+  GetUserTransactionsUseCase,
+  MarkTransactionPaidUseCase,
+  MarkTransactionFailedUseCase,
+  MarkTransactionRefundedUseCase,
+  GetUserTransactionSummaryUseCase,
+  GetPendingTransactionsUseCase,
+  GetFailedTransactionsUseCase,
+  GetTotalSpentUseCase,
+} from '../../core/application/billing/use-cases/transaction-log.use-cases';
+
+// Refund Use Cases
+import {
+  RequestRefundUseCase,
+  GetRefundByIdUseCase,
+  ListRefundsUseCase,
+  GetUserRefundsUseCase,
+  ApproveRefundUseCase,
+  RejectRefundUseCase,
+  ProcessRefundUseCase,
+  GetPendingRefundsUseCase,
+  GetApprovedRefundsUseCase,
+  GetRefundStatisticsUseCase,
+  GetTotalRefundedAmountUseCase,
+  GetPendingRefundAmountUseCase,
+  DeleteRefundUseCase,
+} from '../../core/application/billing/use-cases/refund.use-cases';
+
+// Dispute Use Cases
+import {
+  CreateDisputeUseCase,
+  GetDisputeByIdUseCase,
+  ListDisputesUseCase,
+  GetUserDisputesUseCase,
+  StartDisputeReviewUseCase,
+  EscalateDisputeUseCase,
+  ResolveDisputeUseCase,
+  CloseDisputeUseCase,
+  UpdateDisputePriorityUseCase,
+  AddDisputeEvidenceUseCase,
+  GetOpenDisputesUseCase,
+  GetActiveDisputesUseCase,
+  GetEscalatedDisputesUseCase,
+  GetHighPriorityDisputesUseCase,
+  GetDisputesRequiringAttentionUseCase,
+  GetDisputeStatisticsUseCase,
+  DeleteDisputeUseCase,
+} from '../../core/application/billing/use-cases/dispute.use-cases';
+
+// Service Usage Billing Use Cases
+import {
+  GetUnbilledServiceUsageSummaryUseCase,
+  GenerateServiceUsageInvoiceUseCase,
+  GetBillableUsageByServiceTypeUseCase,
+  ProcessBatchServiceUsageBillingUseCase,
+  GetCombinedBillingSummaryUseCase,
+} from '../../core/application/billing/use-cases/service-usage-billing.use-cases';
+
+@Module({
+  imports: [
+    PrismaModule,
+    forwardRef(() => MembershipModule), // Import for service usage billing integration
+    forwardRef(() => NotificationModule), // Notification integration
+  ],
+  controllers: [BillingController],
+  providers: [
+    // ============================================
+    // UNIT OF WORK
+    // ============================================
+    {
+      provide: BILLING_UNIT_OF_WORK,
+      useClass: PrismaBillingUnitOfWork,
+    },
+
+    // ============================================
+    // REPOSITORIES (for backward compatibility)
+    // ============================================
+    {
+      provide: 'IMembershipInvoiceRepository',
+      useClass: PrismaMembershipInvoiceRepository,
+    },
+    {
+      provide: 'ITransactionLogRepository',
+      useClass: PrismaTransactionLogRepository,
+    },
+    {
+      provide: 'IRefundRepository',
+      useClass: PrismaRefundRepository,
+    },
+    {
+      provide: 'IDisputeRepository',
+      useClass: PrismaDisputeRepository,
+    },
+
+    // ============================================
+    // MEMBERSHIP INVOICE USE CASES
+    // ============================================
     CreateMembershipInvoiceUseCase,
     GetMembershipInvoiceByIdUseCase,
     GetMembershipInvoiceByNumberUseCase,
@@ -36,10 +156,10 @@ import {
     GetUnpaidInvoicesByMembershipUseCase,
     GetTotalUnpaidAmountUseCase,
     DeleteMembershipInvoiceUseCase,
-} from '../../core/application/billing/use-cases/membership-invoice.use-cases';
 
-// TransactionLog Use Cases
-import {
+    // ============================================
+    // TRANSACTION LOG USE CASES
+    // ============================================
     CreateTransactionLogUseCase,
     CreateSubscriptionPaymentUseCase,
     CreateWalletTopupUseCase,
@@ -55,10 +175,10 @@ import {
     GetPendingTransactionsUseCase,
     GetFailedTransactionsUseCase,
     GetTotalSpentUseCase,
-} from '../../core/application/billing/use-cases/transaction-log.use-cases';
 
-// Refund Use Cases
-import {
+    // ============================================
+    // REFUND USE CASES
+    // ============================================
     RequestRefundUseCase,
     GetRefundByIdUseCase,
     ListRefundsUseCase,
@@ -72,10 +192,10 @@ import {
     GetTotalRefundedAmountUseCase,
     GetPendingRefundAmountUseCase,
     DeleteRefundUseCase,
-} from '../../core/application/billing/use-cases/refund.use-cases';
 
-// Dispute Use Cases
-import {
+    // ============================================
+    // DISPUTE USE CASES
+    // ============================================
     CreateDisputeUseCase,
     GetDisputeByIdUseCase,
     ListDisputesUseCase,
@@ -93,182 +213,62 @@ import {
     GetDisputesRequiringAttentionUseCase,
     GetDisputeStatisticsUseCase,
     DeleteDisputeUseCase,
-} from '../../core/application/billing/use-cases/dispute.use-cases';
 
-// Service Usage Billing Use Cases
-import {
+    // ============================================
+    // SERVICE USAGE BILLING USE CASES
+    // ============================================
     GetUnbilledServiceUsageSummaryUseCase,
     GenerateServiceUsageInvoiceUseCase,
     GetBillableUsageByServiceTypeUseCase,
     ProcessBatchServiceUsageBillingUseCase,
     GetCombinedBillingSummaryUseCase,
-} from '../../core/application/billing/use-cases/service-usage-billing.use-cases';
+  ],
+  exports: [
+    // Unit of Work
+    BILLING_UNIT_OF_WORK,
 
-@Module({
-    imports: [
-        PrismaModule,
-        forwardRef(() => MembershipModule), // Import for service usage billing integration
-        forwardRef(() => NotificationModule), // Notification integration
-    ],
-    controllers: [BillingController],
-    providers: [
-        // ============================================
-        // UNIT OF WORK
-        // ============================================
-        {
-            provide: BILLING_UNIT_OF_WORK,
-            useClass: PrismaBillingUnitOfWork,
-        },
+    // Repositories (for backward compatibility)
+    'IMembershipInvoiceRepository',
+    'ITransactionLogRepository',
+    'IRefundRepository',
+    'IDisputeRepository',
 
-        // ============================================
-        // REPOSITORIES (for backward compatibility)
-        // ============================================
-        {
-            provide: 'IMembershipInvoiceRepository',
-            useClass: PrismaMembershipInvoiceRepository,
-        },
-        {
-            provide: 'ITransactionLogRepository',
-            useClass: PrismaTransactionLogRepository,
-        },
-        {
-            provide: 'IRefundRepository',
-            useClass: PrismaRefundRepository,
-        },
-        {
-            provide: 'IDisputeRepository',
-            useClass: PrismaDisputeRepository,
-        },
+    // Invoice Use Cases
+    CreateMembershipInvoiceUseCase,
+    GetMembershipInvoiceByIdUseCase,
+    ListMembershipInvoicesUseCase,
+    MarkInvoicePaidUseCase,
+    GetOverdueInvoicesUseCase,
 
-        // ============================================
-        // MEMBERSHIP INVOICE USE CASES
-        // ============================================
-        CreateMembershipInvoiceUseCase,
-        GetMembershipInvoiceByIdUseCase,
-        GetMembershipInvoiceByNumberUseCase,
-        ListMembershipInvoicesUseCase,
-        GetInvoicesByMembershipUseCase,
-        MarkInvoicePaidUseCase,
-        MarkInvoiceOverdueUseCase,
-        CancelMembershipInvoiceUseCase,
-        GetOverdueInvoicesUseCase,
-        GetInvoicesDueSoonUseCase,
-        GetUnpaidInvoicesByMembershipUseCase,
-        GetTotalUnpaidAmountUseCase,
-        DeleteMembershipInvoiceUseCase,
+    // Transaction Use Cases
+    CreateTransactionLogUseCase,
+    CreateSubscriptionPaymentUseCase,
+    CreateServicePaymentUseCase,
+    GetTransactionLogByIdUseCase,
+    MarkTransactionPaidUseCase,
+    GetUserTransactionSummaryUseCase,
 
-        // ============================================
-        // TRANSACTION LOG USE CASES
-        // ============================================
-        CreateTransactionLogUseCase,
-        CreateSubscriptionPaymentUseCase,
-        CreateWalletTopupUseCase,
-        CreateServicePaymentUseCase,
-        GetTransactionLogByIdUseCase,
-        GetTransactionByReferenceUseCase,
-        ListTransactionLogsUseCase,
-        GetUserTransactionsUseCase,
-        MarkTransactionPaidUseCase,
-        MarkTransactionFailedUseCase,
-        MarkTransactionRefundedUseCase,
-        GetUserTransactionSummaryUseCase,
-        GetPendingTransactionsUseCase,
-        GetFailedTransactionsUseCase,
-        GetTotalSpentUseCase,
+    // Refund Use Cases
+    RequestRefundUseCase,
+    GetRefundByIdUseCase,
+    ApproveRefundUseCase,
+    RejectRefundUseCase,
+    ProcessRefundUseCase,
+    GetPendingRefundsUseCase,
 
-        // ============================================
-        // REFUND USE CASES
-        // ============================================
-        RequestRefundUseCase,
-        GetRefundByIdUseCase,
-        ListRefundsUseCase,
-        GetUserRefundsUseCase,
-        ApproveRefundUseCase,
-        RejectRefundUseCase,
-        ProcessRefundUseCase,
-        GetPendingRefundsUseCase,
-        GetApprovedRefundsUseCase,
-        GetRefundStatisticsUseCase,
-        GetTotalRefundedAmountUseCase,
-        GetPendingRefundAmountUseCase,
-        DeleteRefundUseCase,
+    // Dispute Use Cases
+    CreateDisputeUseCase,
+    GetDisputeByIdUseCase,
+    ResolveDisputeUseCase,
+    GetActiveDisputesUseCase,
+    GetDisputeStatisticsUseCase,
 
-        // ============================================
-        // DISPUTE USE CASES
-        // ============================================
-        CreateDisputeUseCase,
-        GetDisputeByIdUseCase,
-        ListDisputesUseCase,
-        GetUserDisputesUseCase,
-        StartDisputeReviewUseCase,
-        EscalateDisputeUseCase,
-        ResolveDisputeUseCase,
-        CloseDisputeUseCase,
-        UpdateDisputePriorityUseCase,
-        AddDisputeEvidenceUseCase,
-        GetOpenDisputesUseCase,
-        GetActiveDisputesUseCase,
-        GetEscalatedDisputesUseCase,
-        GetHighPriorityDisputesUseCase,
-        GetDisputesRequiringAttentionUseCase,
-        GetDisputeStatisticsUseCase,
-        DeleteDisputeUseCase,
-
-        // ============================================
-        // SERVICE USAGE BILLING USE CASES
-        // ============================================
-        GetUnbilledServiceUsageSummaryUseCase,
-        GenerateServiceUsageInvoiceUseCase,
-        GetBillableUsageByServiceTypeUseCase,
-        ProcessBatchServiceUsageBillingUseCase,
-        GetCombinedBillingSummaryUseCase,
-    ],
-    exports: [
-        // Unit of Work
-        BILLING_UNIT_OF_WORK,
-
-        // Repositories (for backward compatibility)
-        'IMembershipInvoiceRepository',
-        'ITransactionLogRepository',
-        'IRefundRepository',
-        'IDisputeRepository',
-
-        // Invoice Use Cases
-        CreateMembershipInvoiceUseCase,
-        GetMembershipInvoiceByIdUseCase,
-        ListMembershipInvoicesUseCase,
-        MarkInvoicePaidUseCase,
-        GetOverdueInvoicesUseCase,
-
-        // Transaction Use Cases
-        CreateTransactionLogUseCase,
-        CreateSubscriptionPaymentUseCase,
-        CreateServicePaymentUseCase,
-        GetTransactionLogByIdUseCase,
-        MarkTransactionPaidUseCase,
-        GetUserTransactionSummaryUseCase,
-
-        // Refund Use Cases
-        RequestRefundUseCase,
-        GetRefundByIdUseCase,
-        ApproveRefundUseCase,
-        RejectRefundUseCase,
-        ProcessRefundUseCase,
-        GetPendingRefundsUseCase,
-
-        // Dispute Use Cases
-        CreateDisputeUseCase,
-        GetDisputeByIdUseCase,
-        ResolveDisputeUseCase,
-        GetActiveDisputesUseCase,
-        GetDisputeStatisticsUseCase,
-
-        // Service Usage Billing Use Cases
-        GetUnbilledServiceUsageSummaryUseCase,
-        GenerateServiceUsageInvoiceUseCase,
-        GetBillableUsageByServiceTypeUseCase,
-        ProcessBatchServiceUsageBillingUseCase,
-        GetCombinedBillingSummaryUseCase,
-    ],
+    // Service Usage Billing Use Cases
+    GetUnbilledServiceUsageSummaryUseCase,
+    GenerateServiceUsageInvoiceUseCase,
+    GetBillableUsageByServiceTypeUseCase,
+    ProcessBatchServiceUsageBillingUseCase,
+    GetCombinedBillingSummaryUseCase,
+  ],
 })
 export class BillingModule {}

@@ -19,7 +19,9 @@ export class RequestNumber {
     // Format: CR-YYYYMMDD-XXXX (e.g., CR-20250123-0001)
     const pattern = /^CR-\d{8}-\d{4}$/;
     if (!pattern.test(value)) {
-      throw new Error('Invalid request number format. Expected: CR-YYYYMMDD-XXXX');
+      throw new Error(
+        'Invalid request number format. Expected: CR-YYYYMMDD-XXXX',
+      );
     }
     return new RequestNumber(value);
   }
@@ -92,7 +94,9 @@ export class ConsultationStatusVO {
   private constructor(private readonly value: ConsultationStatus) {}
 
   static create(value: string): ConsultationStatusVO {
-    if (!Object.values(ConsultationStatus).includes(value as ConsultationStatus)) {
+    if (
+      !Object.values(ConsultationStatus).includes(value as ConsultationStatus)
+    ) {
       throw new Error(`Invalid consultation status: ${value}`);
     }
     return new ConsultationStatusVO(value as ConsultationStatus);
@@ -157,20 +161,22 @@ export class ConsultationStatusVO {
 /**
  * Maps Prisma RequestStatus to domain ConsultationStatus
  */
-export function mapPrismaStatusToConsultationStatus(prismaStatus: string): ConsultationStatus {
+export function mapPrismaStatusToConsultationStatus(
+  prismaStatus: string,
+): ConsultationStatus {
   const statusMap: Record<string, ConsultationStatus> = {
-    'pending': ConsultationStatus.PENDING,
-    'assigned': ConsultationStatus.ASSIGNED,
-    'scheduled': ConsultationStatus.ASSIGNED,        // Map to assigned
-    'in_progress': ConsultationStatus.IN_PROGRESS,
-    'quote_sent': ConsultationStatus.IN_PROGRESS,    // Consultation doesn't have quote workflow
-    'quote_accepted': ConsultationStatus.IN_PROGRESS,
-    'completed': ConsultationStatus.COMPLETED,
-    'disputed': ConsultationStatus.DISPUTED,
-    'cancelled': ConsultationStatus.CANCELLED,
-    'closed': ConsultationStatus.COMPLETED,          // Map closed to completed
-    'no_show': ConsultationStatus.CANCELLED,         // Map to cancelled
-    'rescheduled': ConsultationStatus.PENDING,       // Map to pending
+    pending: ConsultationStatus.PENDING,
+    assigned: ConsultationStatus.ASSIGNED,
+    scheduled: ConsultationStatus.ASSIGNED, // Map to assigned
+    in_progress: ConsultationStatus.IN_PROGRESS,
+    quote_sent: ConsultationStatus.IN_PROGRESS, // Consultation doesn't have quote workflow
+    quote_accepted: ConsultationStatus.IN_PROGRESS,
+    completed: ConsultationStatus.COMPLETED,
+    disputed: ConsultationStatus.DISPUTED,
+    cancelled: ConsultationStatus.CANCELLED,
+    closed: ConsultationStatus.COMPLETED, // Map closed to completed
+    no_show: ConsultationStatus.CANCELLED, // Map to cancelled
+    rescheduled: ConsultationStatus.PENDING, // Map to pending
   };
   return statusMap[prismaStatus] || ConsultationStatus.PENDING;
 }
@@ -178,13 +184,15 @@ export function mapPrismaStatusToConsultationStatus(prismaStatus: string): Consu
 /**
  * Maps domain ConsultationStatus to Prisma RequestStatus
  */
-export function mapConsultationStatusToPrisma(status: ConsultationStatus): string {
+export function mapConsultationStatusToPrisma(
+  status: ConsultationStatus,
+): string {
   const statusMap: Record<ConsultationStatus, string> = {
     [ConsultationStatus.PENDING]: 'pending',
     [ConsultationStatus.ASSIGNED]: 'assigned',
     [ConsultationStatus.IN_PROGRESS]: 'in_progress',
-    [ConsultationStatus.AWAITING_INFO]: 'in_progress',   // Map to in_progress (awaiting_info not in Prisma)
-    [ConsultationStatus.RESPONDED]: 'in_progress',       // Map to in_progress (responded not in Prisma)
+    [ConsultationStatus.AWAITING_INFO]: 'in_progress', // Map to in_progress (awaiting_info not in Prisma)
+    [ConsultationStatus.RESPONDED]: 'in_progress', // Map to in_progress (responded not in Prisma)
     [ConsultationStatus.COMPLETED]: 'completed',
     [ConsultationStatus.CANCELLED]: 'cancelled',
     [ConsultationStatus.DISPUTED]: 'disputed',
@@ -195,8 +203,12 @@ export function mapConsultationStatusToPrisma(status: ConsultationStatus): strin
 /**
  * Check if a string is a valid consultation status
  */
-export function isValidConsultationStatus(value: string): value is ConsultationStatus {
-  return Object.values(ConsultationStatus).includes(value as ConsultationStatus);
+export function isValidConsultationStatus(
+  value: string,
+): value is ConsultationStatus {
+  return Object.values(ConsultationStatus).includes(
+    value as ConsultationStatus,
+  );
 }
 
 /**
@@ -268,7 +280,8 @@ export class SLAStatus {
   }
 
   static calculate(deadline: Date, currentDate: Date = new Date()): SLAStatus {
-    const hoursRemaining = (deadline.getTime() - currentDate.getTime()) / (1000 * 60 * 60);
+    const hoursRemaining =
+      (deadline.getTime() - currentDate.getTime()) / (1000 * 60 * 60);
 
     if (hoursRemaining < 0) {
       return new SLAStatus(SLAStatusType.BREACHED);
@@ -599,12 +612,14 @@ export class ConsultationRequest {
   assignToProvider(providerId: UserId): void {
     if (!this.status.canBeAssigned()) {
       throw new Error(
-        `Cannot assign request with status: ${this.status.getValue()}`
+        `Cannot assign request with status: ${this.status.getValue()}`,
       );
     }
 
     this.props.assignedProviderId = providerId;
-    this.props.status = ConsultationStatusVO.create(ConsultationStatus.ASSIGNED);
+    this.props.status = ConsultationStatusVO.create(
+      ConsultationStatus.ASSIGNED,
+    );
     this.props.assignedAt = new Date();
     this.props.updatedAt = new Date();
 
@@ -624,11 +639,13 @@ export class ConsultationRequest {
 
     if (this.status.isCancelled() || this.status.isCompleted()) {
       throw new Error(
-        `Cannot mark as responded with status: ${this.status.getValue()}`
+        `Cannot mark as responded with status: ${this.status.getValue()}`,
       );
     }
 
-    this.props.status = ConsultationStatusVO.create(ConsultationStatus.RESPONDED);
+    this.props.status = ConsultationStatusVO.create(
+      ConsultationStatus.RESPONDED,
+    );
     this.props.respondedAt = new Date();
     this.props.updatedAt = new Date();
   }
@@ -641,13 +658,18 @@ export class ConsultationRequest {
       throw new Error('Cannot mark as in progress: No provider assigned');
     }
 
-    if (!this.status.isAssigned() && this.status.getValue() !== ConsultationStatus.AWAITING_INFO) {
+    if (
+      !this.status.isAssigned() &&
+      this.status.getValue() !== ConsultationStatus.AWAITING_INFO
+    ) {
       throw new Error(
-        `Cannot mark as in progress from status: ${this.status.getValue()}`
+        `Cannot mark as in progress from status: ${this.status.getValue()}`,
       );
     }
 
-    this.props.status = ConsultationStatusVO.create(ConsultationStatus.IN_PROGRESS);
+    this.props.status = ConsultationStatusVO.create(
+      ConsultationStatus.IN_PROGRESS,
+    );
     this.props.updatedAt = new Date();
   }
 
@@ -661,11 +683,13 @@ export class ConsultationRequest {
 
     if (this.status.isCompleted() || this.status.isCancelled()) {
       throw new Error(
-        `Cannot request info with status: ${this.status.getValue()}`
+        `Cannot request info with status: ${this.status.getValue()}`,
       );
     }
 
-    this.props.status = ConsultationStatusVO.create(ConsultationStatus.AWAITING_INFO);
+    this.props.status = ConsultationStatusVO.create(
+      ConsultationStatus.AWAITING_INFO,
+    );
     this.props.updatedAt = new Date();
   }
 
@@ -675,11 +699,13 @@ export class ConsultationRequest {
   complete(): void {
     if (!this.status.canBeCompleted()) {
       throw new Error(
-        `Cannot complete request with status: ${this.status.getValue()}`
+        `Cannot complete request with status: ${this.status.getValue()}`,
       );
     }
 
-    this.props.status = ConsultationStatusVO.create(ConsultationStatus.COMPLETED);
+    this.props.status = ConsultationStatusVO.create(
+      ConsultationStatus.COMPLETED,
+    );
     this.props.completedAt = new Date();
     this.props.updatedAt = new Date();
   }
@@ -690,11 +716,13 @@ export class ConsultationRequest {
   cancel(reason?: string): void {
     if (!this.status.canBeCancelled()) {
       throw new Error(
-        `Cannot cancel request with status: ${this.status.getValue()}`
+        `Cannot cancel request with status: ${this.status.getValue()}`,
       );
     }
 
-    this.props.status = ConsultationStatusVO.create(ConsultationStatus.CANCELLED);
+    this.props.status = ConsultationStatusVO.create(
+      ConsultationStatus.CANCELLED,
+    );
     this.props.updatedAt = new Date();
     // Reason would be stored in a separate event/history
   }
@@ -708,7 +736,8 @@ export class ConsultationRequest {
     }
 
     const hoursSinceCompletion = this.props.completedAt
-      ? (new Date().getTime() - this.props.completedAt.getTime()) / (1000 * 60 * 60)
+      ? (new Date().getTime() - this.props.completedAt.getTime()) /
+        (1000 * 60 * 60)
       : 0;
 
     if (hoursSinceCompletion > 48) {
@@ -719,7 +748,9 @@ export class ConsultationRequest {
       throw new Error('Dispute reason is required');
     }
 
-    this.props.status = ConsultationStatusVO.create(ConsultationStatus.DISPUTED);
+    this.props.status = ConsultationStatusVO.create(
+      ConsultationStatus.DISPUTED,
+    );
     this.props.updatedAt = new Date();
   }
 
@@ -727,7 +758,11 @@ export class ConsultationRequest {
    * Update SLA status based on current time
    */
   updateSLAStatus(): void {
-    if (this.props.slaDeadline && !this.status.isCompleted() && !this.status.isCancelled()) {
+    if (
+      this.props.slaDeadline &&
+      !this.status.isCompleted() &&
+      !this.status.isCancelled()
+    ) {
       this.props.slaStatus = SLAStatus.calculate(this.props.slaDeadline);
       this.props.updatedAt = new Date();
     }

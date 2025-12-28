@@ -7,7 +7,10 @@ import {
   // ... other Prisma enums
 } from '@prisma/client';
 
-import { CaseStatusEnum , PaymentStatusEnum } from 'src/core/domain/litigation-case/value-objects/litigation-case.vo';
+import {
+  CaseStatusEnum,
+  PaymentStatusEnum,
+} from 'src/core/domain/litigation-case/value-objects/litigation-case.vo';
 
 // ============================================
 // CASE STATUS MAPPER
@@ -56,7 +59,8 @@ export class PaymentStatusMapper {
       [PaymentStatusEnum.PENDING]: PrismaPaymentStatus.pending,
       [PaymentStatusEnum.PAID]: PrismaPaymentStatus.paid,
       [PaymentStatusEnum.REFUNDED]: PrismaPaymentStatus.refunded,
-      [PaymentStatusEnum.PARTIALLY_PAID]: PrismaPaymentStatus.partially_refunded, // or adjust
+      [PaymentStatusEnum.PARTIALLY_PAID]:
+        PrismaPaymentStatus.partially_refunded, // or adjust
     };
     return mapping[domainStatus];
   }
@@ -67,7 +71,8 @@ export class PaymentStatusMapper {
       [PrismaPaymentStatus.paid]: PaymentStatusEnum.PAID,
       [PrismaPaymentStatus.failed]: PaymentStatusEnum.PENDING,
       [PrismaPaymentStatus.refunded]: PaymentStatusEnum.REFUNDED,
-      [PrismaPaymentStatus.partially_refunded]: PaymentStatusEnum.PARTIALLY_PAID,
+      [PrismaPaymentStatus.partially_refunded]:
+        PaymentStatusEnum.PARTIALLY_PAID,
     };
     return mapping[prismaStatus];
   }

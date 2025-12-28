@@ -35,26 +35,27 @@ import { IMembershipInvoiceRepository } from './membership-invoice.repository';
  * });
  * ```
  */
-export interface IBillingUnitOfWork extends IBaseUnitOfWork<IBillingUnitOfWork> {
-    /**
-     * Repository for refund operations within the transaction.
-     */
-    readonly refunds: IRefundRepository;
+export interface IBillingUnitOfWork
+  extends IBaseUnitOfWork<IBillingUnitOfWork> {
+  /**
+   * Repository for refund operations within the transaction.
+   */
+  readonly refunds: IRefundRepository;
 
-    /**
-     * Repository for dispute operations within the transaction.
-     */
-    readonly disputes: IDisputeRepository;
+  /**
+   * Repository for dispute operations within the transaction.
+   */
+  readonly disputes: IDisputeRepository;
 
-    /**
-     * Repository for transaction log operations within the transaction.
-     */
-    readonly transactionLogs: ITransactionLogRepository;
+  /**
+   * Repository for transaction log operations within the transaction.
+   */
+  readonly transactionLogs: ITransactionLogRepository;
 
-    /**
-     * Repository for membership invoice operations within the transaction.
-     */
-    readonly invoices: IMembershipInvoiceRepository;
+  /**
+   * Repository for membership invoice operations within the transaction.
+   */
+  readonly invoices: IMembershipInvoiceRepository;
 }
 
 /**

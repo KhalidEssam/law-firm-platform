@@ -3,10 +3,16 @@
 // Application Layer - Business Logic
 // ============================================
 
-import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 // import { ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from '../../../domain/legal-opinion/entities/legal-opinion-request.entity';
-import {BackgroundContext} from '../../../domain/legal-opinion/value-objects/background-context.vo';
+import { BackgroundContext } from '../../../domain/legal-opinion/value-objects/background-context.vo';
 import { OpinionTypeVO } from 'src/core/domain/legal-opinion/value-objects/opinion-type.vo';
 import { OpinionType } from 'src/core/domain/legal-opinion/value-objects/opinion-type.vo';
 import { OpinionPriorityVO } from 'src/core/domain/legal-opinion/value-objects/opinion-priority.vo';
@@ -62,7 +68,7 @@ export class CreateOpinionRequestUseCase {
       country: command.jurisdiction.country,
       region: command.jurisdiction.region,
       city: command.jurisdiction.city,
-    //   legalSystem: command.jurisdiction.legalSystem,
+      //   legalSystem: command.jurisdiction.legalSystem,
     });
 
     // Create opinion request entity
@@ -73,15 +79,25 @@ export class CreateOpinionRequestUseCase {
       legalQuestion: LegalQuestion.create(command.legalQuestion),
       backgroundContext: BackgroundContext.create(command.backgroundContext),
       relevantFacts: RelevantFacts.create(command.relevantFacts),
-      specificIssues: command.specificIssues ? SpecificIssues.create(command.specificIssues) : undefined,
+      specificIssues: command.specificIssues
+        ? SpecificIssues.create(command.specificIssues)
+        : undefined,
       jurisdiction,
-      priority: OpinionPriorityVO.create((command.priority as OpinionPriority) || OpinionPriority.STANDARD),
-      requestedDeliveryDate: command.requestedDeliveryDate ? new Date(command.requestedDeliveryDate) : undefined,
-      deliveryFormat: DeliveryFormatVO.create((command.deliveryFormat as DeliveryFormat) || DeliveryFormat.PDF),
+      priority: OpinionPriorityVO.create(
+        (command.priority as OpinionPriority) || OpinionPriority.STANDARD,
+      ),
+      requestedDeliveryDate: command.requestedDeliveryDate
+        ? new Date(command.requestedDeliveryDate)
+        : undefined,
+      deliveryFormat: DeliveryFormatVO.create(
+        (command.deliveryFormat as DeliveryFormat) || DeliveryFormat.PDF,
+      ),
       includeExecutiveSummary: command.includeExecutiveSummary ?? true,
       includeCitations: command.includeCitations ?? true,
       includeRecommendations: command.includeRecommendations ?? true,
-      confidentialityLevel: ConfidentialityLevel.create(command.confidentialityLevel || 'standard'),
+      confidentialityLevel: ConfidentialityLevel.create(
+        command.confidentialityLevel || 'standard',
+      ),
     });
 
     // Save to repository
@@ -119,14 +135,18 @@ export class CreateOpinionRequestUseCase {
       includeExecutiveSummary: opinion.includeExecutiveSummary,
       includeCitations: opinion.includeCitations,
       includeRecommendations: opinion.includeRecommendations,
-      estimatedCost: opinion.estimatedCost ? {
-        amount: opinion.estimatedCost.getAmount(),
-        currency: opinion.estimatedCost.getCurrency(),
-      } : undefined,
-      finalCost: opinion.finalCost ? {
-        amount: opinion.finalCost.getAmount(),
-        currency: opinion.finalCost.getCurrency(),
-      } : undefined,
+      estimatedCost: opinion.estimatedCost
+        ? {
+            amount: opinion.estimatedCost.getAmount(),
+            currency: opinion.estimatedCost.getCurrency(),
+          }
+        : undefined,
+      finalCost: opinion.finalCost
+        ? {
+            amount: opinion.finalCost.getAmount(),
+            currency: opinion.finalCost.getCurrency(),
+          }
+        : undefined,
       isPaid: opinion.isPaid,
       paymentReference: opinion.paymentReference,
       submittedAt: opinion.submittedAt?.toISOString(),

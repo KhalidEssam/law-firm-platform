@@ -3,7 +3,13 @@
 // Application Layer - Business Logic
 // ============================================
 
-import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
 import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
@@ -26,8 +32,10 @@ export class GetOpinionRequestUseCase {
   ) {}
 
   async execute(query: GetOpinionRequestQuery): Promise<any> {
-    const opinion = await this.repository.findById(OpinionRequestId.create(query.opinionRequestId));
-    
+    const opinion = await this.repository.findById(
+      OpinionRequestId.create(query.opinionRequestId),
+    );
+
     if (!opinion) {
       throw new NotFoundException('Opinion request not found');
     }
@@ -38,7 +46,9 @@ export class GetOpinionRequestUseCase {
     const isAdmin = ['admin', 'manager'].includes(query.userRole);
 
     if (!isOwner && !isAssigned && !isAdmin) {
-      throw new ForbiddenException('You do not have access to this opinion request');
+      throw new ForbiddenException(
+        'You do not have access to this opinion request',
+      );
     }
 
     return this.toDto(opinion);
@@ -65,10 +75,12 @@ export class GetOpinionRequestUseCase {
       priority: opinion.priority.getValue(),
       status: opinion.status.getValue(),
       deliveryFormat: opinion.deliveryFormat.getValue(),
-      estimatedCost: opinion.estimatedCost ? {
-        amount: opinion.estimatedCost.getAmount(),
-        currency: opinion.estimatedCost.getCurrency(),
-      } : undefined,
+      estimatedCost: opinion.estimatedCost
+        ? {
+            amount: opinion.estimatedCost.getAmount(),
+            currency: opinion.estimatedCost.getCurrency(),
+          }
+        : undefined,
       isPaid: opinion.isPaid,
       createdAt: opinion.createdAt.toISOString(),
       updatedAt: opinion.updatedAt.toISOString(),

@@ -1,5 +1,3 @@
-
-
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
@@ -21,8 +19,10 @@ export class DeleteOpinionRequestUseCase {
   ) {}
 
   async execute(command: DeleteOpinionRequestCommand): Promise<void> {
-    const opinion = await this.repository.findById(OpinionRequestId.create(command.opinionRequestId));
-    
+    const opinion = await this.repository.findById(
+      OpinionRequestId.create(command.opinionRequestId),
+    );
+
     if (!opinion) {
       throw new NotFoundException('Opinion request not found');
     }

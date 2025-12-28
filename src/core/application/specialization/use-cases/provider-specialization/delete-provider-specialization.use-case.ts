@@ -8,40 +8,43 @@ import { PROVIDER_SPECIALIZATION_REPOSITORY } from '../../../../domain/specializ
 
 @Injectable()
 export class DeleteProviderSpecializationUseCase {
-    constructor(
-        @Inject(PROVIDER_SPECIALIZATION_REPOSITORY)
-        private readonly repository: IProviderSpecializationRepository,
-    ) {}
+  constructor(
+    @Inject(PROVIDER_SPECIALIZATION_REPOSITORY)
+    private readonly repository: IProviderSpecializationRepository,
+  ) {}
 
-    async execute(id: string): Promise<void> {
-        const providerSpecialization = await this.repository.findById(id);
+  async execute(id: string): Promise<void> {
+    const providerSpecialization = await this.repository.findById(id);
 
-        if (!providerSpecialization) {
-            throw new NotFoundException(`Provider specialization with ID "${id}" not found`);
-        }
-
-        await this.repository.delete(id);
+    if (!providerSpecialization) {
+      throw new NotFoundException(
+        `Provider specialization with ID "${id}" not found`,
+      );
     }
 
-    async executeByProviderAndSpecialization(
-        providerId: string,
-        specializationId: string
-    ): Promise<void> {
-        const providerSpecialization = await this.repository.findByProviderAndSpecialization(
-            providerId,
-            specializationId
-        );
+    await this.repository.delete(id);
+  }
 
-        if (!providerSpecialization) {
-            throw new NotFoundException(
-                `Provider specialization not found for provider "${providerId}" and specialization "${specializationId}"`
-            );
-        }
+  async executeByProviderAndSpecialization(
+    providerId: string,
+    specializationId: string,
+  ): Promise<void> {
+    const providerSpecialization =
+      await this.repository.findByProviderAndSpecialization(
+        providerId,
+        specializationId,
+      );
 
-        await this.repository.delete(providerSpecialization.id);
+    if (!providerSpecialization) {
+      throw new NotFoundException(
+        `Provider specialization not found for provider "${providerId}" and specialization "${specializationId}"`,
+      );
     }
 
-    async executeAllByProvider(providerId: string): Promise<void> {
-        await this.repository.deleteByProvider(providerId);
-    }
+    await this.repository.delete(providerSpecialization.id);
+  }
+
+  async executeAllByProvider(providerId: string): Promise<void> {
+    await this.repository.deleteByProvider(providerId);
+  }
 }

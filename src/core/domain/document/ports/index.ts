@@ -3,9 +3,9 @@
 // ============================================
 
 export {
-    DOCUMENT_REPOSITORY,
-    type ListDocumentsOptions,
-    type DocumentsByRequestOptions,
-    type DocumentStatistics,
-    type IDocumentRepository,
+  DOCUMENT_REPOSITORY,
+  type ListDocumentsOptions,
+  type DocumentsByRequestOptions,
+  type DocumentStatistics,
+  type IDocumentRepository,
 } from './document.repository';

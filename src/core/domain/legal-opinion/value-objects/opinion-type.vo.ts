@@ -67,12 +67,18 @@ export class OpinionTypeVO {
   // Get description
   getDescription(): string {
     const descriptions: Record<OpinionType, string> = {
-      [OpinionType.LEGAL_ANALYSIS]: 'Comprehensive analysis of a legal issue or situation',
-      [OpinionType.CONTRACT_REVIEW]: 'Review and analysis of contract terms and conditions',
-      [OpinionType.COMPLIANCE_OPINION]: 'Assessment of compliance with applicable laws and regulations',
-      [OpinionType.DUE_DILIGENCE]: 'Legal due diligence for transactions or investments',
-      [OpinionType.LITIGATION_RISK]: 'Assessment of litigation risks and potential outcomes',
-      [OpinionType.REGULATORY_OPINION]: 'Opinion on regulatory requirements and compliance',
+      [OpinionType.LEGAL_ANALYSIS]:
+        'Comprehensive analysis of a legal issue or situation',
+      [OpinionType.CONTRACT_REVIEW]:
+        'Review and analysis of contract terms and conditions',
+      [OpinionType.COMPLIANCE_OPINION]:
+        'Assessment of compliance with applicable laws and regulations',
+      [OpinionType.DUE_DILIGENCE]:
+        'Legal due diligence for transactions or investments',
+      [OpinionType.LITIGATION_RISK]:
+        'Assessment of litigation risks and potential outcomes',
+      [OpinionType.REGULATORY_OPINION]:
+        'Opinion on regulatory requirements and compliance',
       [OpinionType.CUSTOM]: 'Custom legal opinion tailored to specific needs',
     };
     return descriptions[this.value];

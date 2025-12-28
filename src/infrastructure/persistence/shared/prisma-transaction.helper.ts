@@ -5,50 +5,50 @@
 
 import { Prisma } from '@prisma/client';
 import {
-    TransactionOptions,
-    TransactionIsolationLevel,
-    DEFAULT_TRANSACTION_OPTIONS,
+  TransactionOptions,
+  TransactionIsolationLevel,
+  DEFAULT_TRANSACTION_OPTIONS,
 } from '../../../core/domain/shared/ports/base-unit-of-work.interface';
 
 /**
  * Prisma interactive transaction options type.
  */
 export interface PrismaInteractiveTransactionOptions {
-    maxWait?: number;
-    timeout?: number;
-    isolationLevel?: Prisma.TransactionIsolationLevel;
+  maxWait?: number;
+  timeout?: number;
+  isolationLevel?: Prisma.TransactionIsolationLevel;
 }
 
 /**
  * Maps our domain transaction options to Prisma transaction options.
  */
 export function toPrismaTransactionOptions(
-    options?: TransactionOptions,
+  options?: TransactionOptions,
 ): PrismaInteractiveTransactionOptions {
-    const opts = options ?? DEFAULT_TRANSACTION_OPTIONS;
+  const opts = options ?? DEFAULT_TRANSACTION_OPTIONS;
 
-    return {
-        maxWait: opts.maxWait,
-        timeout: opts.timeout,
-        isolationLevel: mapIsolationLevel(opts.isolationLevel),
-    };
+  return {
+    maxWait: opts.maxWait,
+    timeout: opts.timeout,
+    isolationLevel: mapIsolationLevel(opts.isolationLevel),
+  };
 }
 
 /**
  * Maps domain isolation level to Prisma isolation level.
  */
 function mapIsolationLevel(
-    level?: TransactionIsolationLevel,
+  level?: TransactionIsolationLevel,
 ): Prisma.TransactionIsolationLevel {
-    switch (level) {
-        case TransactionIsolationLevel.Serializable:
-            return Prisma.TransactionIsolationLevel.Serializable;
-        case TransactionIsolationLevel.RepeatableRead:
-            return Prisma.TransactionIsolationLevel.RepeatableRead;
-        case TransactionIsolationLevel.ReadCommitted:
-        default:
-            return Prisma.TransactionIsolationLevel.ReadCommitted;
-    }
+  switch (level) {
+    case TransactionIsolationLevel.Serializable:
+      return Prisma.TransactionIsolationLevel.Serializable;
+    case TransactionIsolationLevel.RepeatableRead:
+      return Prisma.TransactionIsolationLevel.RepeatableRead;
+    case TransactionIsolationLevel.ReadCommitted:
+    default:
+      return Prisma.TransactionIsolationLevel.ReadCommitted;
+  }
 }
 
 /**
@@ -62,6 +62,6 @@ export type PrismaTransactionClient = Prisma.TransactionClient;
  * Use this when creating transactional repository implementations.
  */
 export type TransactionalPrismaClient = Omit<
-    PrismaTransactionClient,
-    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+  PrismaTransactionClient,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
 >;

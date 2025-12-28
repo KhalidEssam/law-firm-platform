@@ -6,10 +6,10 @@
 // import { DomainException } from '../shared/domain-exception';
 
 export enum OpinionPriority {
-  STANDARD = 'standard',     // 7-10 business days
-  EXPEDITED = 'expedited',   // 3-5 business days
-  RUSH = 'rush',             // 24-48 hours
-  URGENT = 'urgent',         // Within 24 hours
+  STANDARD = 'standard', // 7-10 business days
+  EXPEDITED = 'expedited', // 3-5 business days
+  RUSH = 'rush', // 24-48 hours
+  URGENT = 'urgent', // Within 24 hours
 }
 
 export class OpinionPriorityVO {
@@ -68,7 +68,10 @@ export class OpinionPriorityVO {
   }
 
   isUrgent(): boolean {
-    return this.value === OpinionPriority.URGENT || this.value === OpinionPriority.RUSH;
+    return (
+      this.value === OpinionPriority.URGENT ||
+      this.value === OpinionPriority.RUSH
+    );
   }
 
   equals(other: OpinionPriorityVO): boolean {
@@ -115,11 +118,15 @@ export class DeliveryFormatVO {
   }
 
   includesPDF(): boolean {
-    return this.value === DeliveryFormat.PDF || this.value === DeliveryFormat.BOTH;
+    return (
+      this.value === DeliveryFormat.PDF || this.value === DeliveryFormat.BOTH
+    );
   }
 
   includesWord(): boolean {
-    return this.value === DeliveryFormat.WORD || this.value === DeliveryFormat.BOTH;
+    return (
+      this.value === DeliveryFormat.WORD || this.value === DeliveryFormat.BOTH
+    );
   }
 
   getLabel(): string {
@@ -160,11 +167,9 @@ export class Money {
     // if (amount < 0) {
     //   throw new DomainException('Amount cannot be negative');
     // }
-
     // if (!currency || currency.trim().length === 0) {
     //   throw new DomainException('Currency is required');
     // }
-
     // if (currency.length !== 3) {
     //   throw new DomainException('Currency must be 3-letter ISO code (e.g., SAR, USD)');
     // }
@@ -212,7 +217,7 @@ export class Money {
   divide(divisor: number): Money {
     if (divisor === 0) {
       return Money.zero(this.currency);
-    //   throw new DomainException('Cannot divide by zero');
+      //   throw new DomainException('Cannot divide by zero');
     }
     return new Money(this.amount / divisor, this.currency);
   }
@@ -239,9 +244,9 @@ export class Money {
   private ensureSameCurrency(other: Money): void {
     if (this.currency !== other.currency) {
       // TODO: Add a custom exception
-    //   throw new DomainException(
-    //     `Cannot operate on different currencies: ${this.currency} and ${other.currency}`
-    //   );
+      //   throw new DomainException(
+      //     `Cannot operate on different currencies: ${this.currency} and ${other.currency}`
+      //   );
     }
   }
 

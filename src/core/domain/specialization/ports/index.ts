@@ -3,16 +3,16 @@
 // ============================================
 
 export {
-    // DI Tokens
-    SPECIALIZATION_REPOSITORY,
-    PROVIDER_SPECIALIZATION_REPOSITORY,
+  // DI Tokens
+  SPECIALIZATION_REPOSITORY,
+  PROVIDER_SPECIALIZATION_REPOSITORY,
 
-    // Options interfaces
-    type ListSpecializationsOptions,
-    type ListProviderSpecializationsOptions,
-    type ProvidersBySpecializationOptions,
+  // Options interfaces
+  type ListSpecializationsOptions,
+  type ListProviderSpecializationsOptions,
+  type ProvidersBySpecializationOptions,
 
-    // Repository interfaces
-    type ISpecializationRepository,
-    type IProviderSpecializationRepository,
+  // Repository interfaces
+  type ISpecializationRepository,
+  type IProviderSpecializationRepository,
 } from './specialization.repository';

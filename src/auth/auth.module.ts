@@ -10,10 +10,7 @@ import { ROLE_PROVIDER } from './role.provider';
 import { Auth0RoleProvider } from '../infrastructure/persistence/auth0/auth0-role.provider';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    Auth0Module,
-  ],
+  imports: [PassportModule.register({ defaultStrategy: 'jwt' }), Auth0Module],
   providers: [
     JwtStrategy,
     AuthDomainService,
@@ -23,4 +20,4 @@ import { Auth0RoleProvider } from '../infrastructure/persistence/auth0/auth0-rol
   ],
   exports: [AuthDomainService, AuthRoleService],
 })
-export class AuthModule { }
+export class AuthModule {}

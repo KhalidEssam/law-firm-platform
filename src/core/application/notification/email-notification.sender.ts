@@ -3,48 +3,51 @@
 // src/core/application/notification/email-notification.sender.ts
 // ============================================
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { NotificationSender } from './interfaces/notification-sender.interface';
 import { Notification } from '../../domain/notification/entities/notification.entity';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailNotificationSender extends NotificationSender {
-    private transporter: nodemailer.Transporter;
+  private readonly logger = new Logger(EmailNotificationSender.name);
+  private transporter: nodemailer.Transporter;
 
-    constructor() {
-        super();
-        this.transporter = nodemailer.createTransport({
-            host: process.env.MAIL_HOST ?? 'mail.exoln.com',
-            port: parseInt(process.env.MAIL_PORT ?? '465'),
-            secure: true,
-            auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASS,
-            },
-        });
+  constructor() {
+    super();
+    this.transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST ?? 'mail.exoln.com',
+      port: parseInt(process.env.MAIL_PORT ?? '465'),
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+  }
+
+  async send(notification: Notification, recipient: string): Promise<void> {
+    const mailOptions: nodemailer.SendMailOptions = {
+      from: `"${process.env.MAIL_FROM_NAME ?? 'Exoln Lex'}" <${process.env.MAIL_USER}>`,
+      to: recipient,
+      subject: notification.title,
+      text: notification.message,
+      html: this.buildHtmlContent(notification),
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      this.logger.log(
+        `Email notification sent to ${recipient}: ${notification.type}`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${recipient}`, error.stack);
+      throw error;
     }
+  }
 
-    async send(notification: Notification, recipient: string): Promise<void> {
-        const mailOptions: nodemailer.SendMailOptions = {
-            from: `"${process.env.MAIL_FROM_NAME ?? 'Exoln Lex'}" <${process.env.MAIL_USER}>`,
-            to: recipient,
-            subject: notification.title,
-            text: notification.message,
-            html: this.buildHtmlContent(notification),
-        };
-
-        try {
-            await this.transporter.sendMail(mailOptions);
-            console.log(`📧 Email notification sent to ${recipient}: ${notification.type}`);
-        } catch (error) {
-            console.error(`Failed to send email to ${recipient}:`, error);
-            throw error;
-        }
-    }
-
-    private buildHtmlContent(notification: Notification): string {
-        return `
+  private buildHtmlContent(notification: Notification): string {
+    return `
             <!DOCTYPE html>
             <html dir="ltr" lang="en">
             <head>
@@ -106,5 +109,5 @@ export class EmailNotificationSender extends NotificationSender {
             </body>
             </html>
         `;
-    }
+  }
 }

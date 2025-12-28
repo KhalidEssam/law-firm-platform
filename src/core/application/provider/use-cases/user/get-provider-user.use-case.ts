@@ -6,13 +6,16 @@ import { ProviderUser } from '../../../../domain/provider/entities/provider-user
 import { IProviderUserRepository } from '../../ports/repository';
 
 export class GetProviderUserUseCase {
-    constructor(private readonly repository: IProviderUserRepository) {}
+  constructor(private readonly repository: IProviderUserRepository) {}
 
-    async execute(id: string): Promise<ProviderUser | null> {
-        return await this.repository.findById(id);
-    }
+  async execute(id: string): Promise<ProviderUser | null> {
+    return await this.repository.findById(id);
+  }
 
-    async executeByProviderAndUser(providerId: string, userId: string): Promise<ProviderUser | null> {
-        return await this.repository.findByProviderAndUser(providerId, userId);
-    }
+  async executeByProviderAndUser(
+    providerId: string,
+    userId: string,
+  ): Promise<ProviderUser | null> {
+    return await this.repository.findByProviderAndUser(providerId, userId);
+  }
 }

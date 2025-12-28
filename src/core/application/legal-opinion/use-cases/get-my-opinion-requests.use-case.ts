@@ -3,17 +3,11 @@
 // Application Layer - State Management
 // ============================================
 
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-
-} from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
 import { PaginationParams } from 'src/infrastructure/persistence/consultation/prisma.repository';
 import { UserId } from 'src/core/domain/consultation/value-objects/consultation-request-domain';
-
 
 // ============================================
 // GET MY OPINION REQUESTS USE CASE
@@ -39,7 +33,7 @@ export class GetMyOpinionRequestsUseCase {
     );
 
     return {
-      data: result.data.map(opinion => this.toDto(opinion)),
+      data: result.data.map((opinion) => this.toDto(opinion)),
       pagination: result.pagination,
     };
   }
@@ -53,10 +47,12 @@ export class GetMyOpinionRequestsUseCase {
       status: opinion.status.getValue(),
       priority: opinion.priority.getValue(),
       isPaid: opinion.isPaid,
-      estimatedCost: opinion.estimatedCost ? {
-        amount: opinion.estimatedCost.getAmount(),
-        currency: opinion.estimatedCost.getCurrency(),
-      } : undefined,
+      estimatedCost: opinion.estimatedCost
+        ? {
+            amount: opinion.estimatedCost.getAmount(),
+            currency: opinion.estimatedCost.getCurrency(),
+          }
+        : undefined,
       submittedAt: opinion.submittedAt?.toISOString(),
       completedAt: opinion.completedAt?.toISOString(),
       createdAt: opinion.createdAt.toISOString(),

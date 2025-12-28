@@ -6,17 +6,19 @@ import { ProviderProfile } from '../../../../domain/provider/entities/providerpr
 import { IProviderProfileRepository } from '../../ports/repository';
 
 export class GetProviderProfileUseCase {
-    constructor(private readonly repository: IProviderProfileRepository) {}
+  constructor(private readonly repository: IProviderProfileRepository) {}
 
-    async execute(id: string): Promise<ProviderProfile | null> {
-        return await this.repository.findById(id);
-    }
+  async execute(id: string): Promise<ProviderProfile | null> {
+    return await this.repository.findById(id);
+  }
 
-    async executeByUserId(userId: string): Promise<ProviderProfile | null> {
-        return await this.repository.findByUserId(userId);
-    }
+  async executeByUserId(userId: string): Promise<ProviderProfile | null> {
+    return await this.repository.findByUserId(userId);
+  }
 
-    async executeByLicenseNumber(licenseNumber: string): Promise<ProviderProfile | null> {
-        return await this.repository.findByLicenseNumber(licenseNumber);
-    }
+  async executeByLicenseNumber(
+    licenseNumber: string,
+  ): Promise<ProviderProfile | null> {
+    return await this.repository.findByLicenseNumber(licenseNumber);
+  }
 }

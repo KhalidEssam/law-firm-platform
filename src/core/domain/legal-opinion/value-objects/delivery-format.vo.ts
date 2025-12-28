@@ -34,11 +34,15 @@ export class DeliveryFormatVO {
   }
 
   includesPDF(): boolean {
-    return this.value === DeliveryFormat.PDF || this.value === DeliveryFormat.BOTH;
+    return (
+      this.value === DeliveryFormat.PDF || this.value === DeliveryFormat.BOTH
+    );
   }
 
   includesWord(): boolean {
-    return this.value === DeliveryFormat.WORD || this.value === DeliveryFormat.BOTH;
+    return (
+      this.value === DeliveryFormat.WORD || this.value === DeliveryFormat.BOTH
+    );
   }
 
   getLabel(): string {

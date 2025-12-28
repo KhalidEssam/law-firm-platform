@@ -8,10 +8,10 @@
 // ============================================
 
 export type {
-    ICallRequestRepository,
-    CallRequestFilter,
-    PaginationOptions,
-    PaginatedResult,
+  ICallRequestRepository,
+  CallRequestFilter,
+  PaginationOptions,
+  PaginatedResult,
 } from '../../../domain/call-request/ports/call-request.repository';
 
 export { CALL_REQUEST_REPOSITORY } from '../../../domain/call-request/ports/call-request.repository';

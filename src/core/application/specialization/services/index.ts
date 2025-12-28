@@ -3,7 +3,7 @@
 // ============================================
 
 export {
-    SpecializationIntegrationService,
-    type ProviderWithSpecializations,
-    type SpecializationMatch,
+  SpecializationIntegrationService,
+  type ProviderWithSpecializations,
+  type SpecializationMatch,
 } from './specialization-integration.service';

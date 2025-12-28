@@ -7,7 +7,7 @@
 
 /**
  * OpinionSubject - The subject or title of the legal opinion request
- * 
+ *
  * Business Rules:
  * - Must be between 10 and 200 characters
  * - Cannot be empty or whitespace only
@@ -28,21 +28,17 @@ export class OpinionSubject {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Opinion subject cannot be empty');
     // }
-
     // const trimmed = value.trim();
-
     // if (trimmed.length < OpinionSubject.MIN_LENGTH) {
     //   throw new DomainException(
     //     `Opinion subject must be at least ${OpinionSubject.MIN_LENGTH} characters`
     //   );
     // }
-
     // if (trimmed.length > OpinionSubject.MAX_LENGTH) {
     //   throw new DomainException(
     //     `Opinion subject cannot exceed ${OpinionSubject.MAX_LENGTH} characters`
     //   );
     // }
-
     // // Additional validation: Should not be all caps (poor UX)
     // if (trimmed === trimmed.toUpperCase() && trimmed.length > 20) {
     //   throw new DomainException(

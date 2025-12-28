@@ -4,84 +4,86 @@
 // ============================================
 
 export enum InvoiceStatusEnum {
-    UNPAID = 'unpaid',
-    PAID = 'paid',
-    OVERDUE = 'overdue',
-    CANCELLED = 'cancelled',
+  UNPAID = 'unpaid',
+  PAID = 'paid',
+  OVERDUE = 'overdue',
+  CANCELLED = 'cancelled',
 }
 
 export class InvoiceStatus {
-    private static readonly allowedStatuses = Object.values(InvoiceStatusEnum);
+  private static readonly allowedStatuses = Object.values(InvoiceStatusEnum);
 
-    private constructor(private readonly value: InvoiceStatusEnum) {}
+  private constructor(private readonly value: InvoiceStatusEnum) {}
 
-    static create(value: string): InvoiceStatus {
-        const normalizedValue = value.toLowerCase() as InvoiceStatusEnum;
-        if (!InvoiceStatus.allowedStatuses.includes(normalizedValue)) {
-            throw new Error(`Invalid invoice status: ${value}`);
-        }
-        return new InvoiceStatus(normalizedValue);
+  static create(value: string): InvoiceStatus {
+    const normalizedValue = value.toLowerCase() as InvoiceStatusEnum;
+    if (!InvoiceStatus.allowedStatuses.includes(normalizedValue)) {
+      throw new Error(`Invalid invoice status: ${value}`);
     }
+    return new InvoiceStatus(normalizedValue);
+  }
 
-    static unpaid(): InvoiceStatus {
-        return new InvoiceStatus(InvoiceStatusEnum.UNPAID);
-    }
+  static unpaid(): InvoiceStatus {
+    return new InvoiceStatus(InvoiceStatusEnum.UNPAID);
+  }
 
-    static paid(): InvoiceStatus {
-        return new InvoiceStatus(InvoiceStatusEnum.PAID);
-    }
+  static paid(): InvoiceStatus {
+    return new InvoiceStatus(InvoiceStatusEnum.PAID);
+  }
 
-    static overdue(): InvoiceStatus {
-        return new InvoiceStatus(InvoiceStatusEnum.OVERDUE);
-    }
+  static overdue(): InvoiceStatus {
+    return new InvoiceStatus(InvoiceStatusEnum.OVERDUE);
+  }
 
-    static cancelled(): InvoiceStatus {
-        return new InvoiceStatus(InvoiceStatusEnum.CANCELLED);
-    }
+  static cancelled(): InvoiceStatus {
+    return new InvoiceStatus(InvoiceStatusEnum.CANCELLED);
+  }
 
-    getValue(): InvoiceStatusEnum {
-        return this.value;
-    }
+  getValue(): InvoiceStatusEnum {
+    return this.value;
+  }
 
-    // State query methods
-    isUnpaid(): boolean {
-        return this.value === InvoiceStatusEnum.UNPAID;
-    }
+  // State query methods
+  isUnpaid(): boolean {
+    return this.value === InvoiceStatusEnum.UNPAID;
+  }
 
-    isPaid(): boolean {
-        return this.value === InvoiceStatusEnum.PAID;
-    }
+  isPaid(): boolean {
+    return this.value === InvoiceStatusEnum.PAID;
+  }
 
-    isOverdue(): boolean {
-        return this.value === InvoiceStatusEnum.OVERDUE;
-    }
+  isOverdue(): boolean {
+    return this.value === InvoiceStatusEnum.OVERDUE;
+  }
 
-    isCancelled(): boolean {
-        return this.value === InvoiceStatusEnum.CANCELLED;
-    }
+  isCancelled(): boolean {
+    return this.value === InvoiceStatusEnum.CANCELLED;
+  }
 
-    // Business rule methods
-    canBePaid(): boolean {
-        return [InvoiceStatusEnum.UNPAID, InvoiceStatusEnum.OVERDUE].includes(this.value);
-    }
+  // Business rule methods
+  canBePaid(): boolean {
+    return [InvoiceStatusEnum.UNPAID, InvoiceStatusEnum.OVERDUE].includes(
+      this.value,
+    );
+  }
 
-    canBeCancelled(): boolean {
-        return this.value === InvoiceStatusEnum.UNPAID;
-    }
+  canBeCancelled(): boolean {
+    return this.value === InvoiceStatusEnum.UNPAID;
+  }
 
-    canBeMarkedOverdue(): boolean {
-        return this.value === InvoiceStatusEnum.UNPAID;
-    }
+  canBeMarkedOverdue(): boolean {
+    return this.value === InvoiceStatusEnum.UNPAID;
+  }
 
-    equals(other: InvoiceStatus): boolean {
-        return this.value === other.value;
-    }
+  equals(other: InvoiceStatus): boolean {
+    return this.value === other.value;
+  }
 
-    toString(): string {
-        return this.value;
-    }
+  toString(): string {
+    return this.value;
+  }
 
-    toJSON(): string {
-        return this.value;
-    }
+  toJSON(): string {
+    return this.value;
+  }
 }

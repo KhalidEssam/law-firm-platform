@@ -16,8 +16,8 @@ import { PrismaLegalOpinionRequestRepository } from '../persistence/legal-opinio
 
 // Unit of Work
 import {
-    PrismaLegalOpinionUnitOfWork,
-    LEGAL_OPINION_UNIT_OF_WORK,
+  PrismaLegalOpinionUnitOfWork,
+  LEGAL_OPINION_UNIT_OF_WORK,
 } from '../persistence/legal-opinion/prisma-legal-opinion.uow';
 
 // Use Cases

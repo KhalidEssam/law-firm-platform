@@ -4,17 +4,17 @@ import type { IUserRepository } from '../../domain/user/ports/user.repository';
 
 @Injectable()
 export class VerifyMobileUseCase {
-    constructor(
-        @Inject('IUserRepository')
-        private readonly userRepository: IUserRepository,
-    ) { }
+  constructor(
+    @Inject('IUserRepository')
+    private readonly userRepository: IUserRepository,
+  ) {}
 
-    async execute(userId: string): Promise<User> {
-        const user = await this.userRepository.findById(userId);
-        if (!user) {
-            throw new NotFoundException(`User with ID ${userId} not found`);
-        }
-
-        return await this.userRepository.verifyMobile(userId);
+  async execute(userId: string): Promise<User> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
     }
+
+    return await this.userRepository.verifyMobile(userId);
+  }
 }

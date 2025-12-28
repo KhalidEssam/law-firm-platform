@@ -5,13 +5,13 @@
 import { IProviderProfileRepository } from '../../ports/repository';
 
 export class DeleteProviderProfileUseCase {
-    constructor(private readonly repository: IProviderProfileRepository) {}
+  constructor(private readonly repository: IProviderProfileRepository) {}
 
-    async execute(id: string, soft: boolean = true): Promise<void> {
-        if (soft) {
-            await this.repository.softDelete(id);
-        } else {
-            await this.repository.delete(id);
-        }
+  async execute(id: string, soft: boolean = true): Promise<void> {
+    if (soft) {
+      await this.repository.softDelete(id);
+    } else {
+      await this.repository.delete(id);
     }
+  }
 }

@@ -5,8 +5,8 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-    NotificationPreference,
-    UserNotificationPreferences,
+  NotificationPreference,
+  UserNotificationPreferences,
 } from '../../../domain/notification/entities/notification-preference.entity';
 import { type INotificationPreferenceRepository } from '../../../domain/notification/ports/notification-preference.repository';
 import { NotificationChannel } from '../../../domain/notification/value-objects/notification-channel.enum';
@@ -16,30 +16,30 @@ import { NotificationChannel } from '../../../domain/notification/value-objects/
 // ============================================
 
 export interface SetPreferenceDto {
-    userId: string;
-    channel: NotificationChannel;
-    eventType: string;
-    enabled: boolean;
+  userId: string;
+  channel: NotificationChannel;
+  eventType: string;
+  enabled: boolean;
 }
 
 export interface BulkSetPreferencesDto {
-    userId: string;
-    preferences: Array<{
-        channel: NotificationChannel;
-        eventType: string;
-        enabled: boolean;
-    }>;
+  userId: string;
+  preferences: Array<{
+    channel: NotificationChannel;
+    eventType: string;
+    enabled: boolean;
+  }>;
 }
 
 export interface UserPreferencesResponseDto {
-    userId: string;
-    preferences: Array<{
-        id: string;
-        channel: NotificationChannel;
-        eventType: string;
-        enabled: boolean;
-    }>;
-    byChannel: Record<string, Array<{ eventType: string; enabled: boolean }>>;
+  userId: string;
+  preferences: Array<{
+    id: string;
+    channel: NotificationChannel;
+    eventType: string;
+    enabled: boolean;
+  }>;
+  byChannel: Record<string, Array<{ eventType: string; enabled: boolean }>>;
 }
 
 // ============================================
@@ -48,58 +48,78 @@ export interface UserPreferencesResponseDto {
 
 @Injectable()
 export class GetNotificationPreferencesUseCase {
-    constructor(private readonly preferenceRepository: INotificationPreferenceRepository) {}
+  constructor(
+    private readonly preferenceRepository: INotificationPreferenceRepository,
+  ) {}
 
-    async forUser(userId: string): Promise<UserPreferencesResponseDto> {
-        const preferences = await this.preferenceRepository.findByUserId(userId);
+  async forUser(userId: string): Promise<UserPreferencesResponseDto> {
+    const preferences = await this.preferenceRepository.findByUserId(userId);
 
-        const byChannel: Record<string, Array<{ eventType: string; enabled: boolean }>> = {};
-        for (const pref of preferences) {
-            const channel = pref.channel;
-            if (!byChannel[channel]) {
-                byChannel[channel] = [];
-            }
-            byChannel[channel].push({
-                eventType: pref.eventType,
-                enabled: pref.enabled,
-            });
-        }
-
-        return {
-            userId,
-            preferences: preferences.map(p => ({
-                id: p.id,
-                channel: p.channel,
-                eventType: p.eventType,
-                enabled: p.enabled,
-            })),
-            byChannel,
-        };
+    const byChannel: Record<
+      string,
+      Array<{ eventType: string; enabled: boolean }>
+    > = {};
+    for (const pref of preferences) {
+      const channel = pref.channel;
+      if (!byChannel[channel]) {
+        byChannel[channel] = [];
+      }
+      byChannel[channel].push({
+        eventType: pref.eventType,
+        enabled: pref.enabled,
+      });
     }
 
-    async forUserAndChannel(
-        userId: string,
-        channel: NotificationChannel
-    ): Promise<NotificationPreference[]> {
-        return await this.preferenceRepository.findByUserIdAndChannel(userId, channel);
-    }
+    return {
+      userId,
+      preferences: preferences.map((p) => ({
+        id: p.id,
+        channel: p.channel,
+        eventType: p.eventType,
+        enabled: p.enabled,
+      })),
+      byChannel,
+    };
+  }
 
-    async isEnabled(
-        userId: string,
-        channel: NotificationChannel,
-        eventType: string
-    ): Promise<boolean> {
-        return await this.preferenceRepository.isNotificationEnabled(userId, channel, eventType);
-    }
+  async forUserAndChannel(
+    userId: string,
+    channel: NotificationChannel,
+  ): Promise<NotificationPreference[]> {
+    return await this.preferenceRepository.findByUserIdAndChannel(
+      userId,
+      channel,
+    );
+  }
 
-    async getEnabledChannelsForEvent(userId: string, eventType: string): Promise<NotificationChannel[]> {
-        return await this.preferenceRepository.getEnabledChannelsForEvent(userId, eventType);
-    }
+  async isEnabled(
+    userId: string,
+    channel: NotificationChannel,
+    eventType: string,
+  ): Promise<boolean> {
+    return await this.preferenceRepository.isNotificationEnabled(
+      userId,
+      channel,
+      eventType,
+    );
+  }
 
-    async getUserPreferencesCollection(userId: string): Promise<UserNotificationPreferences> {
-        const preferences = await this.preferenceRepository.findByUserId(userId);
-        return UserNotificationPreferences.fromList(userId, preferences);
-    }
+  async getEnabledChannelsForEvent(
+    userId: string,
+    eventType: string,
+  ): Promise<NotificationChannel[]> {
+    return await this.preferenceRepository.getEnabledChannelsForEvent(
+      userId,
+      eventType,
+    );
+  }
+
+  async getUserPreferencesCollection(
+    userId: string,
+  ): Promise<UserNotificationPreferences> {
+    const preferences = await this.preferenceRepository.findByUserId(userId);
+    return UserNotificationPreferences.fromList(userId, preferences);
+  }
 }
 
 // ============================================
@@ -108,86 +128,88 @@ export class GetNotificationPreferencesUseCase {
 
 @Injectable()
 export class SetNotificationPreferenceUseCase {
-    constructor(private readonly preferenceRepository: INotificationPreferenceRepository) {}
+  constructor(
+    private readonly preferenceRepository: INotificationPreferenceRepository,
+  ) {}
 
-    async execute(dto: SetPreferenceDto): Promise<NotificationPreference> {
-        const preference = NotificationPreference.create({
-            userId: dto.userId,
-            channel: dto.channel,
-            eventType: dto.eventType,
-            enabled: dto.enabled,
-        });
+  async execute(dto: SetPreferenceDto): Promise<NotificationPreference> {
+    const preference = NotificationPreference.create({
+      userId: dto.userId,
+      channel: dto.channel,
+      eventType: dto.eventType,
+      enabled: dto.enabled,
+    });
 
-        return await this.preferenceRepository.upsert(preference);
+    return await this.preferenceRepository.upsert(preference);
+  }
+
+  async enable(
+    userId: string,
+    channel: NotificationChannel,
+    eventType: string,
+  ): Promise<NotificationPreference> {
+    const existing = await this.preferenceRepository.findByUserChannelAndEvent(
+      userId,
+      channel,
+      eventType,
+    );
+
+    if (existing) {
+      return await this.preferenceRepository.enable(existing.id);
     }
 
-    async enable(
-        userId: string,
-        channel: NotificationChannel,
-        eventType: string
-    ): Promise<NotificationPreference> {
-        const existing = await this.preferenceRepository.findByUserChannelAndEvent(
-            userId,
-            channel,
-            eventType
-        );
+    const preference = NotificationPreference.create({
+      userId,
+      channel,
+      eventType,
+      enabled: true,
+    });
 
-        if (existing) {
-            return await this.preferenceRepository.enable(existing.id);
-        }
+    return await this.preferenceRepository.create(preference);
+  }
 
-        const preference = NotificationPreference.create({
-            userId,
-            channel,
-            eventType,
-            enabled: true,
-        });
+  async disable(
+    userId: string,
+    channel: NotificationChannel,
+    eventType: string,
+  ): Promise<NotificationPreference> {
+    const existing = await this.preferenceRepository.findByUserChannelAndEvent(
+      userId,
+      channel,
+      eventType,
+    );
 
-        return await this.preferenceRepository.create(preference);
+    if (existing) {
+      return await this.preferenceRepository.disable(existing.id);
     }
 
-    async disable(
-        userId: string,
-        channel: NotificationChannel,
-        eventType: string
-    ): Promise<NotificationPreference> {
-        const existing = await this.preferenceRepository.findByUserChannelAndEvent(
-            userId,
-            channel,
-            eventType
-        );
+    const preference = NotificationPreference.create({
+      userId,
+      channel,
+      eventType,
+      enabled: false,
+    });
 
-        if (existing) {
-            return await this.preferenceRepository.disable(existing.id);
-        }
+    return await this.preferenceRepository.create(preference);
+  }
 
-        const preference = NotificationPreference.create({
-            userId,
-            channel,
-            eventType,
-            enabled: false,
-        });
+  async toggle(
+    userId: string,
+    channel: NotificationChannel,
+    eventType: string,
+  ): Promise<NotificationPreference> {
+    const isEnabled = await this.preferenceRepository.isNotificationEnabled(
+      userId,
+      channel,
+      eventType,
+    );
 
-        return await this.preferenceRepository.create(preference);
+    if (isEnabled) {
+      return this.disable(userId, channel, eventType);
+    } else {
+      return this.enable(userId, channel, eventType);
     }
-
-    async toggle(
-        userId: string,
-        channel: NotificationChannel,
-        eventType: string
-    ): Promise<NotificationPreference> {
-        const isEnabled = await this.preferenceRepository.isNotificationEnabled(
-            userId,
-            channel,
-            eventType
-        );
-
-        if (isEnabled) {
-            return this.disable(userId, channel, eventType);
-        } else {
-            return this.enable(userId, channel, eventType);
-        }
-    }
+  }
 }
 
 // ============================================
@@ -196,51 +218,68 @@ export class SetNotificationPreferenceUseCase {
 
 @Injectable()
 export class BulkSetNotificationPreferencesUseCase {
-    constructor(private readonly preferenceRepository: INotificationPreferenceRepository) {}
+  constructor(
+    private readonly preferenceRepository: INotificationPreferenceRepository,
+  ) {}
 
-    async execute(dto: BulkSetPreferencesDto): Promise<NotificationPreference[]> {
-        return await this.preferenceRepository.bulkUpdateByUserId(dto.userId, dto.preferences);
+  async execute(dto: BulkSetPreferencesDto): Promise<NotificationPreference[]> {
+    return await this.preferenceRepository.bulkUpdateByUserId(
+      dto.userId,
+      dto.preferences,
+    );
+  }
+
+  async setChannelPreferences(
+    userId: string,
+    channel: NotificationChannel,
+    preferences: Array<{ eventType: string; enabled: boolean }>,
+  ): Promise<NotificationPreference[]> {
+    const prefDtos = preferences.map((p) => ({
+      channel,
+      eventType: p.eventType,
+      enabled: p.enabled,
+    }));
+
+    return await this.preferenceRepository.bulkUpdateByUserId(userId, prefDtos);
+  }
+
+  async enableAllForChannel(
+    userId: string,
+    channel: NotificationChannel,
+  ): Promise<void> {
+    const prefs = await this.preferenceRepository.findByUserIdAndChannel(
+      userId,
+      channel,
+    );
+    const updates = prefs.map((p) => ({
+      channel: p.channel,
+      eventType: p.eventType,
+      enabled: true,
+    }));
+
+    if (updates.length > 0) {
+      await this.preferenceRepository.bulkUpdateByUserId(userId, updates);
     }
+  }
 
-    async setChannelPreferences(
-        userId: string,
-        channel: NotificationChannel,
-        preferences: Array<{ eventType: string; enabled: boolean }>
-    ): Promise<NotificationPreference[]> {
-        const prefDtos = preferences.map(p => ({
-            channel,
-            eventType: p.eventType,
-            enabled: p.enabled,
-        }));
+  async disableAllForChannel(
+    userId: string,
+    channel: NotificationChannel,
+  ): Promise<void> {
+    const prefs = await this.preferenceRepository.findByUserIdAndChannel(
+      userId,
+      channel,
+    );
+    const updates = prefs.map((p) => ({
+      channel: p.channel,
+      eventType: p.eventType,
+      enabled: false,
+    }));
 
-        return await this.preferenceRepository.bulkUpdateByUserId(userId, prefDtos);
+    if (updates.length > 0) {
+      await this.preferenceRepository.bulkUpdateByUserId(userId, updates);
     }
-
-    async enableAllForChannel(userId: string, channel: NotificationChannel): Promise<void> {
-        const prefs = await this.preferenceRepository.findByUserIdAndChannel(userId, channel);
-        const updates = prefs.map(p => ({
-            channel: p.channel,
-            eventType: p.eventType,
-            enabled: true,
-        }));
-
-        if (updates.length > 0) {
-            await this.preferenceRepository.bulkUpdateByUserId(userId, updates);
-        }
-    }
-
-    async disableAllForChannel(userId: string, channel: NotificationChannel): Promise<void> {
-        const prefs = await this.preferenceRepository.findByUserIdAndChannel(userId, channel);
-        const updates = prefs.map(p => ({
-            channel: p.channel,
-            eventType: p.eventType,
-            enabled: false,
-        }));
-
-        if (updates.length > 0) {
-            await this.preferenceRepository.bulkUpdateByUserId(userId, updates);
-        }
-    }
+  }
 }
 
 // ============================================
@@ -249,29 +288,31 @@ export class BulkSetNotificationPreferencesUseCase {
 
 @Injectable()
 export class InitializeNotificationPreferencesUseCase {
-    constructor(private readonly preferenceRepository: INotificationPreferenceRepository) {}
+  constructor(
+    private readonly preferenceRepository: INotificationPreferenceRepository,
+  ) {}
 
-    async forUser(userId: string): Promise<NotificationPreference[]> {
-        // Check if user already has preferences
-        const hasPrefs = await this.preferenceRepository.hasPreferences(userId);
-        if (hasPrefs) {
-            // Return existing preferences
-            return await this.preferenceRepository.findByUserId(userId);
-        }
-
-        // Create default preferences
-        const defaults = NotificationPreference.createDefaultsForUser(userId);
-        return await this.preferenceRepository.createMany(defaults);
+  async forUser(userId: string): Promise<NotificationPreference[]> {
+    // Check if user already has preferences
+    const hasPrefs = await this.preferenceRepository.hasPreferences(userId);
+    if (hasPrefs) {
+      // Return existing preferences
+      return await this.preferenceRepository.findByUserId(userId);
     }
 
-    async resetToDefaults(userId: string): Promise<NotificationPreference[]> {
-        // Delete existing preferences
-        await this.preferenceRepository.deleteByUserId(userId);
+    // Create default preferences
+    const defaults = NotificationPreference.createDefaultsForUser(userId);
+    return await this.preferenceRepository.createMany(defaults);
+  }
 
-        // Create default preferences
-        const defaults = NotificationPreference.createDefaultsForUser(userId);
-        return await this.preferenceRepository.createMany(defaults);
-    }
+  async resetToDefaults(userId: string): Promise<NotificationPreference[]> {
+    // Delete existing preferences
+    await this.preferenceRepository.deleteByUserId(userId);
+
+    // Create default preferences
+    const defaults = NotificationPreference.createDefaultsForUser(userId);
+    return await this.preferenceRepository.createMany(defaults);
+  }
 }
 
 // ============================================
@@ -280,13 +321,15 @@ export class InitializeNotificationPreferencesUseCase {
 
 @Injectable()
 export class DeleteNotificationPreferencesUseCase {
-    constructor(private readonly preferenceRepository: INotificationPreferenceRepository) {}
+  constructor(
+    private readonly preferenceRepository: INotificationPreferenceRepository,
+  ) {}
 
-    async byId(id: string): Promise<void> {
-        await this.preferenceRepository.delete(id);
-    }
+  async byId(id: string): Promise<void> {
+    await this.preferenceRepository.delete(id);
+  }
 
-    async forUser(userId: string): Promise<number> {
-        return await this.preferenceRepository.deleteByUserId(userId);
-    }
+  async forUser(userId: string): Promise<number> {
+    return await this.preferenceRepository.deleteByUserId(userId);
+  }
 }

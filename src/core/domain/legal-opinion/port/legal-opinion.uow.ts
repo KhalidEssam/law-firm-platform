@@ -4,50 +4,63 @@
 // ============================================
 
 import { IBaseUnitOfWork } from '../../shared/ports/base-unit-of-work.interface';
-import { ILegalOpinionRequestRepository, PaginationParams, PaginatedResult } from './legal-opinion-request.repository.interface';
-import { LegalOpinionStatusHistory, StatusHistoryId } from '../entities/legal-opinion-status-history.entity';
+import {
+  ILegalOpinionRequestRepository,
+  PaginationParams,
+  PaginatedResult,
+} from './legal-opinion-request.repository.interface';
+import {
+  LegalOpinionStatusHistory,
+  StatusHistoryId,
+} from '../entities/legal-opinion-status-history.entity';
 
 /**
  * Repository interface for Legal Opinion Status History operations.
  */
 export interface ILegalOpinionStatusHistoryRepository {
-    /**
-     * Creates a new status history record.
-     */
-    create(history: LegalOpinionStatusHistory): Promise<LegalOpinionStatusHistory>;
+  /**
+   * Creates a new status history record.
+   */
+  create(
+    history: LegalOpinionStatusHistory,
+  ): Promise<LegalOpinionStatusHistory>;
 
-    /**
-     * Creates multiple status history records atomically.
-     */
-    createMany(histories: LegalOpinionStatusHistory[]): Promise<LegalOpinionStatusHistory[]>;
+  /**
+   * Creates multiple status history records atomically.
+   */
+  createMany(
+    histories: LegalOpinionStatusHistory[],
+  ): Promise<LegalOpinionStatusHistory[]>;
 
-    /**
-     * Finds a status history record by ID.
-     */
-    findById(id: StatusHistoryId): Promise<LegalOpinionStatusHistory | null>;
+  /**
+   * Finds a status history record by ID.
+   */
+  findById(id: StatusHistoryId): Promise<LegalOpinionStatusHistory | null>;
 
-    /**
-     * Finds all status history records for a legal opinion request.
-     */
-    findByLegalOpinionId(
-        legalOpinionId: string,
-        pagination?: PaginationParams,
-    ): Promise<PaginatedResult<LegalOpinionStatusHistory>>;
+  /**
+   * Finds all status history records for a legal opinion request.
+   */
+  findByLegalOpinionId(
+    legalOpinionId: string,
+    pagination?: PaginationParams,
+  ): Promise<PaginatedResult<LegalOpinionStatusHistory>>;
 
-    /**
-     * Gets the most recent status history for a legal opinion request.
-     */
-    findLatestByLegalOpinionId(legalOpinionId: string): Promise<LegalOpinionStatusHistory | null>;
+  /**
+   * Gets the most recent status history for a legal opinion request.
+   */
+  findLatestByLegalOpinionId(
+    legalOpinionId: string,
+  ): Promise<LegalOpinionStatusHistory | null>;
 
-    /**
-     * Counts status changes for a legal opinion request.
-     */
-    countByLegalOpinionId(legalOpinionId: string): Promise<number>;
+  /**
+   * Counts status changes for a legal opinion request.
+   */
+  countByLegalOpinionId(legalOpinionId: string): Promise<number>;
 
-    /**
-     * Deletes a status history record.
-     */
-    delete(id: StatusHistoryId): Promise<void>;
+  /**
+   * Deletes a status history record.
+   */
+  delete(id: StatusHistoryId): Promise<void>;
 }
 
 /**
@@ -82,17 +95,18 @@ export interface ILegalOpinionStatusHistoryRepository {
  * });
  * ```
  */
-export interface ILegalOpinionUnitOfWork extends IBaseUnitOfWork<ILegalOpinionUnitOfWork> {
-    /**
-     * Repository for legal opinion request operations within the transaction.
-     */
-    readonly opinions: ILegalOpinionRequestRepository;
+export interface ILegalOpinionUnitOfWork
+  extends IBaseUnitOfWork<ILegalOpinionUnitOfWork> {
+  /**
+   * Repository for legal opinion request operations within the transaction.
+   */
+  readonly opinions: ILegalOpinionRequestRepository;
 
-    /**
-     * Repository for status history operations within the transaction.
-     * Used to create audit trail for all status changes.
-     */
-    readonly statusHistories: ILegalOpinionStatusHistoryRepository;
+  /**
+   * Repository for status history operations within the transaction.
+   * Used to create audit trail for all status changes.
+   */
+  readonly statusHistories: ILegalOpinionStatusHistoryRepository;
 }
 
 /**

@@ -4,20 +4,17 @@
 // ============================================
 
 import { LegalOpinionRequest } from '../entities/legal-opinion-request.entity';
-import {
-  OpinionRequestId,
-  
-} from '../value-objects/opinion-requestid.vo';
+import { OpinionRequestId } from '../value-objects/opinion-requestid.vo';
 import { OpinionStatus } from '../value-objects/opinion-status.vo';
 import { OpinionType } from '../value-objects/opinion-type.vo';
 import { OpinionPriority } from '../value-objects/opinion-priority.vo';
 import { UserId } from '../../consultation/value-objects/consultation-request-domain';
 /**
  * Repository Port (Interface)
- * 
+ *
  * This defines the contract that any infrastructure implementation must follow.
  * The domain layer depends on this interface, not on concrete implementations.
- * 
+ *
  * Following the Dependency Inversion Principle:
  * - Domain (high-level) doesn't depend on Infrastructure (low-level)
  * - Both depend on this abstraction
@@ -114,7 +111,9 @@ export interface ILegalOpinionRequestRepository {
    * @param opinionNumber - The human-readable opinion number
    * @returns The opinion request or null if not found
    */
-  findByOpinionNumber(opinionNumber: string): Promise<LegalOpinionRequest | null>;
+  findByOpinionNumber(
+    opinionNumber: string,
+  ): Promise<LegalOpinionRequest | null>;
 
   /**
    * Find all opinion requests with optional filters and pagination

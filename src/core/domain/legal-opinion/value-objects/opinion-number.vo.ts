@@ -7,10 +7,10 @@
 
 /**
  * OpinionNumber - Human-readable unique reference number
- * 
+ *
  * Format: OP-YYYYMMDD-XXXX
  * Example: OP-20250128-0001
- * 
+ *
  * Business Rules:
  * - Must follow the format: OP-YYYYMMDD-XXXX
  * - Date portion represents creation date
@@ -32,7 +32,6 @@ export class OpinionNumber {
     // if (!value) {
     //   throw new DomainException('OpinionNumber cannot be empty');
     // }
-
     // if (!OpinionNumber.PATTERN.test(value)) {
     //   throw new DomainException(
     //     'OpinionNumber must follow format: OP-YYYYMMDD-XXXX'
@@ -43,17 +42,17 @@ export class OpinionNumber {
   // Factory method: Generate new opinion number
   static generate(date?: Date, sequence?: number): OpinionNumber {
     const now = date || new Date();
-    
+
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
-    
+
     // Sequence number defaults to 1, would normally come from database
     const seq = sequence || 1;
     const sequenceStr = String(seq).padStart(4, '0');
-    
+
     const opinionNumber = `${OpinionNumber.PREFIX}-${year}${month}${day}-${sequenceStr}`;
-    
+
     return new OpinionNumber(opinionNumber);
   }
 
@@ -73,7 +72,7 @@ export class OpinionNumber {
     const year = parseInt(datePart.substring(0, 4));
     const month = parseInt(datePart.substring(4, 6)) - 1;
     const day = parseInt(datePart.substring(6, 8));
-    
+
     return new Date(year, month, day);
   }
 

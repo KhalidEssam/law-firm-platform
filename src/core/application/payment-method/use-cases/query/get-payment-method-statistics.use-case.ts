@@ -6,17 +6,17 @@ import { Injectable, Inject } from '@nestjs/common';
 import { type IPaymentMethodRepository } from '../../../../domain/payment-method/port/payment-method.repository';
 
 export interface GetPaymentMethodStatisticsQuery {
-    filters?: any;
+  filters?: any;
 }
 
 @Injectable()
 export class GetPaymentMethodStatisticsUseCase {
-    constructor(
-        @Inject('IPaymentMethodRepository')
-        private readonly repository: IPaymentMethodRepository,
-    ) {}
+  constructor(
+    @Inject('IPaymentMethodRepository')
+    private readonly repository: IPaymentMethodRepository,
+  ) {}
 
-    async execute(query: GetPaymentMethodStatisticsQuery): Promise<any> {
-        return await this.repository.getStatistics(query.filters);
-    }
+  async execute(query: GetPaymentMethodStatisticsQuery): Promise<any> {
+    return await this.repository.getStatistics(query.filters);
+  }
 }

@@ -7,7 +7,7 @@
 
 /**
  * SpecificIssues - Specific legal issues or sub-questions to address
- * 
+ *
  * Business Rules:
  * - Optional field (not all opinions need this)
  * - Must be between 50 and 2000 characters if provided
@@ -28,15 +28,12 @@ export class SpecificIssues {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Specific issues cannot be empty');
     // }
-
     // const trimmed = value.trim();
-
     // if (trimmed.length < SpecificIssues.MIN_LENGTH) {
     //   throw new DomainException(
     //     `Specific issues must be at least ${SpecificIssues.MIN_LENGTH} characters`
     //   );
     // }
-
     // if (trimmed.length > SpecificIssues.MAX_LENGTH) {
     //   throw new DomainException(
     //     `Specific issues cannot exceed ${SpecificIssues.MAX_LENGTH} characters`
@@ -56,10 +53,10 @@ export class SpecificIssues {
   getIssues(): string[] {
     const bulletPattern = /^[\s]*[-•*\d]+[.)]\s*/gm;
     const lines = this.value.split('\n');
-    
+
     return lines
-      .map(line => line.replace(bulletPattern, '').trim())
-      .filter(line => line.length > 0);
+      .map((line) => line.replace(bulletPattern, '').trim())
+      .filter((line) => line.length > 0);
   }
 
   getIssueCount(): number {

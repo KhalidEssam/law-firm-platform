@@ -7,19 +7,19 @@
 
 /**
  * RelevantFacts - Specific facts that are legally relevant
- * 
+ *
  * Business Rules:
  * - Must be between 100 and 5000 characters
  * - Should be objective and factual (not opinions)
  * - Should include dates, names, amounts, etc.
  * - Cannot be empty or whitespace only
  * - Should be organized and clear
- * 
+ *
  * Purpose:
  * - Provides the factual foundation for legal analysis
  * - Helps lawyer identify applicable laws and precedents
  * - Distinguishes from mere opinions or speculation
- * 
+ *
  * Examples of good relevant facts:
  * - "On January 15, 2025, we signed a contract with ABC Corp for SAR 500,000"
  * - "The employee was terminated on March 1, 2025 after 3 years of employment"
@@ -39,15 +39,12 @@ export class RelevantFacts {
     // if (!value || value.trim().length === 0) {
     //   throw new DomainException('Relevant facts cannot be empty');
     // }
-
     // const trimmed = value.trim();
-
     // if (trimmed.length < RelevantFacts.MIN_LENGTH) {
     //   throw new DomainException(
     //     `Relevant facts must be at least ${RelevantFacts.MIN_LENGTH} characters. Please provide more specific facts.`
     //   );
     // }
-
     // if (trimmed.length > RelevantFacts.MAX_LENGTH) {
     //   throw new DomainException(
     //     `Relevant facts cannot exceed ${RelevantFacts.MAX_LENGTH} characters`
@@ -83,10 +80,10 @@ export class RelevantFacts {
     // Split by common bullet markers or newlines
     const bulletPattern = /^[\s]*[-•*\d]+[.)]\s*/gm;
     const lines = this.value.split('\n');
-    
+
     return lines
-      .map(line => line.replace(bulletPattern, '').trim())
-      .filter(line => line.length > 0);
+      .map((line) => line.replace(bulletPattern, '').trim())
+      .filter((line) => line.length > 0);
   }
 
   // Count individual facts (rough estimate)
@@ -101,8 +98,8 @@ export class RelevantFacts {
       /\d{1,2}\/\d{1,2}\/\d{2,4}/, // MM/DD/YYYY or DD/MM/YYYY
       /\d{1,2}\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}/i, // DD Month YYYY
     ];
-    
-    return datePatterns.some(pattern => pattern.test(this.value));
+
+    return datePatterns.some((pattern) => pattern.test(this.value));
   }
 
   // Check if facts contain monetary amounts
@@ -113,27 +110,27 @@ export class RelevantFacts {
       /€[\d,]+/, // Euro
       /[\d,]+\s*(SAR|USD|EUR|GBP)/, // Amount with currency
     ];
-    
-    return moneyPatterns.some(pattern => pattern.test(this.value));
+
+    return moneyPatterns.some((pattern) => pattern.test(this.value));
   }
 
   // Get quality score (0-100) based on content analysis
   getQualityScore(): number {
     let score = 50; // Base score
-    
+
     // Longer, detailed facts score higher
     if (this.value.length > 500) score += 10;
     if (this.value.length > 1000) score += 10;
-    
+
     // Contains dates (more specific)
     if (this.containsDates()) score += 15;
-    
+
     // Contains monetary amounts (more specific)
     if (this.containsMonetaryAmounts()) score += 15;
-    
+
     // Well-structured (bullet points)
     if (this.getFactCount() > 3) score += 10;
-    
+
     return Math.min(score, 100);
   }
 

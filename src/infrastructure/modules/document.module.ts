@@ -19,11 +19,11 @@ import { DOCUMENT_REPOSITORY } from '../../core/domain/document/ports/document.r
 
 // Storage Services
 import {
-    CloudinaryStorageService,
-    S3StorageService,
-    DocumentStorageService,
-    CLOUDINARY_PROVIDER,
-    S3_PROVIDER,
+  CloudinaryStorageService,
+  S3StorageService,
+  DocumentStorageService,
+  CLOUDINARY_PROVIDER,
+  S3_PROVIDER,
 } from '../../core/application/document/services/storage';
 
 // Notification Service
@@ -31,74 +31,68 @@ import { DocumentNotificationService } from '../../core/application/document/ser
 
 // Use Cases
 import {
-    UploadDocumentUseCase,
-    VerifyDocumentUseCase,
-    DeleteDocumentUseCase,
-    GetDocumentUseCase,
-    ListDocumentsUseCase,
+  UploadDocumentUseCase,
+  VerifyDocumentUseCase,
+  DeleteDocumentUseCase,
+  GetDocumentUseCase,
+  ListDocumentsUseCase,
 } from '../../core/application/document/use-cases';
 
 // Notification Module (optional integration)
 import { NotificationModule } from '../../interface/notification/notification.module';
 
 @Module({
-    imports: [
-        ConfigModule,
-        PrismaModule,
-        forwardRef(() => NotificationModule),
-    ],
-    controllers: [
-        DocumentController,
-    ],
-    providers: [
-        // ============================================
-        // REPOSITORIES
-        // ============================================
-        {
-            provide: DOCUMENT_REPOSITORY,
-            useFactory: (prisma: PrismaService) => {
-                return new PrismaDocumentRepository(prisma);
-            },
-            inject: [PrismaService],
-        },
+  imports: [ConfigModule, PrismaModule, forwardRef(() => NotificationModule)],
+  controllers: [DocumentController],
+  providers: [
+    // ============================================
+    // REPOSITORIES
+    // ============================================
+    {
+      provide: DOCUMENT_REPOSITORY,
+      useFactory: (prisma: PrismaService) => {
+        return new PrismaDocumentRepository(prisma);
+      },
+      inject: [PrismaService],
+    },
 
-        // ============================================
-        // STORAGE PROVIDERS
-        // ============================================
-        {
-            provide: CLOUDINARY_PROVIDER,
-            useClass: CloudinaryStorageService,
-        },
-        {
-            provide: S3_PROVIDER,
-            useClass: S3StorageService,
-        },
-        DocumentStorageService,
+    // ============================================
+    // STORAGE PROVIDERS
+    // ============================================
+    {
+      provide: CLOUDINARY_PROVIDER,
+      useClass: CloudinaryStorageService,
+    },
+    {
+      provide: S3_PROVIDER,
+      useClass: S3StorageService,
+    },
+    DocumentStorageService,
 
-        // ============================================
-        // NOTIFICATION SERVICE
-        // ============================================
-        DocumentNotificationService,
+    // ============================================
+    // NOTIFICATION SERVICE
+    // ============================================
+    DocumentNotificationService,
 
-        // ============================================
-        // USE CASES
-        // ============================================
-        UploadDocumentUseCase,
-        VerifyDocumentUseCase,
-        DeleteDocumentUseCase,
-        GetDocumentUseCase,
-        ListDocumentsUseCase,
-    ],
-    exports: [
-        DOCUMENT_REPOSITORY,
-        DocumentStorageService,
-        DocumentNotificationService,
-        // Export use cases for cross-module integration
-        UploadDocumentUseCase,
-        GetDocumentUseCase,
-        ListDocumentsUseCase,
-        VerifyDocumentUseCase,
-        DeleteDocumentUseCase,
-    ],
+    // ============================================
+    // USE CASES
+    // ============================================
+    UploadDocumentUseCase,
+    VerifyDocumentUseCase,
+    DeleteDocumentUseCase,
+    GetDocumentUseCase,
+    ListDocumentsUseCase,
+  ],
+  exports: [
+    DOCUMENT_REPOSITORY,
+    DocumentStorageService,
+    DocumentNotificationService,
+    // Export use cases for cross-module integration
+    UploadDocumentUseCase,
+    GetDocumentUseCase,
+    ListDocumentsUseCase,
+    VerifyDocumentUseCase,
+    DeleteDocumentUseCase,
+  ],
 })
 export class DocumentModule {}

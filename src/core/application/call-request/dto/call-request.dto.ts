@@ -1,17 +1,17 @@
 // src/core/application/call-request/dto/call-request.dto.ts
 
 import {
-    IsString,
-    IsOptional,
-    IsDateString,
-    IsInt,
-    IsEnum,
-    IsUUID,
-    Min,
-    Max,
-    IsUrl,
-    MinLength,
-    MaxLength,
+  IsString,
+  IsOptional,
+  IsDateString,
+  IsInt,
+  IsEnum,
+  IsUUID,
+  Min,
+  Max,
+  IsUrl,
+  MinLength,
+  MaxLength,
 } from 'class-validator';
 import { CallStatus } from '../../../domain/call-request/value-objects/call-status.vo';
 import { CallPlatformType } from '../../../domain/call-request/value-objects/call-platform.vo';
@@ -21,25 +21,25 @@ import { CallPlatformType } from '../../../domain/call-request/value-objects/cal
 // ============================================
 
 export class CreateCallRequestDto {
-    @IsUUID()
-    subscriberId: string;
+  @IsUUID()
+  subscriberId: string;
 
-    @IsString()
-    @MinLength(10)
-    @MaxLength(1000)
-    purpose: string;
+  @IsString()
+  @MinLength(10)
+  @MaxLength(1000)
+  purpose: string;
 
-    @IsOptional()
-    @IsString()
-    consultationType?: string;
+  @IsOptional()
+  @IsString()
+  consultationType?: string;
 
-    @IsOptional()
-    @IsDateString()
-    preferredDate?: string;
+  @IsOptional()
+  @IsDateString()
+  preferredDate?: string;
 
-    @IsOptional()
-    @IsString()
-    preferredTime?: string;
+  @IsOptional()
+  @IsString()
+  preferredTime?: string;
 }
 
 // ============================================
@@ -47,21 +47,21 @@ export class CreateCallRequestDto {
 // ============================================
 
 export class ScheduleCallDto {
-    @IsDateString()
-    scheduledAt: string;
+  @IsDateString()
+  scheduledAt: string;
 
-    @IsInt()
-    @Min(15)
-    @Max(120)
-    durationMinutes: number;
+  @IsInt()
+  @Min(15)
+  @Max(120)
+  durationMinutes: number;
 
-    @IsOptional()
-    @IsEnum(CallPlatformType)
-    platform?: CallPlatformType;
+  @IsOptional()
+  @IsEnum(CallPlatformType)
+  platform?: CallPlatformType;
 
-    @IsOptional()
-    @IsUrl()
-    callLink?: string;
+  @IsOptional()
+  @IsUrl()
+  callLink?: string;
 }
 
 // ============================================
@@ -69,8 +69,8 @@ export class ScheduleCallDto {
 // ============================================
 
 export class AssignProviderDto {
-    @IsUUID()
-    providerId: string;
+  @IsUUID()
+  providerId: string;
 }
 
 // ============================================
@@ -78,19 +78,19 @@ export class AssignProviderDto {
 // ============================================
 
 export class RescheduleCallDto {
-    @IsDateString()
-    scheduledAt: string;
+  @IsDateString()
+  scheduledAt: string;
 
-    @IsOptional()
-    @IsInt()
-    @Min(15)
-    @Max(120)
-    durationMinutes?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(15)
+  @Max(120)
+  durationMinutes?: number;
 
-    @IsOptional()
-    @IsString()
-    @MaxLength(500)
-    reason?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }
 
 // ============================================
@@ -98,9 +98,9 @@ export class RescheduleCallDto {
 // ============================================
 
 export class EndCallDto {
-    @IsOptional()
-    @IsUrl()
-    recordingUrl?: string;
+  @IsOptional()
+  @IsUrl()
+  recordingUrl?: string;
 }
 
 // ============================================
@@ -108,10 +108,10 @@ export class EndCallDto {
 // ============================================
 
 export class CancelCallDto {
-    @IsOptional()
-    @IsString()
-    @MaxLength(500)
-    reason?: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }
 
 // ============================================
@@ -119,12 +119,12 @@ export class CancelCallDto {
 // ============================================
 
 export class UpdateCallLinkDto {
-    @IsUrl()
-    callLink: string;
+  @IsUrl()
+  callLink: string;
 
-    @IsOptional()
-    @IsEnum(CallPlatformType)
-    platform?: CallPlatformType;
+  @IsOptional()
+  @IsEnum(CallPlatformType)
+  platform?: CallPlatformType;
 }
 
 // ============================================
@@ -132,48 +132,48 @@ export class UpdateCallLinkDto {
 // ============================================
 
 export class GetCallRequestsQueryDto {
-    @IsOptional()
-    @IsUUID()
-    subscriberId?: string;
+  @IsOptional()
+  @IsUUID()
+  subscriberId?: string;
 
-    @IsOptional()
-    @IsUUID()
-    providerId?: string;
+  @IsOptional()
+  @IsUUID()
+  providerId?: string;
 
-    @IsOptional()
-    @IsEnum(CallStatus)
-    status?: CallStatus;
+  @IsOptional()
+  @IsEnum(CallStatus)
+  status?: CallStatus;
 
-    @IsOptional()
-    @IsString()
-    consultationType?: string;
+  @IsOptional()
+  @IsString()
+  consultationType?: string;
 
-    @IsOptional()
-    @IsDateString()
-    scheduledAfter?: string;
+  @IsOptional()
+  @IsDateString()
+  scheduledAfter?: string;
 
-    @IsOptional()
-    @IsDateString()
-    scheduledBefore?: string;
+  @IsOptional()
+  @IsDateString()
+  scheduledBefore?: string;
 
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @Max(100)
-    limit?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 
-    @IsOptional()
-    @IsInt()
-    @Min(0)
-    offset?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  offset?: number;
 
-    @IsOptional()
-    @IsEnum(['createdAt', 'scheduledAt', 'updatedAt'])
-    orderBy?: 'createdAt' | 'scheduledAt' | 'updatedAt';
+  @IsOptional()
+  @IsEnum(['createdAt', 'scheduledAt', 'updatedAt'])
+  orderBy?: 'createdAt' | 'scheduledAt' | 'updatedAt';
 
-    @IsOptional()
-    @IsEnum(['asc', 'desc'])
-    orderDirection?: 'asc' | 'desc';
+  @IsOptional()
+  @IsEnum(['asc', 'desc'])
+  orderDirection?: 'asc' | 'desc';
 }
 
 // ============================================
@@ -181,47 +181,47 @@ export class GetCallRequestsQueryDto {
 // ============================================
 
 export class CallRequestResponseDto {
-    id: string;
-    requestNumber: string;
-    subscriberId: string;
-    assignedProviderId: string | null;
-    consultationType: string | null;
-    purpose: string;
-    preferredDate: Date | null;
-    preferredTime: string | null;
-    status: CallStatus;
-    scheduledAt: Date | null;
-    scheduledDuration: number | null;
-    actualDuration: number | null;
-    callStartedAt: Date | null;
-    callEndedAt: Date | null;
-    recordingUrl: string | null;
-    callPlatform: string | null;
-    callLink: string | null;
-    submittedAt: Date;
-    completedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string;
+  requestNumber: string;
+  subscriberId: string;
+  assignedProviderId: string | null;
+  consultationType: string | null;
+  purpose: string;
+  preferredDate: Date | null;
+  preferredTime: string | null;
+  status: CallStatus;
+  scheduledAt: Date | null;
+  scheduledDuration: number | null;
+  actualDuration: number | null;
+  callStartedAt: Date | null;
+  callEndedAt: Date | null;
+  recordingUrl: string | null;
+  callPlatform: string | null;
+  callLink: string | null;
+  submittedAt: Date;
+  completedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export class CallRequestListResponseDto {
-    data: CallRequestResponseDto[];
-    total: number;
-    limit: number;
-    offset: number;
-    hasMore: boolean;
+  data: CallRequestResponseDto[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
 }
 
 export class CallMinutesSummaryDto {
-    subscriberId: string;
-    totalMinutes: number;
-    billableMinutes: number;
-    periodStart: Date;
-    periodEnd: Date;
+  subscriberId: string;
+  totalMinutes: number;
+  billableMinutes: number;
+  periodStart: Date;
+  periodEnd: Date;
 }
 
 export class ProviderAvailabilityDto {
-    providerId: string;
-    isAvailable: boolean;
-    conflictingCalls?: CallRequestResponseDto[];
+  providerId: string;
+  isAvailable: boolean;
+  conflictingCalls?: CallRequestResponseDto[];
 }

@@ -1,12 +1,15 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { PrismaModule } from './prisma/prisma.module'; // ✅ FIXED: import from src
+import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './infrastructure/modules/user.module';
+import { HealthModule } from './common/health/health.module';
+import configuration from './config/configuration';
 
 import { AuthModule } from './auth/auth.module';
 import { Auth0Module } from './infrastructure/persistence/auth0/auth0.module';
@@ -33,14 +36,23 @@ import { DocumentModule } from './infrastructure/modules/document.module';
 
 @Module({
   imports: [
+    // Configuration Module - loads environment variables
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      envFilePath: ['.env.local', '.env'],
+    }),
     // Scheduling for cron jobs (SLA checks, etc.)
     ScheduleModule.forRoot(),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-      blockDuration: 120000,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+        blockDuration: 120000,
+      },
+    ]),
     PrismaModule,
+    HealthModule,
     AuthModule,
     Auth0Module,
     RolesModule,
@@ -73,7 +85,6 @@ import { DocumentModule } from './infrastructure/modules/document.module';
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
-
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

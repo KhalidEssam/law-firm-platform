@@ -82,35 +82,35 @@ import { ConfidentialityLevel } from '../value-objects/confidentiality-level.vo'
 // ============================================
 
 export enum OpinionStatus {
-  DRAFT = 'draft',                    // Client is preparing the request
-  SUBMITTED = 'submitted',            // Request submitted, awaiting review
-  UNDER_REVIEW = 'under_review',      // Legal team reviewing the request
-  ASSIGNED = 'assigned',              // Assigned to specific lawyer
-  RESEARCH_PHASE = 'research_phase',  // Lawyer conducting legal research
-  DRAFTING = 'drafting',              // Opinion being drafted
+  DRAFT = 'draft', // Client is preparing the request
+  SUBMITTED = 'submitted', // Request submitted, awaiting review
+  UNDER_REVIEW = 'under_review', // Legal team reviewing the request
+  ASSIGNED = 'assigned', // Assigned to specific lawyer
+  RESEARCH_PHASE = 'research_phase', // Lawyer conducting legal research
+  DRAFTING = 'drafting', // Opinion being drafted
   INTERNAL_REVIEW = 'internal_review', // Internal quality review
   REVISION_REQUESTED = 'revision_requested', // Client requested changes
-  REVISING = 'revising',              // Lawyer making revisions
-  COMPLETED = 'completed',            // Opinion delivered
-  CANCELLED = 'cancelled',            // Request cancelled
-  REJECTED = 'rejected',              // Request rejected (out of scope, etc.)
+  REVISING = 'revising', // Lawyer making revisions
+  COMPLETED = 'completed', // Opinion delivered
+  CANCELLED = 'cancelled', // Request cancelled
+  REJECTED = 'rejected', // Request rejected (out of scope, etc.)
 }
 
 export enum OpinionType {
-  LEGAL_ANALYSIS = 'legal_analysis',           // Analysis of legal issue
-  CONTRACT_REVIEW = 'contract_review',         // Contract review opinion
-  COMPLIANCE_OPINION = 'compliance_opinion',   // Compliance assessment
-  DUE_DILIGENCE = 'due_diligence',            // Due diligence opinion
-  LITIGATION_RISK = 'litigation_risk',         // Litigation risk assessment
-  REGULATORY_OPINION = 'regulatory_opinion',   // Regulatory compliance
-  CUSTOM = 'custom',                           // Custom opinion type
+  LEGAL_ANALYSIS = 'legal_analysis', // Analysis of legal issue
+  CONTRACT_REVIEW = 'contract_review', // Contract review opinion
+  COMPLIANCE_OPINION = 'compliance_opinion', // Compliance assessment
+  DUE_DILIGENCE = 'due_diligence', // Due diligence opinion
+  LITIGATION_RISK = 'litigation_risk', // Litigation risk assessment
+  REGULATORY_OPINION = 'regulatory_opinion', // Regulatory compliance
+  CUSTOM = 'custom', // Custom opinion type
 }
 
 export enum OpinionPriority {
-  STANDARD = 'standard',     // 7-10 business days
-  EXPEDITED = 'expedited',   // 3-5 business days
-  RUSH = 'rush',             // 24-48 hours
-  URGENT = 'urgent',         // Within 24 hours (premium)
+  STANDARD = 'standard', // 7-10 business days
+  EXPEDITED = 'expedited', // 3-5 business days
+  RUSH = 'rush', // 24-48 hours
+  URGENT = 'urgent', // Within 24 hours (premium)
 }
 
 export enum DeliveryFormat {
@@ -129,7 +129,7 @@ export interface LegalOpinionRequestProps {
   clientId: UserId;
   assignedLawyerId?: UserId;
   reviewedBy?: UserId;
-  
+
   // Request Details
   opinionType: OpinionTypeVO;
   subject: OpinionSubject;
@@ -138,29 +138,29 @@ export interface LegalOpinionRequestProps {
   relevantFacts: RelevantFacts;
   specificIssues?: SpecificIssues;
   jurisdiction: Jurisdiction;
-  
+
   // Priority & Deadlines
   priority: OpinionPriorityVO;
   requestedDeliveryDate?: Date;
   actualDeliveryDate?: Date;
-  
+
   // Status & Workflow
   status: OpinionStatusVO;
   draftVersion?: number;
   finalVersion?: number;
-  
+
   // Deliverables
   deliveryFormat: DeliveryFormatVO;
   includeExecutiveSummary: boolean;
   includeCitations: boolean;
   includeRecommendations: boolean;
-  
+
   // Pricing
   estimatedCost?: Money;
   finalCost?: Money;
   isPaid: boolean;
   paymentReference?: string;
-  
+
   // Timestamps
   submittedAt?: Date;
   assignedAt?: Date;
@@ -169,12 +169,12 @@ export interface LegalOpinionRequestProps {
   reviewStartedAt?: Date;
   completedAt?: Date;
   expectedCompletionDate?: Date;
-  
+
   // Metadata
   confidentialityLevel: ConfidentialityLevel;
   isUrgent: boolean;
   requiresCollaboration: boolean;
-  
+
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
@@ -207,7 +207,7 @@ export class LegalOpinionRequest {
     confidentialityLevel?: ConfidentialityLevel;
   }): LegalOpinionRequest {
     const now = new Date();
-    
+
     return new LegalOpinionRequest({
       id: OpinionRequestId.create(),
       opinionNumber: OpinionNumber.generate(),
@@ -219,14 +219,17 @@ export class LegalOpinionRequest {
       relevantFacts: props.relevantFacts,
       jurisdiction: props.jurisdiction,
       specificIssues: props.specificIssues,
-      priority: props.priority || OpinionPriorityVO.create(OpinionPriority.STANDARD),
+      priority:
+        props.priority || OpinionPriorityVO.create(OpinionPriority.STANDARD),
       requestedDeliveryDate: props.requestedDeliveryDate,
       status: OpinionStatusVO.create(OpinionStatus.DRAFT),
-      deliveryFormat: props.deliveryFormat || DeliveryFormatVO.create(DeliveryFormat.PDF),
+      deliveryFormat:
+        props.deliveryFormat || DeliveryFormatVO.create(DeliveryFormat.PDF),
       includeExecutiveSummary: props.includeExecutiveSummary ?? true,
       includeCitations: props.includeCitations ?? true,
       includeRecommendations: props.includeRecommendations ?? true,
-      confidentialityLevel: props.confidentialityLevel || ConfidentialityLevel.create('standard'),
+      confidentialityLevel:
+        props.confidentialityLevel || ConfidentialityLevel.create('standard'),
       isUrgent: false,
       requiresCollaboration: false,
       isPaid: false,
@@ -264,7 +267,7 @@ export class LegalOpinionRequest {
     // if (this.props.status.getValue() !== OpinionStatus.DRAFT) {
     //   throw new DomainException('Can only submit draft opinions');
     // }
-    
+
     // // Business rule: Must have all required information
     // if (!this.hasRequiredInformation()) {
     //   throw new DomainException('Opinion request must have all required information before submission');
@@ -273,7 +276,7 @@ export class LegalOpinionRequest {
     this.props.status = OpinionStatusVO.create(OpinionStatus.SUBMITTED);
     this.props.submittedAt = new Date();
     this.props.updatedAt = new Date();
-    
+
     // Calculate expected completion date based on priority
     this.calculateExpectedCompletionDate();
   }
@@ -296,18 +299,20 @@ export class LegalOpinionRequest {
     this.props.relevantFacts = relevantFacts;
     this.props.updatedAt = new Date();
   }
-  
+
   updateSpecificIssues(specificIssues: SpecificIssues): void {
     this.props.specificIssues = specificIssues;
     this.props.updatedAt = new Date();
-    
   }
   changePriority(priority: OpinionPriorityVO): void {
     this.props.priority = priority;
     this.props.updatedAt = new Date();
   }
   assignToLawyer(lawyerId: UserId): void {
-    const allowedStatuses = [OpinionStatus.SUBMITTED, OpinionStatus.UNDER_REVIEW];
+    const allowedStatuses = [
+      OpinionStatus.SUBMITTED,
+      OpinionStatus.UNDER_REVIEW,
+    ];
     // if (!allowedStatuses.includes(this.props.status.getValue() as OpinionStatus)) {
     //   throw new DomainException('Can only assign submitted or under-review opinions');
     // }
@@ -368,7 +373,9 @@ export class LegalOpinionRequest {
     //   throw new DomainException('Can only request revision during internal review');
     // }
 
-    this.props.status = OpinionStatusVO.create(OpinionStatus.REVISION_REQUESTED);
+    this.props.status = OpinionStatusVO.create(
+      OpinionStatus.REVISION_REQUESTED,
+    );
     this.props.updatedAt = new Date();
     // Revision reason would be stored in a related entity (OpinionReview)
   }
@@ -386,7 +393,7 @@ export class LegalOpinionRequest {
     // if (this.props.status.getValue() !== OpinionStatus.INTERNAL_REVIEW) {
     //   throw new DomainException('Can only complete opinions that passed internal review');
     // }
-    
+
     // Business rule: Must be paid before delivery
     // if (!this.props.isPaid) {
     //   throw new DomainException('Opinion must be paid before delivery');
@@ -406,7 +413,7 @@ export class LegalOpinionRequest {
       OpinionStatus.UNDER_REVIEW,
       OpinionStatus.ASSIGNED,
     ];
-    
+
     // if (!allowedStatuses.includes(this.props.status.getValue() as OpinionStatus)) {
     //   throw new DomainException('Cannot cancel opinion in current status');
     // }
@@ -417,8 +424,11 @@ export class LegalOpinionRequest {
   }
 
   reject(reason: string): void {
-    const allowedStatuses = [OpinionStatus.SUBMITTED, OpinionStatus.UNDER_REVIEW];
-    
+    const allowedStatuses = [
+      OpinionStatus.SUBMITTED,
+      OpinionStatus.UNDER_REVIEW,
+    ];
+
     // if (!allowedStatuses.includes(this.props.status.getValue() as OpinionStatus)) {
     //   throw new DomainException('Can only reject submitted or under-review opinions');
     // }
@@ -488,13 +498,15 @@ export class LegalOpinionRequest {
         break;
     }
 
-    this.props.expectedCompletionDate = new Date(now.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+    this.props.expectedCompletionDate = new Date(
+      now.getTime() + daysToAdd * 24 * 60 * 60 * 1000,
+    );
   }
 
   isOverdue(): boolean {
     if (!this.props.expectedCompletionDate) return false;
     if (this.props.status.getValue() === OpinionStatus.COMPLETED) return false;
-    
+
     return new Date() > this.props.expectedCompletionDate;
   }
 
@@ -509,58 +521,138 @@ export class LegalOpinionRequest {
       OpinionStatus.UNDER_REVIEW,
       OpinionStatus.ASSIGNED,
     ];
-    return cancellableStatuses.includes(this.props.status.getValue() as OpinionStatus);
+    return cancellableStatuses.includes(
+      this.props.status.getValue() as OpinionStatus,
+    );
   }
 
   // ============================================
   // GETTERS
   // ============================================
 
-  get id(): OpinionRequestId { return this.props.id; }
-  get opinionNumber(): OpinionNumber { return this.props.opinionNumber; }
-  get clientId(): UserId { return this.props.clientId; }
-  get assignedLawyerId(): UserId | undefined { return this.props.assignedLawyerId; }
-  get reviewedBy(): UserId | undefined { return this.props.reviewedBy; }
-  
-  get opinionType(): OpinionTypeVO { return this.props.opinionType; }
-  get subject(): OpinionSubject { return this.props.subject; }
-  get legalQuestion(): LegalQuestion { return this.props.legalQuestion; }
-  get backgroundContext(): BackgroundContext { return this.props.backgroundContext; }
-  get relevantFacts(): RelevantFacts { return this.props.relevantFacts; }
-  get specificIssues(): SpecificIssues | undefined { return this.props.specificIssues; }
-  get jurisdiction(): Jurisdiction { return this.props.jurisdiction; }
-  
-  get priority(): OpinionPriorityVO { return this.props.priority; }
-  get requestedDeliveryDate(): Date | undefined { return this.props.requestedDeliveryDate; }
-  get actualDeliveryDate(): Date | undefined { return this.props.actualDeliveryDate; }
-  
-  get status(): OpinionStatusVO { return this.props.status; }
-  get draftVersion(): number | undefined { return this.props.draftVersion; }
-  get finalVersion(): number | undefined { return this.props.finalVersion; }
-  
-  get deliveryFormat(): DeliveryFormatVO { return this.props.deliveryFormat; }
-  get includeExecutiveSummary(): boolean { return this.props.includeExecutiveSummary; }
-  get includeCitations(): boolean { return this.props.includeCitations; }
-  get includeRecommendations(): boolean { return this.props.includeRecommendations; }
-  
-  get estimatedCost(): Money | undefined { return this.props.estimatedCost; }
-  get finalCost(): Money | undefined { return this.props.finalCost; }
-  get isPaid(): boolean { return this.props.isPaid; }
-  get paymentReference(): string | undefined { return this.props.paymentReference; }
-  
-  get submittedAt(): Date | undefined { return this.props.submittedAt; }
-  get assignedAt(): Date | undefined { return this.props.assignedAt; }
-  get researchStartedAt(): Date | undefined { return this.props.researchStartedAt; }
-  get draftCompletedAt(): Date | undefined { return this.props.draftCompletedAt; }
-  get reviewStartedAt(): Date | undefined { return this.props.reviewStartedAt; }
-  get completedAt(): Date | undefined { return this.props.completedAt; }
-  get expectedCompletionDate(): Date | undefined { return this.props.expectedCompletionDate; }
-  
-  get confidentialityLevel(): ConfidentialityLevel { return this.props.confidentialityLevel; }
-  get isUrgent(): boolean { return this.props.isUrgent; }
-  get requiresCollaboration(): boolean { return this.props.requiresCollaboration; }
-  
-  get createdAt(): Date { return this.props.createdAt; }
-  get updatedAt(): Date { return this.props.updatedAt; }
-  get deletedAt(): Date | undefined { return this.props.deletedAt; }
+  get id(): OpinionRequestId {
+    return this.props.id;
+  }
+  get opinionNumber(): OpinionNumber {
+    return this.props.opinionNumber;
+  }
+  get clientId(): UserId {
+    return this.props.clientId;
+  }
+  get assignedLawyerId(): UserId | undefined {
+    return this.props.assignedLawyerId;
+  }
+  get reviewedBy(): UserId | undefined {
+    return this.props.reviewedBy;
+  }
+
+  get opinionType(): OpinionTypeVO {
+    return this.props.opinionType;
+  }
+  get subject(): OpinionSubject {
+    return this.props.subject;
+  }
+  get legalQuestion(): LegalQuestion {
+    return this.props.legalQuestion;
+  }
+  get backgroundContext(): BackgroundContext {
+    return this.props.backgroundContext;
+  }
+  get relevantFacts(): RelevantFacts {
+    return this.props.relevantFacts;
+  }
+  get specificIssues(): SpecificIssues | undefined {
+    return this.props.specificIssues;
+  }
+  get jurisdiction(): Jurisdiction {
+    return this.props.jurisdiction;
+  }
+
+  get priority(): OpinionPriorityVO {
+    return this.props.priority;
+  }
+  get requestedDeliveryDate(): Date | undefined {
+    return this.props.requestedDeliveryDate;
+  }
+  get actualDeliveryDate(): Date | undefined {
+    return this.props.actualDeliveryDate;
+  }
+
+  get status(): OpinionStatusVO {
+    return this.props.status;
+  }
+  get draftVersion(): number | undefined {
+    return this.props.draftVersion;
+  }
+  get finalVersion(): number | undefined {
+    return this.props.finalVersion;
+  }
+
+  get deliveryFormat(): DeliveryFormatVO {
+    return this.props.deliveryFormat;
+  }
+  get includeExecutiveSummary(): boolean {
+    return this.props.includeExecutiveSummary;
+  }
+  get includeCitations(): boolean {
+    return this.props.includeCitations;
+  }
+  get includeRecommendations(): boolean {
+    return this.props.includeRecommendations;
+  }
+
+  get estimatedCost(): Money | undefined {
+    return this.props.estimatedCost;
+  }
+  get finalCost(): Money | undefined {
+    return this.props.finalCost;
+  }
+  get isPaid(): boolean {
+    return this.props.isPaid;
+  }
+  get paymentReference(): string | undefined {
+    return this.props.paymentReference;
+  }
+
+  get submittedAt(): Date | undefined {
+    return this.props.submittedAt;
+  }
+  get assignedAt(): Date | undefined {
+    return this.props.assignedAt;
+  }
+  get researchStartedAt(): Date | undefined {
+    return this.props.researchStartedAt;
+  }
+  get draftCompletedAt(): Date | undefined {
+    return this.props.draftCompletedAt;
+  }
+  get reviewStartedAt(): Date | undefined {
+    return this.props.reviewStartedAt;
+  }
+  get completedAt(): Date | undefined {
+    return this.props.completedAt;
+  }
+  get expectedCompletionDate(): Date | undefined {
+    return this.props.expectedCompletionDate;
+  }
+
+  get confidentialityLevel(): ConfidentialityLevel {
+    return this.props.confidentialityLevel;
+  }
+  get isUrgent(): boolean {
+    return this.props.isUrgent;
+  }
+  get requiresCollaboration(): boolean {
+    return this.props.requiresCollaboration;
+  }
+
+  get createdAt(): Date {
+    return this.props.createdAt;
+  }
+  get updatedAt(): Date {
+    return this.props.updatedAt;
+  }
+  get deletedAt(): Date | undefined {
+    return this.props.deletedAt;
+  }
 }

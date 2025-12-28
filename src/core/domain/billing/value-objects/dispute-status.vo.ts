@@ -4,105 +4,117 @@
 // ============================================
 
 export enum DisputeStatusEnum {
-    OPEN = 'open',
-    UNDER_REVIEW = 'under_review',
-    RESOLVED = 'resolved',
-    ESCALATED = 'escalated',
-    CLOSED = 'closed',
+  OPEN = 'open',
+  UNDER_REVIEW = 'under_review',
+  RESOLVED = 'resolved',
+  ESCALATED = 'escalated',
+  CLOSED = 'closed',
 }
 
 export class DisputeStatus {
-    private static readonly allowedStatuses = Object.values(DisputeStatusEnum);
+  private static readonly allowedStatuses = Object.values(DisputeStatusEnum);
 
-    private constructor(private readonly value: DisputeStatusEnum) {}
+  private constructor(private readonly value: DisputeStatusEnum) {}
 
-    static create(value: string): DisputeStatus {
-        const normalizedValue = value.toLowerCase() as DisputeStatusEnum;
-        if (!DisputeStatus.allowedStatuses.includes(normalizedValue)) {
-            throw new Error(`Invalid dispute status: ${value}`);
-        }
-        return new DisputeStatus(normalizedValue);
+  static create(value: string): DisputeStatus {
+    const normalizedValue = value.toLowerCase() as DisputeStatusEnum;
+    if (!DisputeStatus.allowedStatuses.includes(normalizedValue)) {
+      throw new Error(`Invalid dispute status: ${value}`);
     }
+    return new DisputeStatus(normalizedValue);
+  }
 
-    static open(): DisputeStatus {
-        return new DisputeStatus(DisputeStatusEnum.OPEN);
-    }
+  static open(): DisputeStatus {
+    return new DisputeStatus(DisputeStatusEnum.OPEN);
+  }
 
-    static underReview(): DisputeStatus {
-        return new DisputeStatus(DisputeStatusEnum.UNDER_REVIEW);
-    }
+  static underReview(): DisputeStatus {
+    return new DisputeStatus(DisputeStatusEnum.UNDER_REVIEW);
+  }
 
-    static resolved(): DisputeStatus {
-        return new DisputeStatus(DisputeStatusEnum.RESOLVED);
-    }
+  static resolved(): DisputeStatus {
+    return new DisputeStatus(DisputeStatusEnum.RESOLVED);
+  }
 
-    static escalated(): DisputeStatus {
-        return new DisputeStatus(DisputeStatusEnum.ESCALATED);
-    }
+  static escalated(): DisputeStatus {
+    return new DisputeStatus(DisputeStatusEnum.ESCALATED);
+  }
 
-    static closed(): DisputeStatus {
-        return new DisputeStatus(DisputeStatusEnum.CLOSED);
-    }
+  static closed(): DisputeStatus {
+    return new DisputeStatus(DisputeStatusEnum.CLOSED);
+  }
 
-    getValue(): DisputeStatusEnum {
-        return this.value;
-    }
+  getValue(): DisputeStatusEnum {
+    return this.value;
+  }
 
-    // State query methods
-    isOpen(): boolean {
-        return this.value === DisputeStatusEnum.OPEN;
-    }
+  // State query methods
+  isOpen(): boolean {
+    return this.value === DisputeStatusEnum.OPEN;
+  }
 
-    isUnderReview(): boolean {
-        return this.value === DisputeStatusEnum.UNDER_REVIEW;
-    }
+  isUnderReview(): boolean {
+    return this.value === DisputeStatusEnum.UNDER_REVIEW;
+  }
 
-    isResolved(): boolean {
-        return this.value === DisputeStatusEnum.RESOLVED;
-    }
+  isResolved(): boolean {
+    return this.value === DisputeStatusEnum.RESOLVED;
+  }
 
-    isEscalated(): boolean {
-        return this.value === DisputeStatusEnum.ESCALATED;
-    }
+  isEscalated(): boolean {
+    return this.value === DisputeStatusEnum.ESCALATED;
+  }
 
-    isClosed(): boolean {
-        return this.value === DisputeStatusEnum.CLOSED;
-    }
+  isClosed(): boolean {
+    return this.value === DisputeStatusEnum.CLOSED;
+  }
 
-    // Business rule methods
-    canBeReviewed(): boolean {
-        return this.value === DisputeStatusEnum.OPEN;
-    }
+  // Business rule methods
+  canBeReviewed(): boolean {
+    return this.value === DisputeStatusEnum.OPEN;
+  }
 
-    canBeEscalated(): boolean {
-        return [DisputeStatusEnum.OPEN, DisputeStatusEnum.UNDER_REVIEW].includes(this.value);
-    }
+  canBeEscalated(): boolean {
+    return [DisputeStatusEnum.OPEN, DisputeStatusEnum.UNDER_REVIEW].includes(
+      this.value,
+    );
+  }
 
-    canBeResolved(): boolean {
-        return [DisputeStatusEnum.OPEN, DisputeStatusEnum.UNDER_REVIEW, DisputeStatusEnum.ESCALATED].includes(this.value);
-    }
+  canBeResolved(): boolean {
+    return [
+      DisputeStatusEnum.OPEN,
+      DisputeStatusEnum.UNDER_REVIEW,
+      DisputeStatusEnum.ESCALATED,
+    ].includes(this.value);
+  }
 
-    canBeClosed(): boolean {
-        return this.value === DisputeStatusEnum.RESOLVED;
-    }
+  canBeClosed(): boolean {
+    return this.value === DisputeStatusEnum.RESOLVED;
+  }
 
-    isActive(): boolean {
-        return [DisputeStatusEnum.OPEN, DisputeStatusEnum.UNDER_REVIEW, DisputeStatusEnum.ESCALATED].includes(this.value);
-    }
+  isActive(): boolean {
+    return [
+      DisputeStatusEnum.OPEN,
+      DisputeStatusEnum.UNDER_REVIEW,
+      DisputeStatusEnum.ESCALATED,
+    ].includes(this.value);
+  }
 
-    isFinal(): boolean {
-        return [DisputeStatusEnum.RESOLVED, DisputeStatusEnum.CLOSED].includes(this.value);
-    }
+  isFinal(): boolean {
+    return [DisputeStatusEnum.RESOLVED, DisputeStatusEnum.CLOSED].includes(
+      this.value,
+    );
+  }
 
-    equals(other: DisputeStatus): boolean {
-        return this.value === other.value;
-    }
+  equals(other: DisputeStatus): boolean {
+    return this.value === other.value;
+  }
 
-    toString(): string {
-        return this.value;
-    }
+  toString(): string {
+    return this.value;
+  }
 
-    toJSON(): string {
-        return this.value;
-    }
+  toJSON(): string {
+    return this.value;
+  }
 }

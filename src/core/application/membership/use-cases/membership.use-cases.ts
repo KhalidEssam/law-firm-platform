@@ -3,7 +3,13 @@
 // core/application/membership/use-cases/
 // ============================================
 
-import { Injectable, Inject, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { Membership } from '../../../domain/membership/entities/membership.entity';
 import { MembershipTier } from '../../../domain/membership/entities/membership-tier.entity';
 import { MembershipPayment } from '../../../domain/membership/entities/membership-payment.entity';
@@ -13,16 +19,16 @@ import { MembershipCouponRedemption } from '../../../domain/membership/entities/
 import { QuotaResource } from '../../../domain/membership/value-objects/quota-resource.vo';
 import { Money } from '../../../domain/membership/value-objects/money.vo';
 import {
-    type IMembershipRepository,
-    type IMembershipTierRepository,
-    type IMembershipPaymentRepository,
-    type IMembershipCouponRepository,
-    type IMembershipCouponRedemptionRepository,
-    type IMembershipQuotaUsageRepository,
+  type IMembershipRepository,
+  type IMembershipTierRepository,
+  type IMembershipPaymentRepository,
+  type IMembershipCouponRepository,
+  type IMembershipCouponRedemptionRepository,
+  type IMembershipQuotaUsageRepository,
 } from '../ports/repository';
 import {
-    type IMembershipUnitOfWork,
-    MEMBERSHIP_UNIT_OF_WORK,
+  type IMembershipUnitOfWork,
+  MEMBERSHIP_UNIT_OF_WORK,
 } from '../../../domain/membership/ports/membership.uow';
 
 // ============================================
@@ -30,76 +36,78 @@ import {
 // ============================================
 
 export interface CreateMembershipCommand {
-    userId: string;
-    tierId: number;
-    couponCode?: string;
+  userId: string;
+  tierId: number;
+  couponCode?: string;
 }
 
 @Injectable()
 export class CreateMembershipUseCase {
-    constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-        @Inject('IMembershipTierRepository')
-        private readonly tierRepo: IMembershipTierRepository,
-        @Inject('IMembershipQuotaUsageRepository')
-        private readonly quotaRepo: IMembershipQuotaUsageRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipRepository')
+    private readonly membershipRepo: IMembershipRepository,
+    @Inject('IMembershipTierRepository')
+    private readonly tierRepo: IMembershipTierRepository,
+    @Inject('IMembershipQuotaUsageRepository')
+    private readonly quotaRepo: IMembershipQuotaUsageRepository,
+  ) {}
 
-    async execute(command: CreateMembershipCommand): Promise<Membership> {
-        // Check if user already has ANY membership (userId is unique in schema)
-        const existingAny = await this.membershipRepo.findByUserId(command.userId);
-        if (existingAny) {
-            // If membership exists but is inactive/expired, suggest reactivation
-            if (!existingAny.isActive) {
-                throw new ConflictException(
-                    'User has an inactive membership. Please use the reactivate endpoint instead: POST /memberships/{id}/reactivate'
-                );
-            }
-            throw new ConflictException('User already has an active membership');
-        }
-
-        // Get tier
-        const tier = await this.tierRepo.findById(command.tierId);
-        if (!tier) {
-            throw new NotFoundException('Membership tier not found');
-        }
-
-        if (!tier.canBeSubscribed()) {
-            throw new BadRequestException('This tier is not available for subscription');
-        }
-
-        // Calculate end date based on billing cycle
-        const startDate = new Date();
-        const endDate = new Date(startDate);
-        const cycleMonths = tier.billingCycle.getMonths();
-        endDate.setMonth(endDate.getMonth() + cycleMonths);
-
-        // Create membership
-        const membership = Membership.create({
-            userId: command.userId,
-            tierId: command.tierId,
-            price: tier.price,
-            billingCycle: tier.billingCycle,
-            startDate,
-            endDate,
-            isActive: true,
-            autoRenew: true,
-        });
-
-        const created = await this.membershipRepo.create(membership);
-
-        // Initialize quota usage
-        await this.quotaRepo.create(
-            MembershipQuotaUsage.create({
-                membershipId: created.id,
-                periodStart: startDate,
-                periodEnd: endDate,
-            })
+  async execute(command: CreateMembershipCommand): Promise<Membership> {
+    // Check if user already has ANY membership (userId is unique in schema)
+    const existingAny = await this.membershipRepo.findByUserId(command.userId);
+    if (existingAny) {
+      // If membership exists but is inactive/expired, suggest reactivation
+      if (!existingAny.isActive) {
+        throw new ConflictException(
+          'User has an inactive membership. Please use the reactivate endpoint instead: POST /memberships/{id}/reactivate',
         );
-
-        return created;
+      }
+      throw new ConflictException('User already has an active membership');
     }
+
+    // Get tier
+    const tier = await this.tierRepo.findById(command.tierId);
+    if (!tier) {
+      throw new NotFoundException('Membership tier not found');
+    }
+
+    if (!tier.canBeSubscribed()) {
+      throw new BadRequestException(
+        'This tier is not available for subscription',
+      );
+    }
+
+    // Calculate end date based on billing cycle
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    const cycleMonths = tier.billingCycle.getMonths();
+    endDate.setMonth(endDate.getMonth() + cycleMonths);
+
+    // Create membership
+    const membership = Membership.create({
+      userId: command.userId,
+      tierId: command.tierId,
+      price: tier.price,
+      billingCycle: tier.billingCycle,
+      startDate,
+      endDate,
+      isActive: true,
+      autoRenew: true,
+    });
+
+    const created = await this.membershipRepo.create(membership);
+
+    // Initialize quota usage
+    await this.quotaRepo.create(
+      MembershipQuotaUsage.create({
+        membershipId: created.id,
+        periodStart: startDate,
+        periodEnd: endDate,
+      }),
+    );
+
+    return created;
+  }
 }
 
 // ============================================
@@ -108,18 +116,18 @@ export class CreateMembershipUseCase {
 
 @Injectable()
 export class GetMembershipByIdUseCase {
-    constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipRepository')
+    private readonly membershipRepo: IMembershipRepository,
+  ) {}
 
-    async execute(id: string): Promise<Membership> {
-        const membership = await this.membershipRepo.findById(id);
-        if (!membership) {
-            throw new NotFoundException('Membership not found');
-        }
-        return membership;
+  async execute(id: string): Promise<Membership> {
+    const membership = await this.membershipRepo.findById(id);
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
     }
+    return membership;
+  }
 }
 
 // ============================================
@@ -128,14 +136,14 @@ export class GetMembershipByIdUseCase {
 
 @Injectable()
 export class GetActiveMembershipByUserUseCase {
-    constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipRepository')
+    private readonly membershipRepo: IMembershipRepository,
+  ) {}
 
-    async execute(userId: string): Promise<Membership | null> {
-        return await this.membershipRepo.findActiveByUserId(userId);
-    }
+  async execute(userId: string): Promise<Membership | null> {
+    return await this.membershipRepo.findActiveByUserId(userId);
+  }
 }
 
 // ============================================
@@ -144,23 +152,23 @@ export class GetActiveMembershipByUserUseCase {
 
 @Injectable()
 export class CancelMembershipUseCase {
-    constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipRepository')
+    private readonly membershipRepo: IMembershipRepository,
+  ) {}
 
-    async execute(membershipId: string): Promise<Membership> {
-        const membership = await this.membershipRepo.findById(membershipId);
-        if (!membership) {
-            throw new NotFoundException('Membership not found');
-        }
-
-        if (!membership.isActive) {
-            throw new BadRequestException('Membership is already cancelled');
-        }
-
-        return await this.membershipRepo.cancel(membershipId);
+  async execute(membershipId: string): Promise<Membership> {
+    const membership = await this.membershipRepo.findById(membershipId);
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
     }
+
+    if (!membership.isActive) {
+      throw new BadRequestException('Membership is already cancelled');
+    }
+
+    return await this.membershipRepo.cancel(membershipId);
+  }
 }
 
 // ============================================
@@ -168,34 +176,34 @@ export class CancelMembershipUseCase {
 // ============================================
 
 export interface RenewMembershipCommand {
-    membershipId: string;
-    durationInMonths?: number;
+  membershipId: string;
+  durationInMonths?: number;
 }
 
 @Injectable()
 export class RenewMembershipUseCase {
-    constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-        @Inject('IMembershipTierRepository')
-        private readonly tierRepo: IMembershipTierRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipRepository')
+    private readonly membershipRepo: IMembershipRepository,
+    @Inject('IMembershipTierRepository')
+    private readonly tierRepo: IMembershipTierRepository,
+  ) {}
 
-    async execute(command: RenewMembershipCommand): Promise<Membership> {
-        const membership = await this.membershipRepo.findById(command.membershipId);
-        if (!membership) {
-            throw new NotFoundException('Membership not found');
-        }
-
-        // Get tier to determine billing cycle
-        const tier = await this.tierRepo.findById(membership.tierId);
-        if (!tier) {
-            throw new NotFoundException('Membership tier not found');
-        }
-
-        const duration = command.durationInMonths || tier.billingCycle.getMonths();
-        return await this.membershipRepo.renew(command.membershipId, duration);
+  async execute(command: RenewMembershipCommand): Promise<Membership> {
+    const membership = await this.membershipRepo.findById(command.membershipId);
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
     }
+
+    // Get tier to determine billing cycle
+    const tier = await this.tierRepo.findById(membership.tierId);
+    if (!tier) {
+      throw new NotFoundException('Membership tier not found');
+    }
+
+    const duration = command.durationInMonths || tier.billingCycle.getMonths();
+    return await this.membershipRepo.renew(command.membershipId, duration);
+  }
 }
 
 // ============================================
@@ -204,19 +212,19 @@ export class RenewMembershipUseCase {
 
 @Injectable()
 export class ToggleAutoRenewUseCase {
-    constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipRepository')
+    private readonly membershipRepo: IMembershipRepository,
+  ) {}
 
-    async execute(membershipId: string, autoRenew: boolean): Promise<Membership> {
-        const membership = await this.membershipRepo.findById(membershipId);
-        if (!membership) {
-            throw new NotFoundException('Membership not found');
-        }
-
-        return await this.membershipRepo.toggleAutoRenew(membershipId, autoRenew);
+  async execute(membershipId: string, autoRenew: boolean): Promise<Membership> {
+    const membership = await this.membershipRepo.findById(membershipId);
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
     }
+
+    return await this.membershipRepo.toggleAutoRenew(membershipId, autoRenew);
+  }
 }
 
 // ============================================
@@ -225,69 +233,79 @@ export class ToggleAutoRenewUseCase {
 
 @Injectable()
 export class ApplyCouponUseCase {
-    constructor(
-        @Inject(MEMBERSHIP_UNIT_OF_WORK)
-        private readonly membershipUow: IMembershipUnitOfWork,
-    ) { }
+  constructor(
+    @Inject(MEMBERSHIP_UNIT_OF_WORK)
+    private readonly membershipUow: IMembershipUnitOfWork,
+  ) {}
 
-    /**
-     * Apply a coupon to a membership atomically.
-     *
-     * This operation:
-     * 1. Validates membership exists
-     * 2. Validates coupon is valid and can be redeemed
-     * 3. Checks if user has already redeemed this coupon
-     * 4. Creates redemption record
-     * 5. Increments coupon usage count
-     *
-     * All operations are atomic with Serializable isolation
-     * to prevent race conditions (e.g., double redemption).
-     */
-    async execute(membershipId: string, couponCode: string): Promise<{ discountAmount: number }> {
-        return await this.membershipUow.transaction(async (uow) => {
-            // 1. Validate membership
-            const membership = await uow.memberships.findById(membershipId);
-            if (!membership) {
-                throw new NotFoundException('Membership not found');
-            }
+  /**
+   * Apply a coupon to a membership atomically.
+   *
+   * This operation:
+   * 1. Validates membership exists
+   * 2. Validates coupon is valid and can be redeemed
+   * 3. Checks if user has already redeemed this coupon
+   * 4. Creates redemption record
+   * 5. Increments coupon usage count
+   *
+   * All operations are atomic with Serializable isolation
+   * to prevent race conditions (e.g., double redemption).
+   */
+  async execute(
+    membershipId: string,
+    couponCode: string,
+  ): Promise<{ discountAmount: number }> {
+    return await this.membershipUow.transaction(async (uow) => {
+      // 1. Validate membership
+      const membership = await uow.memberships.findById(membershipId);
+      if (!membership) {
+        throw new NotFoundException('Membership not found');
+      }
 
-            // 2. Validate coupon
-            const validationResult = await uow.coupons.validateCoupon(couponCode);
-            if (!validationResult.valid) {
-                throw new BadRequestException(validationResult.reason || 'Invalid coupon');
-            }
+      // 2. Validate coupon
+      const validationResult = await uow.coupons.validateCoupon(couponCode);
+      if (!validationResult.valid) {
+        throw new BadRequestException(
+          validationResult.reason || 'Invalid coupon',
+        );
+      }
 
-            const coupon = validationResult.coupon!;
+      const coupon = validationResult.coupon!;
 
-            // 3. Check if already redeemed (within transaction to prevent race condition)
-            const alreadyRedeemed = await uow.redemptions.hasUserRedeemedCoupon(membershipId, coupon.id);
-            if (alreadyRedeemed) {
-                throw new BadRequestException('Coupon already redeemed for this membership');
-            }
+      // 3. Check if already redeemed (within transaction to prevent race condition)
+      const alreadyRedeemed = await uow.redemptions.hasUserRedeemedCoupon(
+        membershipId,
+        coupon.id,
+      );
+      if (alreadyRedeemed) {
+        throw new BadRequestException(
+          'Coupon already redeemed for this membership',
+        );
+      }
 
-            // 4. Get tier price
-            const tier = await uow.tiers.findById(membership.tierId);
-            if (!tier) {
-                throw new NotFoundException('Membership tier not found');
-            }
+      // 4. Get tier price
+      const tier = await uow.tiers.findById(membership.tierId);
+      if (!tier) {
+        throw new NotFoundException('Membership tier not found');
+      }
 
-            // 5. Calculate discount
-            const discountAmount = coupon.calculateDiscount(tier.price.amount);
+      // 5. Calculate discount
+      const discountAmount = coupon.calculateDiscount(tier.price.amount);
 
-            // 6. Create redemption record atomically
-            await uow.redemptions.create(
-                MembershipCouponRedemption.create({
-                    membershipId,
-                    couponId: coupon.id,
-                })
-            );
+      // 6. Create redemption record atomically
+      await uow.redemptions.create(
+        MembershipCouponRedemption.create({
+          membershipId,
+          couponId: coupon.id,
+        }),
+      );
 
-            // 7. Increment coupon usage atomically
-            await uow.coupons.incrementUsage(coupon.id);
+      // 7. Increment coupon usage atomically
+      await uow.coupons.incrementUsage(coupon.id);
 
-            return { discountAmount };
-        });
-    }
+      return { discountAmount };
+    });
+  }
 }
 
 // ============================================
@@ -296,70 +314,75 @@ export class ApplyCouponUseCase {
 
 @Injectable()
 export class CheckQuotaUseCase {
-    constructor(
-        @Inject('IMembershipRepository')
-        private readonly membershipRepo: IMembershipRepository,
-        @Inject('IMembershipTierRepository')
-        private readonly tierRepo: IMembershipTierRepository,
-        @Inject('IMembershipQuotaUsageRepository')
-        private readonly quotaRepo: IMembershipQuotaUsageRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipRepository')
+    private readonly membershipRepo: IMembershipRepository,
+    @Inject('IMembershipTierRepository')
+    private readonly tierRepo: IMembershipTierRepository,
+    @Inject('IMembershipQuotaUsageRepository')
+    private readonly quotaRepo: IMembershipQuotaUsageRepository,
+  ) {}
 
-    // Map user-friendly names to internal QuotaResource values
-    private normalizeResource(resource: string): QuotaResource {
-        const friendlyNameMap: Record<string, QuotaResource> = {
-            'consultations': QuotaResource.CONSULTATIONS,
-            'opinions': QuotaResource.OPINIONS,
-            'legalOpinions': QuotaResource.OPINIONS,
-            'services': QuotaResource.SERVICES,
-            'cases': QuotaResource.CASES,
-            'litigationCases': QuotaResource.CASES,
-            'callMinutes': QuotaResource.CALL_MINUTES,
-            // Also support full enum values
-            [QuotaResource.CONSULTATIONS]: QuotaResource.CONSULTATIONS,
-            [QuotaResource.OPINIONS]: QuotaResource.OPINIONS,
-            [QuotaResource.SERVICES]: QuotaResource.SERVICES,
-            [QuotaResource.CASES]: QuotaResource.CASES,
-            [QuotaResource.CALL_MINUTES]: QuotaResource.CALL_MINUTES,
-        };
-        return friendlyNameMap[resource] || resource as QuotaResource;
+  // Map user-friendly names to internal QuotaResource values
+  private normalizeResource(resource: string): QuotaResource {
+    const friendlyNameMap: Record<string, QuotaResource> = {
+      consultations: QuotaResource.CONSULTATIONS,
+      opinions: QuotaResource.OPINIONS,
+      legalOpinions: QuotaResource.OPINIONS,
+      services: QuotaResource.SERVICES,
+      cases: QuotaResource.CASES,
+      litigationCases: QuotaResource.CASES,
+      callMinutes: QuotaResource.CALL_MINUTES,
+      // Also support full enum values
+      [QuotaResource.CONSULTATIONS]: QuotaResource.CONSULTATIONS,
+      [QuotaResource.OPINIONS]: QuotaResource.OPINIONS,
+      [QuotaResource.SERVICES]: QuotaResource.SERVICES,
+      [QuotaResource.CASES]: QuotaResource.CASES,
+      [QuotaResource.CALL_MINUTES]: QuotaResource.CALL_MINUTES,
+    };
+    return friendlyNameMap[resource] || (resource as QuotaResource);
+  }
+
+  async execute(
+    membershipId: string,
+    resource: QuotaResource,
+  ): Promise<{
+    used: number;
+    limit: number | null; // null = unlimited
+    remaining: number | null;
+  }> {
+    const membership = await this.membershipRepo.findById(membershipId);
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
     }
 
-    async execute(membershipId: string, resource: QuotaResource): Promise<{
-        used: number;
-        limit: number | null; // null = unlimited
-        remaining: number | null;
-    }> {
-        const membership = await this.membershipRepo.findById(membershipId);
-        if (!membership) {
-            throw new NotFoundException('Membership not found');
-        }
-
-        const tier = await this.tierRepo.findById(membership.tierId);
-        if (!tier) {
-            throw new NotFoundException('Membership tier not found');
-        }
-
-        // Normalize the resource name to handle user-friendly names
-        const normalizedResource = this.normalizeResource(resource as string);
-
-        const quotaUsage = await this.quotaRepo.findCurrentByMembership(membershipId);
-        const used = quotaUsage?.getUsage(normalizedResource) || 0;
-
-        const resourceToQuotaField: Record<QuotaResource, keyof typeof tier.quota> = {
-            [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
-            [QuotaResource.OPINIONS]: 'opinionsPerMonth',
-            [QuotaResource.SERVICES]: 'servicesPerMonth',
-            [QuotaResource.CASES]: 'casesPerMonth',
-            [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
-        };
-
-        const quotaField = resourceToQuotaField[normalizedResource];
-        const limit = quotaField ? (tier.getQuotaLimit(quotaField) ?? null) : null;
-        const remaining = limit !== null ? Math.max(0, limit - used) : null;
-
-        return { used, limit, remaining };
+    const tier = await this.tierRepo.findById(membership.tierId);
+    if (!tier) {
+      throw new NotFoundException('Membership tier not found');
     }
+
+    // Normalize the resource name to handle user-friendly names
+    const normalizedResource = this.normalizeResource(resource as string);
+
+    const quotaUsage =
+      await this.quotaRepo.findCurrentByMembership(membershipId);
+    const used = quotaUsage?.getUsage(normalizedResource) || 0;
+
+    const resourceToQuotaField: Record<QuotaResource, keyof typeof tier.quota> =
+      {
+        [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
+        [QuotaResource.OPINIONS]: 'opinionsPerMonth',
+        [QuotaResource.SERVICES]: 'servicesPerMonth',
+        [QuotaResource.CASES]: 'casesPerMonth',
+        [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
+      };
+
+    const quotaField = resourceToQuotaField[normalizedResource];
+    const limit = quotaField ? (tier.getQuotaLimit(quotaField) ?? null) : null;
+    const remaining = limit !== null ? Math.max(0, limit - used) : null;
+
+    return { used, limit, remaining };
+  }
 }
 
 // ============================================
@@ -368,87 +391,103 @@ export class CheckQuotaUseCase {
 
 @Injectable()
 export class ConsumeQuotaUseCase {
-    constructor(
-        @Inject(MEMBERSHIP_UNIT_OF_WORK)
-        private readonly membershipUow: IMembershipUnitOfWork,
-    ) { }
+  constructor(
+    @Inject(MEMBERSHIP_UNIT_OF_WORK)
+    private readonly membershipUow: IMembershipUnitOfWork,
+  ) {}
 
-    // Map user-friendly names to internal QuotaResource values
-    private normalizeResource(resource: string): QuotaResource {
-        const friendlyNameMap: Record<string, QuotaResource> = {
-            'consultations': QuotaResource.CONSULTATIONS,
-            'opinions': QuotaResource.OPINIONS,
-            'legalOpinions': QuotaResource.OPINIONS,
-            'services': QuotaResource.SERVICES,
-            'cases': QuotaResource.CASES,
-            'litigationCases': QuotaResource.CASES,
-            'callMinutes': QuotaResource.CALL_MINUTES,
-            // Also support full enum values
-            [QuotaResource.CONSULTATIONS]: QuotaResource.CONSULTATIONS,
-            [QuotaResource.OPINIONS]: QuotaResource.OPINIONS,
-            [QuotaResource.SERVICES]: QuotaResource.SERVICES,
-            [QuotaResource.CASES]: QuotaResource.CASES,
-            [QuotaResource.CALL_MINUTES]: QuotaResource.CALL_MINUTES,
-        };
-        return friendlyNameMap[resource] || resource as QuotaResource;
-    }
+  // Map user-friendly names to internal QuotaResource values
+  private normalizeResource(resource: string): QuotaResource {
+    const friendlyNameMap: Record<string, QuotaResource> = {
+      consultations: QuotaResource.CONSULTATIONS,
+      opinions: QuotaResource.OPINIONS,
+      legalOpinions: QuotaResource.OPINIONS,
+      services: QuotaResource.SERVICES,
+      cases: QuotaResource.CASES,
+      litigationCases: QuotaResource.CASES,
+      callMinutes: QuotaResource.CALL_MINUTES,
+      // Also support full enum values
+      [QuotaResource.CONSULTATIONS]: QuotaResource.CONSULTATIONS,
+      [QuotaResource.OPINIONS]: QuotaResource.OPINIONS,
+      [QuotaResource.SERVICES]: QuotaResource.SERVICES,
+      [QuotaResource.CASES]: QuotaResource.CASES,
+      [QuotaResource.CALL_MINUTES]: QuotaResource.CALL_MINUTES,
+    };
+    return friendlyNameMap[resource] || (resource as QuotaResource);
+  }
 
-    /**
-     * Consume quota atomically with race condition prevention.
-     *
-     * This operation:
-     * 1. Validates membership exists and is active
-     * 2. Gets tier to check quota limits
-     * 3. Checks current usage against limit
-     * 4. Increments usage atomically
-     *
-     * All operations are atomic with Serializable isolation
-     * to prevent race conditions where concurrent requests
-     * could exceed quota limits.
-     */
-    async execute(membershipId: string, resource: QuotaResource, amount: number): Promise<void> {
-        await this.membershipUow.transaction(async (uow) => {
-            // 1. Validate membership
-            const membership = await uow.memberships.findById(membershipId);
-            if (!membership) {
-                throw new NotFoundException('Membership not found');
-            }
+  /**
+   * Consume quota atomically with race condition prevention.
+   *
+   * This operation:
+   * 1. Validates membership exists and is active
+   * 2. Gets tier to check quota limits
+   * 3. Checks current usage against limit
+   * 4. Increments usage atomically
+   *
+   * All operations are atomic with Serializable isolation
+   * to prevent race conditions where concurrent requests
+   * could exceed quota limits.
+   */
+  async execute(
+    membershipId: string,
+    resource: QuotaResource,
+    amount: number,
+  ): Promise<void> {
+    await this.membershipUow.transaction(async (uow) => {
+      // 1. Validate membership
+      const membership = await uow.memberships.findById(membershipId);
+      if (!membership) {
+        throw new NotFoundException('Membership not found');
+      }
 
-            if (!membership.isActive) {
-                throw new BadRequestException('Membership is not active');
-            }
+      if (!membership.isActive) {
+        throw new BadRequestException('Membership is not active');
+      }
 
-            // 2. Get tier to check limits
-            const tier = await uow.tiers.findById(membership.tierId);
-            if (!tier) {
-                throw new NotFoundException('Membership tier not found');
-            }
+      // 2. Get tier to check limits
+      const tier = await uow.tiers.findById(membership.tierId);
+      if (!tier) {
+        throw new NotFoundException('Membership tier not found');
+      }
 
-            // Normalize the resource name to handle user-friendly names
-            const normalizedResource = this.normalizeResource(resource as string);
+      // Normalize the resource name to handle user-friendly names
+      const normalizedResource = this.normalizeResource(resource as string);
 
-            // 3. Get tier limit
-            const resourceToQuotaField: Record<QuotaResource, keyof typeof tier.quota> = {
-                [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
-                [QuotaResource.OPINIONS]: 'opinionsPerMonth',
-                [QuotaResource.SERVICES]: 'servicesPerMonth',
-                [QuotaResource.CASES]: 'casesPerMonth',
-                [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
-            };
+      // 3. Get tier limit
+      const resourceToQuotaField: Record<
+        QuotaResource,
+        keyof typeof tier.quota
+      > = {
+        [QuotaResource.CONSULTATIONS]: 'consultationsPerMonth',
+        [QuotaResource.OPINIONS]: 'opinionsPerMonth',
+        [QuotaResource.SERVICES]: 'servicesPerMonth',
+        [QuotaResource.CASES]: 'casesPerMonth',
+        [QuotaResource.CALL_MINUTES]: 'callMinutesPerMonth',
+      };
 
-            const quotaField = resourceToQuotaField[normalizedResource];
-            const limit = quotaField ? tier.getQuotaLimit(quotaField) : undefined;
+      const quotaField = resourceToQuotaField[normalizedResource];
+      const limit = quotaField ? tier.getQuotaLimit(quotaField) : undefined;
 
-            // 4. Check quota within transaction (prevents race conditions)
-            const hasQuota = await uow.quotaUsage.hasAvailableQuota(membershipId, normalizedResource, amount, limit);
-            if (!hasQuota) {
-                throw new BadRequestException(`Insufficient quota for ${resource}`);
-            }
+      // 4. Check quota within transaction (prevents race conditions)
+      const hasQuota = await uow.quotaUsage.hasAvailableQuota(
+        membershipId,
+        normalizedResource,
+        amount,
+        limit,
+      );
+      if (!hasQuota) {
+        throw new BadRequestException(`Insufficient quota for ${resource}`);
+      }
 
-            // 5. Consume quota atomically
-            await uow.quotaUsage.incrementUsage(membershipId, normalizedResource, amount);
-        });
-    }
+      // 5. Consume quota atomically
+      await uow.quotaUsage.incrementUsage(
+        membershipId,
+        normalizedResource,
+        amount,
+      );
+    });
+  }
 }
 
 // ============================================
@@ -457,14 +496,14 @@ export class ConsumeQuotaUseCase {
 
 @Injectable()
 export class ListMembershipTiersUseCase {
-    constructor(
-        @Inject('IMembershipTierRepository') // 👈 ADD THIS
-        private readonly tierRepo: IMembershipTierRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipTierRepository') // 👈 ADD THIS
+    private readonly tierRepo: IMembershipTierRepository,
+  ) {}
 
-    async execute(options?: { isActive?: boolean }): Promise<MembershipTier[]> {
-        return await this.tierRepo.findAll(options);
-    }
+  async execute(options?: { isActive?: boolean }): Promise<MembershipTier[]> {
+    return await this.tierRepo.findAll(options);
+  }
 }
 
 // ============================================
@@ -472,30 +511,33 @@ export class ListMembershipTiersUseCase {
 // ============================================
 
 export interface CreatePaymentCommand {
-    invoiceId: string;
-    provider: 'moyasar' | 'hyperpay' | 'stripe' | 'paypal';
-    amount: number;
-    currency: string;
-    metadata?: Record<string, any>;
+  invoiceId: string;
+  provider: 'moyasar' | 'hyperpay' | 'stripe' | 'paypal';
+  amount: number;
+  currency: string;
+  metadata?: Record<string, any>;
 }
 
 @Injectable()
 export class CreatePaymentUseCase {
-    constructor(
-        @Inject('IMembershipPaymentRepository')
-        private readonly paymentRepo: IMembershipPaymentRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipPaymentRepository')
+    private readonly paymentRepo: IMembershipPaymentRepository,
+  ) {}
 
-    async execute(command: CreatePaymentCommand): Promise<MembershipPayment> {
-        const payment = MembershipPayment.create({
-            invoiceId: command.invoiceId,
-            provider: command.provider,
-            amount: Money.create({ amount: command.amount, currency: command.currency }),
-            metadata: command.metadata,
-        });
+  async execute(command: CreatePaymentCommand): Promise<MembershipPayment> {
+    const payment = MembershipPayment.create({
+      invoiceId: command.invoiceId,
+      provider: command.provider,
+      amount: Money.create({
+        amount: command.amount,
+        currency: command.currency,
+      }),
+      metadata: command.metadata,
+    });
 
-        return await this.paymentRepo.create(payment);
-    }
+    return await this.paymentRepo.create(payment);
+  }
 }
 
 // ============================================
@@ -504,31 +546,27 @@ export class CreatePaymentUseCase {
 
 @Injectable()
 export class CompletePaymentUseCase {
-    constructor(
-        @Inject('IMembershipPaymentRepository')
-        private readonly paymentRepo: IMembershipPaymentRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipPaymentRepository')
+    private readonly paymentRepo: IMembershipPaymentRepository,
+  ) {}
 
-    async execute(paymentId: string, providerTxnId: string): Promise<MembershipPayment> {
-        const payment = await this.paymentRepo.findById(paymentId);
-        if (!payment) {
-            throw new NotFoundException('Payment not found');
-        }
-
-        if (payment.isSuccessful()) {
-            throw new BadRequestException('Payment already completed');
-        }
-
-        return await this.paymentRepo.markAsCompleted(paymentId, providerTxnId);
+  async execute(
+    paymentId: string,
+    providerTxnId: string,
+  ): Promise<MembershipPayment> {
+    const payment = await this.paymentRepo.findById(paymentId);
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
     }
+
+    if (payment.isSuccessful()) {
+      throw new BadRequestException('Payment already completed');
+    }
+
+    return await this.paymentRepo.markAsCompleted(paymentId, providerTxnId);
+  }
 }
-
-
-
-
-
-
-
 
 // ============================================
 // TIER USE CASES
@@ -536,53 +574,69 @@ export class CompletePaymentUseCase {
 // ============================================
 
 import { BillingCycle } from '../../../domain/membership/value-objects/billing-cycle.vo';
-import { CreateMembershipTierDto, UpdateMembershipTierDto } from '../dto/index.dto';
+import {
+  CreateMembershipTierDto,
+  UpdateMembershipTierDto,
+} from '../dto/index.dto';
 
 // ============================================
 // CREATE MEMBERSHIP TIER USE CASE
 // ============================================
 @Injectable()
 export class CreateMembershipTierUseCase {
-    constructor(
-        @Inject('IMembershipTierRepository') // 👈 ADD THIS
-        private readonly tierRepository: IMembershipTierRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipTierRepository') // 👈 ADD THIS
+    private readonly tierRepository: IMembershipTierRepository,
+  ) {}
 
-    async execute(dto: CreateMembershipTierDto): Promise<MembershipTier> {
-        // Check if tier with same name already exists
-        const existingTier = await this.tierRepository.findByName(dto.name);
-        if (existingTier) {
-            throw new BadRequestException(`Tier with name "${dto.name}" already exists`);
-        }
-
-        // Normalize quota field names (support both user-friendly and internal names)
-        const normalizedQuota = dto.quota ? {
-            consultationsPerMonth: (dto.quota as any).consultationsPerMonth ?? (dto.quota as any).consultations,
-            opinionsPerMonth: (dto.quota as any).opinionsPerMonth ?? (dto.quota as any).legalOpinions,
-            servicesPerMonth: (dto.quota as any).servicesPerMonth ?? (dto.quota as any).services,
-            casesPerMonth: (dto.quota as any).casesPerMonth ?? (dto.quota as any).litigationCases,
-            callMinutesPerMonth: (dto.quota as any).callMinutesPerMonth ?? (dto.quota as any).callMinutes,
-        } : {};
-
-        // Create tier entity
-        const tier = MembershipTier.create({
-            name: dto.name,
-            nameAr: dto.nameAr,
-            description: dto.description,
-            descriptionAr: dto.descriptionAr,
-            price: Money.create({
-                amount: dto.price,
-                currency: dto.currency || 'SAR',
-            }),
-            billingCycle: BillingCycle.fromValue(dto.billingCycle),
-            quota: normalizedQuota,
-            benefits: dto.benefits || [],
-            isActive: dto.isActive !== undefined ? dto.isActive : true,
-        });
-
-        // Persist to database
-        return await this.tierRepository.create(tier);
+  async execute(dto: CreateMembershipTierDto): Promise<MembershipTier> {
+    // Check if tier with same name already exists
+    const existingTier = await this.tierRepository.findByName(dto.name);
+    if (existingTier) {
+      throw new BadRequestException(
+        `Tier with name "${dto.name}" already exists`,
+      );
     }
+
+    // Normalize quota field names (support both user-friendly and internal names)
+    const normalizedQuota = dto.quota
+      ? {
+          consultationsPerMonth:
+            (dto.quota as any).consultationsPerMonth ??
+            (dto.quota as any).consultations,
+          opinionsPerMonth:
+            (dto.quota as any).opinionsPerMonth ??
+            (dto.quota as any).legalOpinions,
+          servicesPerMonth:
+            (dto.quota as any).servicesPerMonth ?? (dto.quota as any).services,
+          casesPerMonth:
+            (dto.quota as any).casesPerMonth ??
+            (dto.quota as any).litigationCases,
+          callMinutesPerMonth:
+            (dto.quota as any).callMinutesPerMonth ??
+            (dto.quota as any).callMinutes,
+        }
+      : {};
+
+    // Create tier entity
+    const tier = MembershipTier.create({
+      name: dto.name,
+      nameAr: dto.nameAr,
+      description: dto.description,
+      descriptionAr: dto.descriptionAr,
+      price: Money.create({
+        amount: dto.price,
+        currency: dto.currency || 'SAR',
+      }),
+      billingCycle: BillingCycle.fromValue(dto.billingCycle),
+      quota: normalizedQuota,
+      benefits: dto.benefits || [],
+      isActive: dto.isActive !== undefined ? dto.isActive : true,
+    });
+
+    // Persist to database
+    return await this.tierRepository.create(tier);
+  }
 }
 
 // ============================================
@@ -590,20 +644,22 @@ export class CreateMembershipTierUseCase {
 // ============================================
 @Injectable()
 export class GetMembershipTierByIdUseCase {
-    constructor(
-        @Inject('IMembershipTierRepository') // 👈 ADD THIS
-        private readonly tierRepository: IMembershipTierRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipTierRepository') // 👈 ADD THIS
+    private readonly tierRepository: IMembershipTierRepository,
+  ) {}
 
-    async execute(tierId: number): Promise<MembershipTier> {
-        const tier = await this.tierRepository.findById(tierId);
+  async execute(tierId: number): Promise<MembershipTier> {
+    const tier = await this.tierRepository.findById(tierId);
 
-        if (!tier) {
-            throw new NotFoundException(`Membership tier with ID ${tierId} not found`);
-        }
-
-        return tier;
+    if (!tier) {
+      throw new NotFoundException(
+        `Membership tier with ID ${tierId} not found`,
+      );
     }
+
+    return tier;
+  }
 }
 
 // ============================================
@@ -611,71 +667,87 @@ export class GetMembershipTierByIdUseCase {
 // ============================================
 @Injectable()
 export class UpdateMembershipTierUseCase {
-    constructor(
-        @Inject('IMembershipTierRepository') // 👈 ADD THIS
-        private readonly tierRepository: IMembershipTierRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipTierRepository') // 👈 ADD THIS
+    private readonly tierRepository: IMembershipTierRepository,
+  ) {}
 
-    async execute(tierId: number, dto: UpdateMembershipTierDto): Promise<MembershipTier> {
-        // Find existing tier
-        const existingTier = await this.tierRepository.findById(tierId);
-        if (!existingTier) {
-            throw new NotFoundException(`Membership tier with ID ${tierId} not found`);
-        }
-
-        // Check if name is being changed and if new name conflicts
-        if (dto.name && dto.name !== existingTier.name) {
-            const conflictingTier = await this.tierRepository.findByName(dto.name);
-            if (conflictingTier && conflictingTier.id !== tierId) {
-                throw new BadRequestException(`Tier with name "${dto.name}" already exists`);
-            }
-        }
-
-        // Update tier properties
-        if (dto.name !== undefined) {
-            existingTier.name = dto.name;
-        }
-        if (dto.nameAr !== undefined) {
-            existingTier.nameAr = dto.nameAr;
-        }
-        if (dto.description !== undefined) {
-            existingTier.description = dto.description;
-        }
-        if (dto.descriptionAr !== undefined) {
-            existingTier.descriptionAr = dto.descriptionAr;
-        }
-        if (dto.price !== undefined) {
-            existingTier.price = Money.create({
-                amount: dto.price,
-                currency: dto.currency || existingTier.price.currency,
-            });
-        }
-        if (dto.billingCycle !== undefined) {
-            existingTier.billingCycle = BillingCycle.fromValue(dto.billingCycle);
-        }
-        if (dto.quota !== undefined) {
-            // Normalize quota field names (support both user-friendly and internal names)
-            existingTier.quota = {
-                consultationsPerMonth: (dto.quota as any).consultationsPerMonth ?? (dto.quota as any).consultations,
-                opinionsPerMonth: (dto.quota as any).opinionsPerMonth ?? (dto.quota as any).legalOpinions,
-                servicesPerMonth: (dto.quota as any).servicesPerMonth ?? (dto.quota as any).services,
-                casesPerMonth: (dto.quota as any).casesPerMonth ?? (dto.quota as any).litigationCases,
-                callMinutesPerMonth: (dto.quota as any).callMinutesPerMonth ?? (dto.quota as any).callMinutes,
-            };
-        }
-        if (dto.benefits !== undefined) {
-            existingTier.benefits = dto.benefits;
-        }
-        if (dto.isActive !== undefined) {
-            existingTier.isActive = dto.isActive;
-        }
-
-        // Update timestamp
-        existingTier.updatedAt = new Date();
-
-        // Persist changes
-        return await this.tierRepository.update(existingTier);
+  async execute(
+    tierId: number,
+    dto: UpdateMembershipTierDto,
+  ): Promise<MembershipTier> {
+    // Find existing tier
+    const existingTier = await this.tierRepository.findById(tierId);
+    if (!existingTier) {
+      throw new NotFoundException(
+        `Membership tier with ID ${tierId} not found`,
+      );
     }
+
+    // Check if name is being changed and if new name conflicts
+    if (dto.name && dto.name !== existingTier.name) {
+      const conflictingTier = await this.tierRepository.findByName(dto.name);
+      if (conflictingTier && conflictingTier.id !== tierId) {
+        throw new BadRequestException(
+          `Tier with name "${dto.name}" already exists`,
+        );
+      }
+    }
+
+    // Update tier properties
+    if (dto.name !== undefined) {
+      existingTier.name = dto.name;
+    }
+    if (dto.nameAr !== undefined) {
+      existingTier.nameAr = dto.nameAr;
+    }
+    if (dto.description !== undefined) {
+      existingTier.description = dto.description;
+    }
+    if (dto.descriptionAr !== undefined) {
+      existingTier.descriptionAr = dto.descriptionAr;
+    }
+    if (dto.price !== undefined) {
+      existingTier.price = Money.create({
+        amount: dto.price,
+        currency: dto.currency || existingTier.price.currency,
+      });
+    }
+    if (dto.billingCycle !== undefined) {
+      existingTier.billingCycle = BillingCycle.fromValue(dto.billingCycle);
+    }
+    if (dto.quota !== undefined) {
+      // Normalize quota field names (support both user-friendly and internal names)
+      existingTier.quota = {
+        consultationsPerMonth:
+          (dto.quota as any).consultationsPerMonth ??
+          (dto.quota as any).consultations,
+        opinionsPerMonth:
+          (dto.quota as any).opinionsPerMonth ??
+          (dto.quota as any).legalOpinions,
+        servicesPerMonth:
+          (dto.quota as any).servicesPerMonth ?? (dto.quota as any).services,
+        casesPerMonth:
+          (dto.quota as any).casesPerMonth ??
+          (dto.quota as any).litigationCases,
+        callMinutesPerMonth:
+          (dto.quota as any).callMinutesPerMonth ??
+          (dto.quota as any).callMinutes,
+      };
+    }
+    if (dto.benefits !== undefined) {
+      existingTier.benefits = dto.benefits;
+    }
+    if (dto.isActive !== undefined) {
+      existingTier.isActive = dto.isActive;
+    }
+
+    // Update timestamp
+    existingTier.updatedAt = new Date();
+
+    // Persist changes
+    return await this.tierRepository.update(existingTier);
+  }
 }
 
 // ============================================
@@ -683,27 +755,30 @@ export class UpdateMembershipTierUseCase {
 // ============================================
 @Injectable()
 export class DeleteMembershipTierUseCase {
-    constructor(
-        @Inject('IMembershipTierRepository') // 👈 ADD THIS
-        private readonly tierRepository: IMembershipTierRepository,
-    ) { }
+  constructor(
+    @Inject('IMembershipTierRepository') // 👈 ADD THIS
+    private readonly tierRepository: IMembershipTierRepository,
+  ) {}
 
-    async execute(tierId: number): Promise<void> {
-        // Find existing tier
-        const tier = await this.tierRepository.findById(tierId);
-        if (!tier) {
-            throw new NotFoundException(`Membership tier with ID ${tierId} not found`);
-        }
-
-        // Check if tier has active memberships
-        const hasActiveMemberships = await this.tierRepository.hasActiveMemberships(tierId);
-        if (hasActiveMemberships) {
-            throw new BadRequestException(
-                'Cannot delete tier with active memberships. Please deactivate the tier instead.',
-            );
-        }
-
-        // Soft delete the tier
-        await this.tierRepository.delete(tierId);
+  async execute(tierId: number): Promise<void> {
+    // Find existing tier
+    const tier = await this.tierRepository.findById(tierId);
+    if (!tier) {
+      throw new NotFoundException(
+        `Membership tier with ID ${tierId} not found`,
+      );
     }
+
+    // Check if tier has active memberships
+    const hasActiveMemberships =
+      await this.tierRepository.hasActiveMemberships(tierId);
+    if (hasActiveMemberships) {
+      throw new BadRequestException(
+        'Cannot delete tier with active memberships. Please deactivate the tier instead.',
+      );
+    }
+
+    // Soft delete the tier
+    await this.tierRepository.delete(tierId);
+  }
 }

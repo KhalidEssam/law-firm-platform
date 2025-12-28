@@ -4,13 +4,13 @@
 // ============================================
 
 import {
-    IsString,
-    IsNumber,
-    IsOptional,
-    IsEnum,
-    IsDateString,
-    IsPositive,
-    Min,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsPositive,
+  Min,
 } from 'class-validator';
 
 // ============================================
@@ -18,55 +18,55 @@ import {
 // ============================================
 
 export class CreateMembershipInvoiceDto {
-    @IsString()
-    membershipId: string;
+  @IsString()
+  membershipId: string;
 
-    @IsNumber()
-    @IsPositive()
-    amount: number;
+  @IsNumber()
+  @IsPositive()
+  amount: number;
 
-    @IsOptional()
-    @IsString()
-    currency?: string;
+  @IsOptional()
+  @IsString()
+  currency?: string;
 
-    @IsDateString()
-    dueDate: string;
+  @IsDateString()
+  dueDate: string;
 }
 
 export class ListMembershipInvoicesQueryDto {
-    @IsOptional()
-    @IsString()
-    membershipId?: string;
+  @IsOptional()
+  @IsString()
+  membershipId?: string;
 
-    @IsOptional()
-    @IsEnum(['unpaid', 'paid', 'overdue', 'cancelled'])
-    status?: string;
+  @IsOptional()
+  @IsEnum(['unpaid', 'paid', 'overdue', 'cancelled'])
+  status?: string;
 
-    @IsOptional()
-    @IsDateString()
-    dueBefore?: string;
+  @IsOptional()
+  @IsDateString()
+  dueBefore?: string;
 
-    @IsOptional()
-    @IsDateString()
-    dueAfter?: string;
+  @IsOptional()
+  @IsDateString()
+  dueAfter?: string;
 
-    @IsOptional()
-    @IsNumber()
-    @Min(1)
-    limit?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  limit?: number;
 
-    @IsOptional()
-    @IsNumber()
-    @Min(0)
-    offset?: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  offset?: number;
 
-    @IsOptional()
-    @IsEnum(['createdAt', 'dueDate', 'amount'])
-    orderBy?: string;
+  @IsOptional()
+  @IsEnum(['createdAt', 'dueDate', 'amount'])
+  orderBy?: string;
 
-    @IsOptional()
-    @IsEnum(['asc', 'desc'])
-    orderDir?: string;
+  @IsOptional()
+  @IsEnum(['asc', 'desc'])
+  orderDir?: string;
 }
 
 // ============================================
@@ -74,29 +74,29 @@ export class ListMembershipInvoicesQueryDto {
 // ============================================
 
 export class MembershipInvoiceResponseDto {
-    id: string;
-    membershipId: string;
-    invoiceNumber: string;
-    amount: number;
-    currency: string;
-    dueDate: string;
-    status: string;
-    isOverdue: boolean;
-    daysUntilDue: number;
-    createdAt: string;
-    updatedAt: string;
+  id: string;
+  membershipId: string;
+  invoiceNumber: string;
+  amount: number;
+  currency: string;
+  dueDate: string;
+  status: string;
+  isOverdue: boolean;
+  daysUntilDue: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export class MembershipInvoiceListResponseDto {
-    invoices: MembershipInvoiceResponseDto[];
-    total: number;
-    limit: number;
-    offset: number;
+  invoices: MembershipInvoiceResponseDto[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export class InvoiceSummaryResponseDto {
-    totalUnpaid: number;
-    totalPaid: number;
-    totalOverdue: number;
-    totalAmount: number;
+  totalUnpaid: number;
+  totalPaid: number;
+  totalOverdue: number;
+  totalAmount: number;
 }

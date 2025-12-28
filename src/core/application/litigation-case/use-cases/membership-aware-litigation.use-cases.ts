@@ -5,13 +5,13 @@
 
 import { Injectable, BadRequestException } from '@nestjs/common';
 import {
-    MembershipIntegrationService,
-    ServiceType,
+  MembershipIntegrationService,
+  ServiceType,
 } from '../../membership/services/membership-integration.service';
 import {
-    CreateLitigationCaseUseCase,
-    CreateLitigationCaseCommand,
-    CloseCaseUseCase,
+  CreateLitigationCaseUseCase,
+  CreateLitigationCaseCommand,
+  CloseCaseUseCase,
 } from './litigation-case.use-cases';
 
 // ============================================
@@ -20,59 +20,64 @@ import {
 
 @Injectable()
 export class CreateLitigationWithMembershipUseCase {
-    constructor(
-        private readonly membershipService: MembershipIntegrationService,
-        private readonly createLitigationUseCase: CreateLitigationCaseUseCase,
-    ) {}
+  constructor(
+    private readonly membershipService: MembershipIntegrationService,
+    private readonly createLitigationUseCase: CreateLitigationCaseUseCase,
+  ) {}
 
-    async execute(command: CreateLitigationCaseCommand): Promise<any & {
-        membershipInfo?: {
-            membershipId: string;
-            tierName: string | null;
-            quotaRemaining: number | null;
-            isUnlimited: boolean;
-        };
-    }> {
-        // 1. Validate membership and quota
-        const validation = await this.membershipService.validateMembershipForService(
-            command.subscriberId,
-            ServiceType.LITIGATION,
-        );
-
-        if (!validation.isValid) {
-            throw new BadRequestException(
-                validation.errorMessage || 'Cannot create litigation case: membership validation failed',
-            );
-        }
-
-        // 2. Create the litigation case using injected use case
-        const litigationCase = await this.createLitigationUseCase.execute(command);
-
-        // 3. Record the service usage
-        try {
-            await this.membershipService.recordServiceUsage({
-                userId: command.subscriberId,
-                serviceType: ServiceType.LITIGATION,
-                requestId: litigationCase.id,
-            });
-        } catch (error) {
-            // Log error but don't fail the request
-            console.error('Failed to record service usage:', error);
-        }
-
-        // 4. Return case with membership info
-        return {
-            ...litigationCase,
-            membershipInfo: {
-                membershipId: validation.membershipId!,
-                tierName: validation.tierName,
-                quotaRemaining: validation.quotaRemaining !== null
-                    ? validation.quotaRemaining - 1
-                    : null,
-                isUnlimited: validation.isUnlimited,
-            },
-        };
+  async execute(command: CreateLitigationCaseCommand): Promise<
+    any & {
+      membershipInfo?: {
+        membershipId: string;
+        tierName: string | null;
+        quotaRemaining: number | null;
+        isUnlimited: boolean;
+      };
     }
+  > {
+    // 1. Validate membership and quota
+    const validation =
+      await this.membershipService.validateMembershipForService(
+        command.subscriberId,
+        ServiceType.LITIGATION,
+      );
+
+    if (!validation.isValid) {
+      throw new BadRequestException(
+        validation.errorMessage ||
+          'Cannot create litigation case: membership validation failed',
+      );
+    }
+
+    // 2. Create the litigation case using injected use case
+    const litigationCase = await this.createLitigationUseCase.execute(command);
+
+    // 3. Record the service usage
+    try {
+      await this.membershipService.recordServiceUsage({
+        userId: command.subscriberId,
+        serviceType: ServiceType.LITIGATION,
+        requestId: litigationCase.id,
+      });
+    } catch (error) {
+      // Log error but don't fail the request
+      console.error('Failed to record service usage:', error);
+    }
+
+    // 4. Return case with membership info
+    return {
+      ...litigationCase,
+      membershipInfo: {
+        membershipId: validation.membershipId!,
+        tierName: validation.tierName,
+        quotaRemaining:
+          validation.quotaRemaining !== null
+            ? validation.quotaRemaining - 1
+            : null,
+        isUnlimited: validation.isUnlimited,
+      },
+    };
+  }
 }
 
 // ============================================
@@ -81,34 +86,35 @@ export class CreateLitigationWithMembershipUseCase {
 
 @Injectable()
 export class CheckLitigationQuotaUseCase {
-    constructor(
-        private readonly membershipService: MembershipIntegrationService,
-    ) {}
+  constructor(
+    private readonly membershipService: MembershipIntegrationService,
+  ) {}
 
-    async execute(userId: string): Promise<{
-        canCreate: boolean;
-        quotaUsed: number;
-        quotaLimit: number | null;
-        quotaRemaining: number | null;
-        isUnlimited: boolean;
-        membershipTier: string | null;
-        errorMessage?: string;
-    }> {
-        const validation = await this.membershipService.validateMembershipForService(
-            userId,
-            ServiceType.LITIGATION,
-        );
+  async execute(userId: string): Promise<{
+    canCreate: boolean;
+    quotaUsed: number;
+    quotaLimit: number | null;
+    quotaRemaining: number | null;
+    isUnlimited: boolean;
+    membershipTier: string | null;
+    errorMessage?: string;
+  }> {
+    const validation =
+      await this.membershipService.validateMembershipForService(
+        userId,
+        ServiceType.LITIGATION,
+      );
 
-        return {
-            canCreate: validation.isValid,
-            quotaUsed: validation.quotaUsed,
-            quotaLimit: validation.quotaLimit,
-            quotaRemaining: validation.quotaRemaining,
-            isUnlimited: validation.isUnlimited,
-            membershipTier: validation.tierName,
-            errorMessage: validation.errorMessage,
-        };
-    }
+    return {
+      canCreate: validation.isValid,
+      quotaUsed: validation.quotaUsed,
+      quotaLimit: validation.quotaLimit,
+      quotaRemaining: validation.quotaRemaining,
+      isUnlimited: validation.isUnlimited,
+      membershipTier: validation.tierName,
+      errorMessage: validation.errorMessage,
+    };
+  }
 }
 
 // ============================================
@@ -117,38 +123,45 @@ export class CheckLitigationQuotaUseCase {
 
 @Injectable()
 export class CloseLitigationWithUsageTrackingUseCase {
-    constructor(
-        private readonly membershipService: MembershipIntegrationService,
-        private readonly closeCaseUseCase: CloseCaseUseCase,
-    ) {}
+  constructor(
+    private readonly membershipService: MembershipIntegrationService,
+    private readonly closeCaseUseCase: CloseCaseUseCase,
+  ) {}
 
-    async execute(caseId: string, subscriberId: string, chargedAmount?: number): Promise<any> {
-        // 1. Close the case using injected use case
-        const closedCase = await this.closeCaseUseCase.execute({ caseId });
+  async execute(
+    caseId: string,
+    subscriberId: string,
+    chargedAmount?: number,
+  ): Promise<any> {
+    // 1. Close the case using injected use case
+    const closedCase = await this.closeCaseUseCase.execute({ caseId });
 
-        // 2. If there's an overage charge, update the service usage
-        if (chargedAmount && chargedAmount > 0) {
-            try {
-                // Get membership for this user
-                const status = await this.membershipService.getMembershipStatus(subscriberId);
-                if (status.membershipId) {
-                    const unbilledUsage = await this.membershipService.getUnbilledUsage(status.membershipId);
-                    const usageForCase = unbilledUsage.find(
-                        u => u.litigationCaseId === caseId
-                    );
-                    if (usageForCase) {
-                        await this.membershipService.markUsageAsBilled(
-                            usageForCase.id,
-                            chargedAmount,
-                            'SAR',
-                        );
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to update usage billing:', error);
-            }
+    // 2. If there's an overage charge, update the service usage
+    if (chargedAmount && chargedAmount > 0) {
+      try {
+        // Get membership for this user
+        const status =
+          await this.membershipService.getMembershipStatus(subscriberId);
+        if (status.membershipId) {
+          const unbilledUsage = await this.membershipService.getUnbilledUsage(
+            status.membershipId,
+          );
+          const usageForCase = unbilledUsage.find(
+            (u) => u.litigationCaseId === caseId,
+          );
+          if (usageForCase) {
+            await this.membershipService.markUsageAsBilled(
+              usageForCase.id,
+              chargedAmount,
+              'SAR',
+            );
+          }
         }
-
-        return closedCase;
+      } catch (error) {
+        console.error('Failed to update usage billing:', error);
+      }
     }
+
+    return closedCase;
+  }
 }
