@@ -243,10 +243,13 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
     const expiringCards = allCards.filter((pm) => {
       try {
         const details = pm.details;
-        if (!details || !details.data) return false;
+        if (!details || typeof details !== 'object' || Array.isArray(details)) return false;
 
-        const expiryMonth = parseInt(details.data.expiryMonth);
-        const expiryYear = parseInt(details.data.expiryYear);
+        const detailsObj = details as Record<string, any>;
+        if (!detailsObj.data || typeof detailsObj.data !== 'object') return false;
+
+        const expiryMonth = parseInt(detailsObj.data.expiryMonth);
+        const expiryYear = parseInt(detailsObj.data.expiryYear);
 
         if (!expiryMonth || !expiryYear) return false;
 
