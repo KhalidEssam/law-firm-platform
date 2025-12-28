@@ -16,7 +16,7 @@ import {
   type IMembershipTierRepository,
   type IMembershipQuotaUsageRepository,
   type IServiceUsageRepository,
-  type ITierServiceRepository,
+  // type ITierServiceRepository,
 } from '../ports/repository';
 import { ServiceUsage } from '../../../domain/membership/entities/service-usage.entity';
 
@@ -87,8 +87,8 @@ export class MembershipIntegrationService {
     private readonly quotaUsageRepo: IMembershipQuotaUsageRepository,
     @Inject('IServiceUsageRepository')
     private readonly serviceUsageRepo: IServiceUsageRepository,
-    @Inject('ITierServiceRepository')
-    private readonly tierServiceRepo: ITierServiceRepository,
+    // @Inject('ITierServiceRepository')
+    // private readonly tierServiceRepo: ITierServiceRepository,
   ) {}
 
   // ============================================

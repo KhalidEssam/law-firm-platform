@@ -21,7 +21,7 @@ import {
 
 // Report Use Cases
 import {
-  CreateReportUseCase,
+  // CreateReportUseCase,
   GetReportByIdUseCase,
   ListReportsUseCase,
   DeleteReportUseCase,
@@ -61,7 +61,7 @@ import { ReportParametersData } from '../../core/domain/reports/value-objects/re
 @Controller('reports')
 export class ReportsController {
   constructor(
-    private readonly createReport: CreateReportUseCase,
+    // private readonly createReport: CreateReportUseCase,
     private readonly getReportById: GetReportByIdUseCase,
     private readonly listReports: ListReportsUseCase,
     private readonly deleteReport: DeleteReportUseCase,

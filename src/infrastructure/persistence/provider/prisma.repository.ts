@@ -539,7 +539,7 @@ export class PrismaProviderServiceRepository
 
   async findByProviderAndServiceType(
     providerId: string,
-    serviceType: ServiceType,
+    // serviceType: ServiceType,
   ): Promise<ProviderService[]> {
     const services = await this.prisma.providerService.findMany({
       where: {
@@ -552,7 +552,7 @@ export class PrismaProviderServiceRepository
 
   async existsByProviderAndServiceType(
     providerId: string,
-    serviceType: ServiceType,
+    // serviceType: ServiceType,
   ): Promise<boolean> {
     const count = await this.prisma.providerService.count({
       where: {

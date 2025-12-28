@@ -20,7 +20,7 @@ import {
   PaymentMethodTypeEnum,
   PaymentMethodDetailsFactory,
   PaymentNickname,
-  CardDetails,
+  // CardDetails,
 } from '../../../core/domain/payment-method/value-objects/payment-method.vo';
 import {
   PaymentMethod as PrismaPaymentMethod,

@@ -3,6 +3,8 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
+    "noUnusedLocals": true,    // Error on unused variables
+    "noUnusedParameters": true, // Error on unused function parameters
     "esModuleInterop": true,
     "isolatedModules": true,
     "declaration": true,

@@ -8,7 +8,7 @@ import {
   Param,
   Query,
   BadRequestException,
-  UseGuards,
+  // UseGuards,
   Req,
   HttpCode,
   HttpStatus,
@@ -22,7 +22,7 @@ import { ListUsersUseCase } from '../../core/application/use-cases/get-all-users
 import { DeleteUserUseCase } from '../../core/application/use-cases/delete-user.use-case';
 import { GetUserByEmailUseCase } from 'src/core/application/use-cases/get-user-by-email.use-case';
 import { GetUserByUsernameUseCase } from '../../core/application/use-cases/get-user-by-username.use-case';
-import { GetUserByAuth0IdUseCase } from '../../core/application/use-cases/get-user-by-auth0.use-case';
+// import { GetUserByAuth0IdUseCase } from '../../core/application/use-cases/get-user-by-auth0.use-case';
 import { VerifyEmailUseCase } from '../../core/application/use-cases/verify-email.use-case';
 import { VerifyMobileUseCase } from '../../core/application/use-cases/verify-mobile.use-case';
 import { UpdateProfileStatusUseCase } from '../../core/application/use-cases/update-profile-status.use-case';
@@ -38,10 +38,10 @@ import {
   UnlinkIdentityUseCase,
   getProviderDisplayName,
 } from 'src/core/application/use-cases/user-identities.use-case';
-import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from '../../auth/roles.guard';
+// import { AuthGuard } from '@nestjs/passport';
+// import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
-import { PermissionsGuard } from '../../auth/permissions.guard';
+// import { PermissionsGuard } from '../../auth/permissions.guard';
 import { Permissions } from '../../auth/permissions.decorator';
 import {
   AvailabilityResponseDto,
@@ -75,7 +75,7 @@ export class UserController {
     private readonly getUserById: GetUserByIdUseCase,
     private readonly getUserByEmail: GetUserByEmailUseCase,
     private readonly getUserByUsername: GetUserByUsernameUseCase,
-    private readonly getUserByAuth0Id: GetUserByAuth0IdUseCase,
+    // private readonly getUserByAuth0Id: GetUserByAuth0IdUseCase,
     private readonly listUsers: ListUsersUseCase,
     private readonly updateUserProfile: UpdateUserProfileUseCase,
     private readonly verifyEmail: VerifyEmailUseCase,

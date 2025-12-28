@@ -8,19 +8,13 @@ import {
   Get,
   Post,
   Put,
-  Patch,
   Delete,
   Body,
   Param,
   Query,
   HttpCode,
   HttpStatus,
-  UseGuards,
-  Request,
   ParseUUIDPipe,
-  BadRequestException,
-  NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,14 +22,13 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
-  ApiQuery,
+  // ApiQuery,
 } from '@nestjs/swagger';
 
 // DTOs
 import {
   CreateOpinionRequestDto,
   UpdateOpinionRequestDto,
-  SubmitOpinionRequestDto,
   AssignToLawyerDto,
   SetEstimatedCostDto,
   MarkAsPaidDto,
@@ -46,13 +39,11 @@ import {
   OpinionRequestResponseDto,
   PaginatedOpinionRequestResponseDto,
   OpinionStatisticsResponseDto,
-  ErrorResponseDto,
   //   ValidationErrorResponseDto,
 } from '../../core/application/legal-opinion/legal-opinion-request.dtos';
 
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { Public } from 'src/auth/decorators/public.decorator';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -64,7 +55,7 @@ import { StartResearchUseCase } from '../../core/application/legal-opinion/use-c
 import { StartDraftingUseCase } from '../../core/application/legal-opinion/use-cases/start-drafting.use-case';
 import { SubmitForReviewUseCase } from '../../core/application/legal-opinion/use-cases/submit-for-review.use-case';
 import { RequestRevisionUseCase } from '../../core/application/legal-opinion/use-cases/request-revision.use-case';
-import { StartRevisingUseCase } from '../../core/application/legal-opinion/use-cases/start-revising.use-case';
+// import { StartRevisingUseCase } from '../../core/application/legal-opinion/use-cases/start-revising.use-case';
 import { CompleteOpinionUseCase } from '../../core/application/legal-opinion/use-cases/complete-opinion.use-case';
 import { SetEstimatedCostUseCase } from '../../core/application/legal-opinion/use-cases/set-estimated-cost.use-case';
 import { MarkAsPaidUseCase } from '../../core/application/legal-opinion/use-cases/mark-as-paid.use-case';

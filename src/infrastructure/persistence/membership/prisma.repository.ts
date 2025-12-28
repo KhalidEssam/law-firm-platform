@@ -12,8 +12,8 @@ import {
 } from '../../../core/domain/membership/entities/membership-tier.entity';
 import {
   MembershipPayment,
-  PaymentStatus,
-  PaymentProvider,
+  // PaymentStatus,
+  // PaymentProvider,
 } from '../../../core/domain/membership/entities/membership-payment.entity';
 import { MembershipCoupon } from '../../../core/domain/membership/entities/membership-coupon.entity';
 import { MembershipCouponRedemption } from '../../../core/domain/membership/entities/membership-coupon-redemption.entity';
@@ -122,27 +122,27 @@ class PaymentStatusMapper {
   }
 }
 
-class DiscountTypeMapper {
-  private static readonly toPrismaMap: Record<string, PrismaDiscountType> = {
-    percentage: PrismaDiscountType.percentage,
-    fixed: PrismaDiscountType.fixed,
-  };
+// class DiscountTypeMapper {
+//   private static readonly toPrismaMap: Record<string, PrismaDiscountType> = {
+//     percentage: PrismaDiscountType.percentage,
+//     fixed: PrismaDiscountType.fixed,
+//   };
 
-  private static readonly toDomainMap: Record<PrismaDiscountType, string> = {
-    [PrismaDiscountType.percentage]: 'percentage',
-    [PrismaDiscountType.fixed]: 'fixed',
-  };
+//   private static readonly toDomainMap: Record<PrismaDiscountType, string> = {
+//     [PrismaDiscountType.percentage]: 'percentage',
+//     [PrismaDiscountType.fixed]: 'fixed',
+//   };
 
-  static toPrisma(type: string): PrismaDiscountType {
-    return (
-      this.toPrismaMap[type.toLowerCase()] || PrismaDiscountType.percentage
-    );
-  }
+//   static toPrisma(type: string): PrismaDiscountType {
+//     return (
+//       this.toPrismaMap[type.toLowerCase()] || PrismaDiscountType.percentage
+//     );
+//   }
 
-  static toDomain(prismaType: PrismaDiscountType): string {
-    return this.toDomainMap[prismaType];
-  }
-}
+//   static toDomain(prismaType: PrismaDiscountType): string {
+//     return this.toDomainMap[prismaType];
+//   }
+// }
 
 // ============================================
 // PRISMA MEMBERSHIP REPOSITORY
@@ -170,17 +170,17 @@ export class PrismaMembershipRepository implements IMembershipRepository {
     });
   }
 
-  private mapToPrisma(membership: Membership): Prisma.MembershipUpdateInput {
-    return {
-      user: { connect: { id: membership.userId } },
-      tier: { connect: { id: membership.tierId } },
-      startDate: membership.startDate,
-      endDate: membership.endDate,
-      isActive: membership.isActive,
-      autoRenew: membership.autoRenew,
-      updatedAt: new Date(),
-    };
-  }
+  // private mapToPrisma(membership: Membership): Prisma.MembershipUpdateInput {
+  //   return {
+  //     user: { connect: { id: membership.userId } },
+  //     tier: { connect: { id: membership.tierId } },
+  //     startDate: membership.startDate,
+  //     endDate: membership.endDate,
+  //     isActive: membership.isActive,
+  //     autoRenew: membership.autoRenew,
+  //     updatedAt: new Date(),
+  //   };
+  // }
 
   // ============================================
   // CREATE

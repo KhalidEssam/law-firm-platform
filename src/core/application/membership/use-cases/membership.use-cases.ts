@@ -22,8 +22,8 @@ import {
   type IMembershipRepository,
   type IMembershipTierRepository,
   type IMembershipPaymentRepository,
-  type IMembershipCouponRepository,
-  type IMembershipCouponRedemptionRepository,
+  // type IMembershipCouponRepository,
+  // type IMembershipCouponRedemptionRepository,
   type IMembershipQuotaUsageRepository,
 } from '../ports/repository';
 import {

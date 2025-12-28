@@ -8,7 +8,6 @@ import {
   Get,
   Post,
   Put,
-  Patch,
   Delete,
   Body,
   Param,
@@ -16,7 +15,6 @@ import {
   Req,
   HttpCode,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -58,7 +56,7 @@ import {
   AddPaymentMethodDto,
   UpdatePaymentMethodDto,
   VerifyPaymentMethodDto,
-  ResetFailedAttemptsDto,
+  // ResetFailedAttemptsDto,
   GetMyPaymentMethodsDto,
   ListPaymentMethodsDto,
   GetExpiringPaymentMethodsDto,

@@ -13,7 +13,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  // UseGuards,
   Request,
   ParseUUIDPipe,
 } from '@nestjs/common';
@@ -29,7 +29,7 @@ import {
 // import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { Public } from 'src/auth/decorators/public.decorator';
+// import { Public } from 'src/auth/decorators/public.decorator';
 
 // Use Cases
 import {
@@ -131,7 +131,7 @@ export class ConsultationRequestController {
     // Get user ID from authenticated user or body
     if (req.user?.sub) {
       // Auth0 user - look up database UUID from Auth0 ID
-      const user = await this.getUserByAuth0Id.execute(req.user.sub);
+      const user = await this.getUserByAuth0Id.execute(req.user.sub.toString());
       dto.subscriberId = user.id;
     } else if (req.user?.id) {
       // Local auth with direct ID

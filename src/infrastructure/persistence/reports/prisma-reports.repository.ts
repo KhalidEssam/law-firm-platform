@@ -26,7 +26,7 @@ import {
   MetricFilter,
   MetricPaginationOptions,
   PaginatedMetrics,
-  AggregationOptions,
+  // AggregationOptions,
 } from '../../../core/application/reports/ports/reports.repository';
 import {
   ReportType as PrismaReportType,
@@ -413,7 +413,7 @@ export class PrismaAnalyticsMetricRepository
   async aggregate(
     metricName: string,
     timeRange: TimeRange,
-    options?: AggregationOptions,
+    // options?: AggregationOptions,
   ): Promise<AggregatedMetric> {
     const result = await this.prisma.analyticsMetric.aggregate({
       where: {
