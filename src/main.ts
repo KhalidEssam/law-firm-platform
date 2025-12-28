@@ -50,9 +50,20 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   // CORS Configuration
-  const corsOrigins = configService.get<string[]>('cors.origin') || [
-    'http://localhost:3000',
-  ];
+  const nodeEnv = configService.get<string>('nodeEnv') || 'development';
+  let corsOrigins = configService.get<string[]>('cors.origin');
+
+  // Security: In production, CORS_ORIGIN must be explicitly configured
+  if (!corsOrigins || corsOrigins.length === 0) {
+    if (nodeEnv === 'production') {
+      logger.error('CORS_ORIGIN must be configured in production environment');
+      throw new Error('CORS_ORIGIN environment variable is required in production');
+    }
+    // Only allow localhost fallback in development
+    corsOrigins = ['http://localhost:3000'];
+    logger.warn('Using default CORS origin: http://localhost:3000 (development only)');
+  }
+
   app.enableCors({
     origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

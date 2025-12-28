@@ -3,6 +3,7 @@
 // src/core/domain/billing/entities/membership-invoice.entity.ts
 // ============================================
 
+import { randomBytes } from 'crypto';
 import { Money, CurrencyEnum } from '../value-objects/money.vo';
 import {
   InvoiceStatus,
@@ -76,7 +77,8 @@ export class MembershipInvoice {
 
   static generateInvoiceNumber(prefix: string = 'INV'): string {
     const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    // Use cryptographically secure random bytes instead of Math.random()
+    const random = randomBytes(2).toString('hex').toUpperCase();
     return `${prefix}-${timestamp}-${random}`;
   }
 

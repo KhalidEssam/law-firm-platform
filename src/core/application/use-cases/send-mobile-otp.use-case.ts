@@ -9,6 +9,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import type { IUserRepository } from '../../domain/user/ports/user.repository';
 import type { IOtpRepository } from '../../domain/user/ports/otp.repository';
 import type { IWhatsAppService } from '../../domain/user/ports/whatsapp.service';
@@ -115,12 +116,13 @@ export class SendMobileOtpUseCase {
   }
 
   private generateOtp(): string {
-    // Generate cryptographically secure random OTP
+    // Generate cryptographically secure random OTP using Node.js crypto module
     const digits = '0123456789';
     let otp = '';
 
     for (let i = 0; i < OTP_CONFIG.LENGTH; i++) {
-      const randomIndex = Math.floor(Math.random() * digits.length);
+      // randomInt is cryptographically secure, unlike Math.random()
+      const randomIndex = randomInt(0, digits.length);
       otp += digits[randomIndex];
     }
 

@@ -3,7 +3,7 @@
 // Wraps consultation use cases with membership validation
 // ============================================
 
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import {
   MembershipIntegrationService,
   ServiceType,
@@ -23,6 +23,8 @@ import {
 
 @Injectable()
 export class CreateConsultationWithMembershipUseCase {
+  private readonly logger = new Logger(CreateConsultationWithMembershipUseCase.name);
+
   constructor(
     private readonly membershipService: MembershipIntegrationService,
     private readonly createConsultationUseCase: CreateConsultationRequestUseCase,
@@ -62,9 +64,9 @@ export class CreateConsultationWithMembershipUseCase {
         serviceType: ServiceType.CONSULTATION,
         requestId: consultation.id,
       });
-    } catch (error) {
+    } catch (error: any) {
       // Log error but don't fail the request
-      console.error('Failed to record service usage:', error);
+      this.logger.error('Failed to record service usage', error?.stack || error);
     }
 
     // 4. Return consultation with membership info
@@ -89,6 +91,8 @@ export class CreateConsultationWithMembershipUseCase {
 
 @Injectable()
 export class CompleteConsultationWithUsageTrackingUseCase {
+  private readonly logger = new Logger(CompleteConsultationWithUsageTrackingUseCase.name);
+
   constructor(
     private readonly membershipService: MembershipIntegrationService,
     private readonly completeConsultationUseCase: CompleteConsultationRequestUseCase,
@@ -124,8 +128,8 @@ export class CompleteConsultationWithUsageTrackingUseCase {
             );
           }
         }
-      } catch (error) {
-        console.error('Failed to update usage billing:', error);
+      } catch (error: any) {
+        this.logger.error('Failed to update usage billing', error?.stack || error);
       }
     }
 

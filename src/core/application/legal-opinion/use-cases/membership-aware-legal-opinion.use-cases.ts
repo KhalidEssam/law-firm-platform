@@ -3,7 +3,7 @@
 // Wraps legal opinion use cases with membership validation
 // ============================================
 
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import {
   MembershipIntegrationService,
   ServiceType,
@@ -19,6 +19,8 @@ import {
 
 @Injectable()
 export class CreateLegalOpinionWithMembershipUseCase {
+  private readonly logger = new Logger(CreateLegalOpinionWithMembershipUseCase.name);
+
   constructor(
     private readonly membershipService: MembershipIntegrationService,
     private readonly createOpinionUseCase: CreateOpinionRequestUseCase,
@@ -58,9 +60,9 @@ export class CreateLegalOpinionWithMembershipUseCase {
         serviceType: ServiceType.LEGAL_OPINION,
         requestId: opinion.id,
       });
-    } catch (error) {
+    } catch (error: any) {
       // Log error but don't fail the request
-      console.error('Failed to record service usage:', error);
+      this.logger.error('Failed to record service usage', error?.stack || error);
     }
 
     // 4. Return opinion with membership info
@@ -122,6 +124,8 @@ export class CheckLegalOpinionQuotaUseCase {
 
 @Injectable()
 export class CompleteLegalOpinionWithUsageTrackingUseCase {
+  private readonly logger = new Logger(CompleteLegalOpinionWithUsageTrackingUseCase.name);
+
   constructor(
     private readonly membershipService: MembershipIntegrationService,
   ) {}
@@ -152,8 +156,8 @@ export class CompleteLegalOpinionWithUsageTrackingUseCase {
             );
           }
         }
-      } catch (error) {
-        console.error('Failed to update usage billing:', error);
+      } catch (error: any) {
+        this.logger.error('Failed to update usage billing', error?.stack || error);
       }
     }
   }

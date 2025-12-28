@@ -3,7 +3,7 @@
 // Wraps litigation use cases with membership validation
 // ============================================
 
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import {
   MembershipIntegrationService,
   ServiceType,
@@ -20,6 +20,8 @@ import {
 
 @Injectable()
 export class CreateLitigationWithMembershipUseCase {
+  private readonly logger = new Logger(CreateLitigationWithMembershipUseCase.name);
+
   constructor(
     private readonly membershipService: MembershipIntegrationService,
     private readonly createLitigationUseCase: CreateLitigationCaseUseCase,
@@ -59,9 +61,9 @@ export class CreateLitigationWithMembershipUseCase {
         serviceType: ServiceType.LITIGATION,
         requestId: litigationCase.id,
       });
-    } catch (error) {
+    } catch (error: any) {
       // Log error but don't fail the request
-      console.error('Failed to record service usage:', error);
+      this.logger.error('Failed to record service usage', error?.stack || error);
     }
 
     // 4. Return case with membership info
@@ -123,6 +125,8 @@ export class CheckLitigationQuotaUseCase {
 
 @Injectable()
 export class CloseLitigationWithUsageTrackingUseCase {
+  private readonly logger = new Logger(CloseLitigationWithUsageTrackingUseCase.name);
+
   constructor(
     private readonly membershipService: MembershipIntegrationService,
     private readonly closeCaseUseCase: CloseCaseUseCase,
@@ -157,8 +161,8 @@ export class CloseLitigationWithUsageTrackingUseCase {
             );
           }
         }
-      } catch (error) {
-        console.error('Failed to update usage billing:', error);
+      } catch (error: any) {
+        this.logger.error('Failed to update usage billing', error?.stack || error);
       }
     }
 

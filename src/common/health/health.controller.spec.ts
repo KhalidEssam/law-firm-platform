@@ -1,7 +1,7 @@
 // Mock PrismaService before importing the controller
 jest.mock('../../prisma/prisma.service', () => ({
   PrismaService: jest.fn().mockImplementation(() => ({
-    $queryRawUnsafe: jest.fn(),
+    $queryRaw: jest.fn(),
   })),
 }));
 
@@ -13,7 +13,7 @@ describe('HealthController', () => {
 
   beforeEach(() => {
     mockPrismaService = {
-      $queryRawUnsafe: jest.fn(),
+      $queryRaw: jest.fn(),
     };
 
     controller = new HealthController(mockPrismaService);
@@ -33,7 +33,7 @@ describe('HealthController', () => {
 
   describe('readiness', () => {
     it('should return ok when database is connected', async () => {
-      mockPrismaService.$queryRawUnsafe.mockResolvedValue([{ '?column?': 1 }]);
+      mockPrismaService.$queryRaw.mockResolvedValue([{ '?column?': 1 }]);
 
       const result = await controller.readiness();
 
@@ -42,7 +42,7 @@ describe('HealthController', () => {
     });
 
     it('should return error when database is disconnected', async () => {
-      mockPrismaService.$queryRawUnsafe.mockRejectedValue(
+      mockPrismaService.$queryRaw.mockRejectedValue(
         new Error('Connection failed'),
       );
 
@@ -55,7 +55,7 @@ describe('HealthController', () => {
 
   describe('check', () => {
     it('should return full health check with connected database', async () => {
-      mockPrismaService.$queryRawUnsafe.mockResolvedValue([{ '?column?': 1 }]);
+      mockPrismaService.$queryRaw.mockResolvedValue([{ '?column?': 1 }]);
 
       const result = await controller.check();
 
@@ -68,7 +68,7 @@ describe('HealthController', () => {
     });
 
     it('should return error status when database is disconnected', async () => {
-      mockPrismaService.$queryRawUnsafe.mockRejectedValue(
+      mockPrismaService.$queryRaw.mockRejectedValue(
         new Error('Connection failed'),
       );
 
@@ -79,7 +79,7 @@ describe('HealthController', () => {
     });
 
     it('should include timestamp in ISO format', async () => {
-      mockPrismaService.$queryRawUnsafe.mockResolvedValue([{ '?column?': 1 }]);
+      mockPrismaService.$queryRaw.mockResolvedValue([{ '?column?': 1 }]);
 
       const result = await controller.check();
 
@@ -87,7 +87,7 @@ describe('HealthController', () => {
     });
 
     it('should include uptime as a number', async () => {
-      mockPrismaService.$queryRawUnsafe.mockResolvedValue([{ '?column?': 1 }]);
+      mockPrismaService.$queryRaw.mockResolvedValue([{ '?column?': 1 }]);
 
       const result = await controller.check();
 

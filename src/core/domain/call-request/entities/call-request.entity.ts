@@ -136,7 +136,8 @@ export class CallRequest {
    */
   private static generateRequestNumber(): string {
     const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    // Use cryptographically secure random bytes instead of Math.random()
+    const random = crypto.randomBytes(2).toString('hex').toUpperCase();
     return `CALL-${timestamp}-${random}`;
   }
 
