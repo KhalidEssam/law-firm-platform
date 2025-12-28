@@ -17,7 +17,7 @@ export class GetReportByIdUseCase {
     private readonly reportRepo: IReportRepository,
   ) {}
 
-  async execute(_id: string): Promise<ReportResponseDto> {
+  async execute(id: string): Promise<ReportResponseDto> {
     const report = await this.reportRepo.findById(id);
     if (!report) {
       throw new NotFoundException(`Report with ID ${id} not found`);

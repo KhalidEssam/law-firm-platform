@@ -110,7 +110,7 @@ export class GetMessageTemplateUseCase {
     private readonly templateRepository: IMessageTemplateRepository,
   ) {}
 
-  async byId(_id: string): Promise<MessageTemplate> {
+  async byId(id: string): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
@@ -217,7 +217,7 @@ export class UpdateMessageTemplateUseCase {
     return await this.templateRepository.update(updated);
   }
 
-  async activate(_id: string): Promise<MessageTemplate> {
+  async activate(id: string): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
@@ -225,7 +225,7 @@ export class UpdateMessageTemplateUseCase {
     return await this.templateRepository.activate(id);
   }
 
-  async deactivate(_id: string): Promise<MessageTemplate> {
+  async deactivate(id: string): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
@@ -244,7 +244,7 @@ export class DeleteMessageTemplateUseCase {
     private readonly templateRepository: IMessageTemplateRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);

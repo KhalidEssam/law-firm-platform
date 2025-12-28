@@ -46,7 +46,7 @@ export class PrismaRefundRepository implements IRefundRepository {
   // ============================================
   // READ
   // ============================================
-  async findById(_id: string): Promise<Refund | null> {
+  async findById(id: string): Promise<Refund | null> {
     const found = await this.prisma.refund.findUnique({
       where: { id },
     });
@@ -158,7 +158,7 @@ export class PrismaRefundRepository implements IRefundRepository {
   // ============================================
   // DELETE
   // ============================================
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.refund.delete({
       where: { id },
     });

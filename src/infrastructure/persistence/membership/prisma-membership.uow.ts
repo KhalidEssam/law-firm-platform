@@ -220,7 +220,7 @@ class TransactionalMembershipRepository implements IMembershipRepository {
     return this.mapToDomain(created);
   }
 
-  async findById(_id: string): Promise<Membership | null> {
+  async findById(id: string): Promise<Membership | null> {
     const found = await this.prisma.membership.findUnique({ where: { id } });
     return found ? this.mapToDomain(found) : null;
   }
@@ -324,7 +324,7 @@ class TransactionalMembershipRepository implements IMembershipRepository {
     return this.mapToDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.membership.delete({ where: { id } });
   }
 
@@ -562,7 +562,7 @@ class TransactionalMembershipCouponRepository
     return this.mapToDomain(created);
   }
 
-  async findById(_id: string): Promise<MembershipCoupon | null> {
+  async findById(id: string): Promise<MembershipCoupon | null> {
     const found = await this.prisma.membershipCoupon.findUnique({
       where: { id },
     });
@@ -643,7 +643,7 @@ class TransactionalMembershipCouponRepository
     return this.mapToDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.membershipCoupon.delete({ where: { id } });
   }
 
@@ -693,7 +693,7 @@ class TransactionalMembershipCouponRedemptionRepository
     return this.mapToDomain(created);
   }
 
-  async findById(_id: string): Promise<MembershipCouponRedemption | null> {
+  async findById(id: string): Promise<MembershipCouponRedemption | null> {
     const found = await this.prisma.membershipCouponRedemption.findUnique({
       where: { id },
     });
@@ -728,7 +728,7 @@ class TransactionalMembershipCouponRedemptionRepository
     return count > 0;
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.membershipCouponRedemption.delete({ where: { id } });
   }
 }
@@ -792,7 +792,7 @@ class TransactionalMembershipQuotaUsageRepository
     return this.mapToDomain(created);
   }
 
-  async findById(_id: string): Promise<MembershipQuotaUsage | null> {
+  async findById(id: string): Promise<MembershipQuotaUsage | null> {
     const found = await this.prisma.membershipQuotaUsage.findUnique({
       where: { id },
     });

@@ -442,12 +442,12 @@ export class PrismaLegalOpinionRequestRepository
     }
 
     // Status - map domain statuses to database statuses
-    if (filters.status) {
-      const dbStatuses = Array.isArray(filters.status)
-        ? filters.status.map((s) => this.mapDomainStatusToDb(s))
-        : this.mapDomainStatusToDb(filters.status);
-      //Fix this
-    }
+    // if (filters.status) {
+    //   const dbStatuses = Array.isArray(filters.status)
+    //     ? filters.status.map((s) => this.mapDomainStatusToDb(s))
+    //     : this.mapDomainStatusToDb(filters.status);
+    //   //Fix this
+    // }
 
     // Payment status
     if (filters.isPaid !== undefined) {

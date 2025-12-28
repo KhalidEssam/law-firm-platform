@@ -161,7 +161,7 @@ export class DeleteRoutingRuleUseCase {
     private readonly ruleRepo: IRoutingRuleRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const rule = await this.ruleRepo.findById(id);
     if (!rule) {
       throw new NotFoundException(`Routing rule with ID ${id} not found`);
@@ -182,7 +182,7 @@ export class GetRoutingRuleByIdUseCase {
     private readonly ruleRepo: IRoutingRuleRepository,
   ) {}
 
-  async execute(_id: string): Promise<RoutingRule> {
+  async execute(id: string): Promise<RoutingRule> {
     const rule = await this.ruleRepo.findById(id);
     if (!rule) {
       throw new NotFoundException(`Routing rule with ID ${id} not found`);

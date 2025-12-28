@@ -49,7 +49,7 @@
 //         return user ? this.mapToDomain(user) : null;
 //     }
 
-//     async findById(_id: string): Promise<User | null> {
+//     async findById(id: string): Promise<User | null> {
 //         const user = await this.prisma.user.findUnique({ where: { id } });
 //         return user ? this.mapToDomain(user) : null;
 //     }
@@ -69,7 +69,7 @@
 //         return this.mapToDomain(updated);
 //     }
 
-//     async delete(_id: string): Promise<void> {
+//     async delete(id: string): Promise<void> {
 //         await this.prisma.user.delete({ where: { id } });
 //     }
 

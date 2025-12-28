@@ -9,6 +9,8 @@ import { MembershipPayment } from '../../../domain/membership/entities/membershi
 import { MembershipQuotaUsage } from '../../../domain/membership/entities/membership-quota-usage.entity';
 import { QuotaResource } from '../../../domain/membership/value-objects/quota-resource.vo';
 
+import { MembershipCoupon } from 'src/core/domain/membership/entities/membership-coupon.entity';
+import { MembershipCouponRedemption } from 'src/core/domain/membership/entities/membership-coupon-redemption.entity';
 // Re-export from domain repositories
 export { type ITierServiceRepository } from '../../../domain/membership/repositories/tier-service.repository';
 export {

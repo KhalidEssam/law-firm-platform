@@ -43,7 +43,7 @@ export class PrismaSLAPolicyRepository implements ISLAPolicyRepository {
     return this.mapToDomain(result);
   }
 
-  async findById(_id: string): Promise<SLAPolicy | null> {
+  async findById(id: string): Promise<SLAPolicy | null> {
     const result = await this.prisma.sLAPolicy.findUnique({
       where: { id },
     });
@@ -132,7 +132,7 @@ export class PrismaSLAPolicyRepository implements ISLAPolicyRepository {
     return results.map(this.mapToDomain);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.sLAPolicy.delete({
       where: { id },
     });

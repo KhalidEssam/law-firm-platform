@@ -111,7 +111,7 @@ export class GetDisputeByIdUseCase {
     private readonly disputeRepository: IDisputeRepository,
   ) {}
 
-  async execute(_id: string): Promise<Dispute> {
+  async execute(id: string): Promise<Dispute> {
     const dispute = await this.disputeRepository.findById(id);
     if (!dispute) {
       throw new NotFoundException(`Dispute with ID ${id} not found`);
@@ -198,7 +198,7 @@ export class StartDisputeReviewUseCase {
     private readonly disputeRepository: IDisputeRepository,
   ) {}
 
-  async execute(_id: string): Promise<Dispute> {
+  async execute(id: string): Promise<Dispute> {
     const dispute = await this.disputeRepository.findById(id);
     if (!dispute) {
       throw new NotFoundException(`Dispute with ID ${id} not found`);
@@ -229,7 +229,7 @@ export class EscalateDisputeUseCase {
    * Escalate a dispute to a higher authority.
    * Uses UoW for consistency and future extensibility.
    */
-  async execute(_id: string, dto: EscalateDisputeDto): Promise<Dispute> {
+  async execute(id: string, dto: EscalateDisputeDto): Promise<Dispute> {
     return await this.billingUow.transaction(async (uow) => {
       const dispute = await uow.disputes.findById(id);
       if (!dispute) {
@@ -271,7 +271,7 @@ export class ResolveDisputeUseCase {
    *
    * All operations are atomic - if any fails, all are rolled back.
    */
-  async execute(_id: string, dto: ResolveDisputeDto): Promise<Dispute> {
+  async execute(id: string, dto: ResolveDisputeDto): Promise<Dispute> {
     return await this.billingUow.transaction(async (uow) => {
       const dispute = await uow.disputes.findById(id);
       if (!dispute) {
@@ -308,7 +308,7 @@ export class CloseDisputeUseCase {
    * Close a resolved dispute.
    * Uses UoW for consistency and future extensibility.
    */
-  async execute(_id: string): Promise<Dispute> {
+  async execute(id: string): Promise<Dispute> {
     return await this.billingUow.transaction(async (uow) => {
       const dispute = await uow.disputes.findById(id);
       if (!dispute) {
@@ -337,7 +337,7 @@ export class UpdateDisputePriorityUseCase {
     private readonly disputeRepository: IDisputeRepository,
   ) {}
 
-  async execute(_id: string, dto: UpdateDisputePriorityDto): Promise<Dispute> {
+  async execute(id: string, dto: UpdateDisputePriorityDto): Promise<Dispute> {
     const dispute = await this.disputeRepository.findById(id);
     if (!dispute) {
       throw new NotFoundException(`Dispute with ID ${id} not found`);
@@ -366,7 +366,7 @@ export class AddDisputeEvidenceUseCase {
     private readonly disputeRepository: IDisputeRepository,
   ) {}
 
-  async execute(_id: string, dto: AddDisputeEvidenceDto): Promise<Dispute> {
+  async execute(id: string, dto: AddDisputeEvidenceDto): Promise<Dispute> {
     const dispute = await this.disputeRepository.findById(id);
     if (!dispute) {
       throw new NotFoundException(`Dispute with ID ${id} not found`);
@@ -483,7 +483,7 @@ export class DeleteDisputeUseCase {
     private readonly disputeRepository: IDisputeRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const dispute = await this.disputeRepository.findById(id);
     if (!dispute) {
       throw new NotFoundException(`Dispute with ID ${id} not found`);

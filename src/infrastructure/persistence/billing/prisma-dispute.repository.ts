@@ -51,7 +51,7 @@ export class PrismaDisputeRepository implements IDisputeRepository {
   // ============================================
   // READ
   // ============================================
-  async findById(_id: string): Promise<Dispute | null> {
+  async findById(id: string): Promise<Dispute | null> {
     const found = await this.prisma.dispute.findUnique({
       where: { id },
     });
@@ -137,7 +137,7 @@ export class PrismaDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async startReview(_id: string): Promise<Dispute> {
+  async startReview(id: string): Promise<Dispute> {
     const updated = await this.prisma.dispute.update({
       where: { id },
       data: {
@@ -181,7 +181,7 @@ export class PrismaDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async close(_id: string): Promise<Dispute> {
+  async close(id: string): Promise<Dispute> {
     const updated = await this.prisma.dispute.update({
       where: { id },
       data: {
@@ -192,7 +192,7 @@ export class PrismaDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async updatePriority(_id: string, priority: PriorityEnum): Promise<Dispute> {
+  async updatePriority(id: string, priority: PriorityEnum): Promise<Dispute> {
     const updated = await this.prisma.dispute.update({
       where: { id },
       data: {
@@ -206,7 +206,7 @@ export class PrismaDisputeRepository implements IDisputeRepository {
   // ============================================
   // DELETE
   // ============================================
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.dispute.delete({
       where: { id },
     });

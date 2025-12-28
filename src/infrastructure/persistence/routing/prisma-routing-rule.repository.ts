@@ -71,7 +71,7 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
     return this.mapToDomain(updated);
   }
 
-  async delete(_id: string): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.prisma.routingRule.delete({
       where: { id },
     });
@@ -80,7 +80,7 @@ export class PrismaRoutingRuleRepository implements IRoutingRuleRepository {
     this.roundRobinStates.delete(id);
   }
 
-  async findById(_id: string): Promise<RoutingRule | null> {
+  async findById(id: string): Promise<RoutingRule | null> {
     const rule = await this.prisma.routingRule.findUnique({
       where: { id },
     });

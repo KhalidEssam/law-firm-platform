@@ -68,7 +68,7 @@ export class GetRefundByIdUseCase {
     private readonly refundRepository: IRefundRepository,
   ) {}
 
-  async execute(_id: string): Promise<Refund> {
+  async execute(id: string): Promise<Refund> {
     const refund = await this.refundRepository.findById(id);
     if (!refund) {
       throw new NotFoundException(`Refund with ID ${id} not found`);
@@ -367,7 +367,7 @@ export class DeleteRefundUseCase {
     private readonly refundRepository: IRefundRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const refund = await this.refundRepository.findById(id);
     if (!refund) {
       throw new NotFoundException(`Refund with ID ${id} not found`);

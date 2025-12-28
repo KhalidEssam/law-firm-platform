@@ -68,7 +68,7 @@ export class GetSupportTicketByIdUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(_id: string): Promise<SupportTicket> {
+  async execute(id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -216,7 +216,7 @@ export class StartTicketProgressUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(_id: string): Promise<SupportTicket> {
+  async execute(id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -243,7 +243,7 @@ export class ResolveTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(_id: string): Promise<SupportTicket> {
+  async execute(id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -270,7 +270,7 @@ export class CloseTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(_id: string): Promise<SupportTicket> {
+  async execute(id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -297,7 +297,7 @@ export class ReopenTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(_id: string): Promise<SupportTicket> {
+  async execute(id: string): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);
@@ -531,7 +531,7 @@ export class DeleteSupportTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(_id: string): Promise<void> {
+  async execute(id: string): Promise<void> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);

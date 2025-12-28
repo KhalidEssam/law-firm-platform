@@ -219,7 +219,7 @@ export class GetNotificationsUseCase {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async byId(_id: string): Promise<Notification> {
+  async byId(id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);
@@ -304,7 +304,7 @@ export class MarkNotificationUseCase {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async asRead(_id: string): Promise<Notification> {
+  async asRead(id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);
@@ -312,7 +312,7 @@ export class MarkNotificationUseCase {
     return await this.notificationRepository.markAsRead(id);
   }
 
-  async asUnread(_id: string): Promise<Notification> {
+  async asUnread(id: string): Promise<Notification> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);
