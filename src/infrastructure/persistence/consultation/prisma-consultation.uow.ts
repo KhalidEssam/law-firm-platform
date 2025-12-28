@@ -34,7 +34,6 @@ import {
   UserId,
   RequestNumber,
   ConsultationTypeVO,
-  ConsultationType,
   ConsultationStatusVO,
   ConsultationStatus,
   Urgency,
@@ -46,29 +45,17 @@ import {
 import {
   Document,
   DocumentId,
-  // FileName,
-  // FileUrl,
-  // FileSize,
   RequestMessage,
   MessageId,
-  // MessageContent,
-  // MessageType,
   RequestStatusHistory,
   StatusHistoryId,
   RequestRating,
   RatingId,
-  // RatingValue,
-  // RatingComment,
   RequestCollaborator,
   CollaboratorId,
   ProviderUserId,
-  // CollaboratorRole,
-  // CollaboratorStatus,
 } from '../../../core/domain/consultation/entities/consultation-request-entities';
-import {
-  // TransactionOptions,
-  DEFAULT_TRANSACTION_OPTIONS,
-} from '../../../core/domain/shared/ports/base-unit-of-work.interface';
+import { DEFAULT_TRANSACTION_OPTIONS } from '../../../core/domain/shared/ports/base-unit-of-work.interface';
 import {
   toPrismaTransactionOptions,
   PrismaTransactionClient,
@@ -524,7 +511,7 @@ class TransactionalConsultationRepository
   }
 
   async groupByStatus(
-    filters?: ConsultationRequestFilters,
+    _filters?: ConsultationRequestFilters,
   ): Promise<Record<ConsultationStatus, ConsultationRequest[]>> {
     return {} as Record<ConsultationStatus, ConsultationRequest[]>;
   }
@@ -755,7 +742,7 @@ class TransactionalStatusHistoryRepository
     return data.map((d) => this.toDomain(d));
   }
 
-  async getAverageTimeInStatus(status: ConsultationStatus): Promise<number> {
+  async getAverageTimeInStatus(_status: ConsultationStatus): Promise<number> {
     return 0; // Simplified implementation
   }
 
@@ -780,7 +767,7 @@ class TransactionalStatusHistoryRepository
 
 class TransactionalDocumentRepository implements IDocumentRepository {
   constructor(
-    private readonly prisma: PrismaService | PrismaTransactionClient,
+    private readonly _prisma: PrismaService | PrismaTransactionClient,
   ) {}
   async create(document: Document): Promise<Document> {
     return document;
@@ -788,17 +775,17 @@ class TransactionalDocumentRepository implements IDocumentRepository {
   async createMany(documents: Document[]): Promise<Document[]> {
     return documents;
   }
-  async findById(id: DocumentId): Promise<Document | null> {
+  async findById(_id: DocumentId): Promise<Document | null> {
     return null;
   }
   async findByConsultationId(
-    consultationId: ConsultationId,
+    _consultationId: ConsultationId,
   ): Promise<Document[]> {
     return [];
   }
   async findAll(
-    filters?: DocumentFilters,
-    pagination?: PaginationParams,
+    _filters?: DocumentFilters,
+    _pagination?: PaginationParams,
   ): Promise<PaginatedResult<Document>> {
     return {
       data: [],
@@ -812,41 +799,41 @@ class TransactionalDocumentRepository implements IDocumentRepository {
       },
     };
   }
-  async count(filters?: DocumentFilters): Promise<number> {
+  async count(_filters?: DocumentFilters): Promise<number> {
     return 0;
   }
-  async exists(id: DocumentId): Promise<boolean> {
+  async exists(_id: DocumentId): Promise<boolean> {
     return false;
   }
   async update(document: Document): Promise<Document> {
     return document;
   }
-  async verify(id: DocumentId): Promise<Document> {
+  async verify(_id: DocumentId): Promise<Document> {
     throw new Error('Not implemented');
   }
-  async softDelete(id: DocumentId): Promise<boolean> {
+  async softDelete(_id: DocumentId): Promise<boolean> {
     return true;
   }
   async softDeleteMany(ids: DocumentId[]): Promise<number> {
     return ids.length;
   }
-  async hardDelete(id: DocumentId): Promise<boolean> {
+  async hardDelete(_id: DocumentId): Promise<boolean> {
     return true;
   }
   async hardDeleteMany(ids: DocumentId[]): Promise<number> {
     return ids.length;
   }
-  async getTotalSize(consultationId: ConsultationId): Promise<number> {
+  async getTotalSize(_consultationId: ConsultationId): Promise<number> {
     return 0;
   }
-  async countByConsultation(consultationId: ConsultationId): Promise<number> {
+  async countByConsultation(_consultationId: ConsultationId): Promise<number> {
     return 0;
   }
 }
 
 class TransactionalMessageRepository implements IRequestMessageRepository {
   constructor(
-    private readonly prisma: PrismaService | PrismaTransactionClient,
+    private readonly _prisma: PrismaService | PrismaTransactionClient,
   ) {}
   async create(message: RequestMessage): Promise<RequestMessage> {
     return message;
@@ -854,12 +841,12 @@ class TransactionalMessageRepository implements IRequestMessageRepository {
   async createMany(messages: RequestMessage[]): Promise<RequestMessage[]> {
     return messages;
   }
-  async findById(id: MessageId): Promise<RequestMessage | null> {
+  async findById(_id: MessageId): Promise<RequestMessage | null> {
     return null;
   }
   async findByConsultationId(
-    consultationId: ConsultationId,
-    pagination?: PaginationParams,
+    _consultationId: ConsultationId,
+    _pagination?: PaginationParams,
   ): Promise<PaginatedResult<RequestMessage>> {
     return {
       data: [],
@@ -874,13 +861,13 @@ class TransactionalMessageRepository implements IRequestMessageRepository {
     };
   }
   async findUnreadByConsultation(
-    consultationId: ConsultationId,
+    _consultationId: ConsultationId,
   ): Promise<RequestMessage[]> {
     return [];
   }
   async findAll(
-    filters?: MessageFilters,
-    pagination?: PaginationParams,
+    _filters?: MessageFilters,
+    _pagination?: PaginationParams,
   ): Promise<PaginatedResult<RequestMessage>> {
     return {
       data: [],
@@ -894,32 +881,32 @@ class TransactionalMessageRepository implements IRequestMessageRepository {
       },
     };
   }
-  async count(filters?: MessageFilters): Promise<number> {
+  async count(_filters?: MessageFilters): Promise<number> {
     return 0;
   }
   async update(message: RequestMessage): Promise<RequestMessage> {
     return message;
   }
-  async markAsRead(id: MessageId): Promise<RequestMessage> {
+  async markAsRead(_id: MessageId): Promise<RequestMessage> {
     throw new Error('Not implemented');
   }
-  async markAllAsRead(consultationId: ConsultationId): Promise<number> {
+  async markAllAsRead(_consultationId: ConsultationId): Promise<number> {
     return 0;
   }
-  async softDelete(id: MessageId): Promise<boolean> {
+  async softDelete(_id: MessageId): Promise<boolean> {
     return true;
   }
   async softDeleteMany(ids: MessageId[]): Promise<number> {
     return ids.length;
   }
-  async hardDelete(id: MessageId): Promise<boolean> {
+  async hardDelete(_id: MessageId): Promise<boolean> {
     return true;
   }
-  async countUnread(consultationId: ConsultationId): Promise<number> {
+  async countUnread(_consultationId: ConsultationId): Promise<number> {
     return 0;
   }
   async getLastMessage(
-    consultationId: ConsultationId,
+    _consultationId: ConsultationId,
   ): Promise<RequestMessage | null> {
     return null;
   }
@@ -927,22 +914,22 @@ class TransactionalMessageRepository implements IRequestMessageRepository {
 
 class TransactionalRatingRepository implements IRequestRatingRepository {
   constructor(
-    private readonly prisma: PrismaService | PrismaTransactionClient,
+    private readonly _prisma: PrismaService | PrismaTransactionClient,
   ) {}
   async create(rating: RequestRating): Promise<RequestRating> {
     return rating;
   }
-  async findById(id: RatingId): Promise<RequestRating | null> {
+  async findById(_id: RatingId): Promise<RequestRating | null> {
     return null;
   }
   async findByConsultationId(
-    consultationId: ConsultationId,
+    _consultationId: ConsultationId,
   ): Promise<RequestRating | null> {
     return null;
   }
   async findBySubscriberId(
-    subscriberId: UserId,
-    pagination?: PaginationParams,
+    _subscriberId: UserId,
+    _pagination?: PaginationParams,
   ): Promise<PaginatedResult<RequestRating>> {
     return {
       data: [],
@@ -956,23 +943,23 @@ class TransactionalRatingRepository implements IRequestRatingRepository {
       },
     };
   }
-  async exists(consultationId: ConsultationId): Promise<boolean> {
+  async exists(_consultationId: ConsultationId): Promise<boolean> {
     return false;
   }
   async update(rating: RequestRating): Promise<RequestRating> {
     return rating;
   }
-  async hardDelete(id: RatingId): Promise<boolean> {
+  async hardDelete(_id: RatingId): Promise<boolean> {
     return true;
   }
-  async getAverageRatingForProvider(providerId: UserId): Promise<number> {
+  async getAverageRatingForProvider(_providerId: UserId): Promise<number> {
     return 0;
   }
-  async countRatingsByProvider(providerId: UserId): Promise<number> {
+  async countRatingsByProvider(_providerId: UserId): Promise<number> {
     return 0;
   }
   async getRatingDistribution(
-    providerId: UserId,
+    _providerId: UserId,
   ): Promise<Record<number, number>> {
     return {};
   }
@@ -982,7 +969,7 @@ class TransactionalCollaboratorRepository
   implements IRequestCollaboratorRepository
 {
   constructor(
-    private readonly prisma: PrismaService | PrismaTransactionClient,
+    private readonly _prisma: PrismaService | PrismaTransactionClient,
   ) {}
   async create(
     collaborator: RequestCollaborator,
@@ -994,17 +981,17 @@ class TransactionalCollaboratorRepository
   ): Promise<RequestCollaborator[]> {
     return collaborators;
   }
-  async findById(id: CollaboratorId): Promise<RequestCollaborator | null> {
+  async findById(_id: CollaboratorId): Promise<RequestCollaborator | null> {
     return null;
   }
   async findByConsultationId(
-    consultationId: ConsultationId,
+    _consultationId: ConsultationId,
   ): Promise<RequestCollaborator[]> {
     return [];
   }
   async findByProviderUserId(
-    providerUserId: ProviderUserId,
-    pagination?: PaginationParams,
+    _providerUserId: ProviderUserId,
+    _pagination?: PaginationParams,
   ): Promise<PaginatedResult<RequestCollaborator>> {
     return {
       data: [],
@@ -1019,8 +1006,8 @@ class TransactionalCollaboratorRepository
     };
   }
   async findAll(
-    filters?: CollaboratorFilters,
-    pagination?: PaginationParams,
+    _filters?: CollaboratorFilters,
+    _pagination?: PaginationParams,
   ): Promise<PaginatedResult<RequestCollaborator>> {
     return {
       data: [],
@@ -1035,8 +1022,8 @@ class TransactionalCollaboratorRepository
     };
   }
   async exists(
-    consultationId: ConsultationId,
-    providerUserId: ProviderUserId,
+    _consultationId: ConsultationId,
+    _providerUserId: ProviderUserId,
   ): Promise<boolean> {
     return false;
   }
@@ -1045,26 +1032,26 @@ class TransactionalCollaboratorRepository
   ): Promise<RequestCollaborator> {
     return collaborator;
   }
-  async accept(id: CollaboratorId): Promise<RequestCollaborator> {
+  async accept(_id: CollaboratorId): Promise<RequestCollaborator> {
     throw new Error('Not implemented');
   }
-  async reject(id: CollaboratorId): Promise<RequestCollaborator> {
+  async reject(_id: CollaboratorId): Promise<RequestCollaborator> {
     throw new Error('Not implemented');
   }
-  async hardDelete(id: CollaboratorId): Promise<boolean> {
+  async hardDelete(_id: CollaboratorId): Promise<boolean> {
     return true;
   }
   async hardDeleteMany(ids: CollaboratorId[]): Promise<number> {
     return ids.length;
   }
   async countActiveCollaborators(
-    consultationId: ConsultationId,
+    _consultationId: ConsultationId,
   ): Promise<number> {
     return 0;
   }
   async getCollaboratorsByRole(
-    consultationId: ConsultationId,
-    role: string,
+    _consultationId: ConsultationId,
+    _role: string,
   ): Promise<RequestCollaborator[]> {
     return [];
   }
