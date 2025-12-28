@@ -237,11 +237,10 @@ export class PrismaLegalOpinionRequestRepository
   }
 
   async findByPriority(
-    priority: OpinionPriority,
+    _priority: OpinionPriority,
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<LegalOpinionRequest>> {
-    // Your schema doesn't have priority field yet
-    // Return all for now, or you can add priority to caseDetails JSON
+    // Schema doesn't have priority field yet - return all for now
     return this.findAll({}, pagination);
   }
 
@@ -311,11 +310,10 @@ export class PrismaLegalOpinionRequestRepository
       },
     });
 
-    const averageCompletionTime = 0;
+    let averageCompletionTime = 0;
     if (completedOpinions.length > 0) {
       const totalHours = completedOpinions.reduce((sum, opinion) => {
         if (opinion.submittedAt && opinion.completedAt) {
-          // ✅ Check for null
           const hours =
             (opinion.completedAt.getTime() - opinion.submittedAt.getTime()) /
             (1000 * 60 * 60);
@@ -323,6 +321,7 @@ export class PrismaLegalOpinionRequestRepository
         }
         return sum;
       }, 0);
+      averageCompletionTime = totalHours / completedOpinions.length;
     }
 
     return {
