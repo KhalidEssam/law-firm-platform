@@ -7,7 +7,7 @@ import { CallRequest } from '../../../core/domain/call-request/entities/call-req
 import {
   CallStatus,
   mapPrismaStatusToCallStatus,
-  mapCallStatusToPrisma,
+  // mapCallStatusToPrisma - unused
 } from '../../../core/domain/call-request/value-objects/call-status.vo';
 import {
   ICallRequestRepository,

@@ -7,7 +7,7 @@ import { Entity } from '../../base/Entity';
 import { NotificationChannel } from '../value-objects/notification-channel.enum';
 import {
   TemplateVariables,
-  TemplateVariable,
+  // TemplateVariable - unused
 } from '../value-objects/template-variable.vo';
 
 interface MessageTemplateProps {

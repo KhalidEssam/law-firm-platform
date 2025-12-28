@@ -309,14 +309,8 @@ export class LegalOpinionRequest {
     this.props.updatedAt = new Date();
   }
   assignToLawyer(lawyerId: UserId): void {
-    const allowedStatuses = [
-      OpinionStatus.SUBMITTED,
-      OpinionStatus.UNDER_REVIEW,
-    ];
-    // if (!allowedStatuses.includes(this.props.status.getValue() as OpinionStatus)) {
-    //   throw new DomainException('Can only assign submitted or under-review opinions');
-    // }
-
+    // Status validation commented out for now
+    // Valid statuses would be: SUBMITTED, UNDER_REVIEW
     this.props.assignedLawyerId = lawyerId;
     this.props.status = OpinionStatusVO.create(OpinionStatus.ASSIGNED);
     this.props.assignedAt = new Date();
@@ -368,7 +362,7 @@ export class LegalOpinionRequest {
     this.props.updatedAt = new Date();
   }
 
-  requestRevision(reason: string): void {
+  requestRevision(_reason: string): void {
     // if (this.props.status.getValue() !== OpinionStatus.INTERNAL_REVIEW) {
     //   throw new DomainException('Can only request revision during internal review');
     // }
@@ -406,33 +400,16 @@ export class LegalOpinionRequest {
     this.props.updatedAt = new Date();
   }
 
-  cancel(reason: string): void {
-    const allowedStatuses = [
-      OpinionStatus.DRAFT,
-      OpinionStatus.SUBMITTED,
-      OpinionStatus.UNDER_REVIEW,
-      OpinionStatus.ASSIGNED,
-    ];
-
-    // if (!allowedStatuses.includes(this.props.status.getValue() as OpinionStatus)) {
-    //   throw new DomainException('Cannot cancel opinion in current status');
-    // }
-
+  cancel(_reason: string): void {
+    // Status validation commented out for now
+    // Valid statuses: DRAFT, SUBMITTED, UNDER_REVIEW, ASSIGNED
     this.props.status = OpinionStatusVO.create(OpinionStatus.CANCELLED);
     this.props.updatedAt = new Date();
-    // Cancellation reason would be stored in a related entity
   }
 
-  reject(reason: string): void {
-    const allowedStatuses = [
-      OpinionStatus.SUBMITTED,
-      OpinionStatus.UNDER_REVIEW,
-    ];
-
-    // if (!allowedStatuses.includes(this.props.status.getValue() as OpinionStatus)) {
-    //   throw new DomainException('Can only reject submitted or under-review opinions');
-    // }
-
+  reject(_reason: string): void {
+    // Status validation commented out for now
+    // Valid statuses: SUBMITTED, UNDER_REVIEW
     this.props.status = OpinionStatusVO.create(OpinionStatus.REJECTED);
     this.props.updatedAt = new Date();
   }
@@ -468,15 +445,7 @@ export class LegalOpinionRequest {
   // HELPER METHODS
   // ============================================
 
-  private hasRequiredInformation(): boolean {
-    return !!(
-      this.props.subject &&
-      this.props.legalQuestion &&
-      this.props.backgroundContext &&
-      this.props.relevantFacts &&
-      this.props.jurisdiction
-    );
-  }
+  // hasRequiredInformation() method reserved for future validation
 
   private calculateExpectedCompletionDate(): void {
     const now = new Date();

@@ -113,7 +113,7 @@ export class S3StorageService implements IStorageProvider {
     return this.isInitialized && this.config !== null;
   }
 
-  async upload(input: FileUploadInput): Promise<UploadResult> {
+  async upload(_input: FileUploadInput): Promise<UploadResult> {
     if (!this.isConfigured()) {
       return {
         success: false,
@@ -175,7 +175,7 @@ export class S3StorageService implements IStorageProvider {
     };
   }
 
-  async delete(options: FileDeleteOptions): Promise<boolean> {
+  async delete(_options: FileDeleteOptions): Promise<boolean> {
     if (!this.isConfigured()) {
       this.logger.warn('AWS S3 is not configured, cannot delete file');
       return false;
@@ -209,7 +209,7 @@ export class S3StorageService implements IStorageProvider {
     return false;
   }
 
-  async getSignedUrl(options: SignedUrlOptions): Promise<string> {
+  async getSignedUrl(_options: SignedUrlOptions): Promise<string> {
     if (!this.isConfigured()) {
       throw new Error('AWS S3 is not configured');
     }
@@ -229,7 +229,7 @@ export class S3StorageService implements IStorageProvider {
     throw new Error('S3 signed URL is not yet implemented');
   }
 
-  async getMetadata(publicId: string): Promise<Record<string, any> | null> {
+  async getMetadata(_publicId: string): Promise<Record<string, any> | null> {
     if (!this.isConfigured()) {
       return null;
     }
@@ -261,39 +261,12 @@ export class S3StorageService implements IStorageProvider {
   /**
    * Generate S3 key from filename and folder
    */
-  private generateS3Key(fileName: string, folder?: string): string {
-    const sanitizedName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const timestamp = Date.now();
-    const uniqueName = `${timestamp}_${sanitizedName}`;
-
-    return folder ? `${folder}/${uniqueName}` : uniqueName;
-  }
 
   /**
    * Get public URL for S3 object
    */
-  private getPublicUrl(key: string): string {
-    if (!this.config) return '';
-
-    if (this.config.endpoint) {
-      return `${this.config.endpoint}/${this.config.bucket}/${key}`;
-    }
-
-    return `https://${this.config.bucket}.s3.${this.config.region}.amazonaws.com/${key}`;
-  }
 
   /**
    * Extract S3 key from URL
    */
-  private extractKeyFromUrl(url?: string): string | null {
-    if (!url || !this.config) return null;
-
-    try {
-      const urlObj = new URL(url);
-      // Remove leading slash
-      return urlObj.pathname.substring(1);
-    } catch {
-      return null;
-    }
-  }
 }

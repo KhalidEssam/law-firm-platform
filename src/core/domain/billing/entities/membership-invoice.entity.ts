@@ -5,10 +5,7 @@
 
 import { randomBytes } from 'crypto';
 import { Money } from '../value-objects/money.vo';
-import {
-  InvoiceStatus,
-  InvoiceStatusEnum,
-} from '../value-objects/invoice-status.vo';
+import { InvoiceStatus } from '../value-objects/invoice-status.vo';
 
 export interface MembershipInvoiceProps {
   membershipId: string;

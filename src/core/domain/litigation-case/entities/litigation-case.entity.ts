@@ -349,7 +349,7 @@ export class LitigationCase {
   /**
    * Cancel case
    */
-  cancel(reason?: string): void {
+  cancel(_reason?: string): void {
     const validStatuses = ['pending', 'quote_sent', 'quote_accepted'];
     if (!validStatuses.includes(this.props.status.getValue())) {
       throw new Error('Cannot cancel case in current status');
@@ -369,7 +369,7 @@ export class LitigationCase {
   /**
    * Process refund
    */
-  processRefund(refundReference: string): void {
+  processRefund(_refundReference: string): void {
     if (!this.props.paymentStatus.isPaid()) {
       throw new Error('Cannot refund unpaid case');
     }

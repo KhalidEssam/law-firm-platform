@@ -714,7 +714,7 @@ export class ConsultationRequest {
   /**
    * Cancel the consultation request
    */
-  cancel(reason?: string): void {
+  cancel(_reason?: string): void {
     if (!this.status.canBeCancelled()) {
       throw new Error(
         `Cannot cancel request with status: ${this.status.getValue()}`,

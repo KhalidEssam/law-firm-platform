@@ -268,7 +268,7 @@ export class SLACalculatorService {
     };
 
     const status = deadlines.getOverallStatus(responded, resolved, now);
-    const timeRemaining = deadlines.getResolutionTimeRemaining(now);
+    deadlines.getResolutionTimeRemaining(now);
     const percentElapsed = deadlines.getResolutionTimeElapsedPercent(now);
 
     // Higher score = more urgent

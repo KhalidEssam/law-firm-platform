@@ -3,7 +3,7 @@
 import {
   PaymentStatus as PrismaPaymentStatus,
   RequestStatus as PrismaRequestStatus,
-  QuoteStatus as PrismaQuoteStatus,
+  // PrismaQuoteStatus - unused
   // ... other Prisma enums
 } from '@prisma/client';
 

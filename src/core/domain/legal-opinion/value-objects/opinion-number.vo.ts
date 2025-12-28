@@ -21,7 +21,6 @@
 export class OpinionNumber {
   private readonly value: string;
   private static readonly PREFIX = 'OP';
-  private static readonly PATTERN = /^OP-\d{8}-\d{4}$/;
 
   private constructor(value: string) {
     this.validate(value);

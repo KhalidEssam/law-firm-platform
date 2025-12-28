@@ -139,7 +139,7 @@ export class ChangeMembershipTierUseCase {
     // Update membership tier
     // Note: In a real implementation, we'd update the Membership entity's tierId
     // For now, we'll use a direct repo update
-    const updatedMembership = await this.membershipRepo.update({
+    await this.membershipRepo.update({
       ...membership,
       tierId: dto.newTierId,
     } as any);

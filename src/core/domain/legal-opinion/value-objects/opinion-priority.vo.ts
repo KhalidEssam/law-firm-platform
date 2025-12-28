@@ -20,7 +20,7 @@ export class OpinionPriorityVO {
     this.value = value;
   }
 
-  private validate(value: OpinionPriority): void {
+  private validate(_value: OpinionPriority): void {
     // if (!Object.values(OpinionPriority).includes(value)) {
     //   throw new DomainException(`Invalid priority: ${value}`);
     // }

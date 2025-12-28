@@ -329,10 +329,10 @@ export class NotificationPreference extends Entity<NotificationPreferenceProps> 
  */
 export class UserNotificationPreferences {
   private readonly preferences: Map<string, NotificationPreference>;
-  private readonly userId: string;
+  // userId stored for future use
 
-  private constructor(userId: string, preferences: NotificationPreference[]) {
-    this.userId = userId;
+  private constructor(_userId: string, preferences: NotificationPreference[]) {
+    // userId stored in constructor
     this.preferences = new Map(preferences.map((p) => [p.preferenceKey, p]));
   }
 

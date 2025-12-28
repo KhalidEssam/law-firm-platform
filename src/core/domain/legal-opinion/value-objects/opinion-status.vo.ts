@@ -28,7 +28,7 @@ export class OpinionStatusVO {
     this.value = value;
   }
 
-  private validate(value: OpinionStatus): void {
+  private validate(_value: OpinionStatus): void {
     // if (!Object.values(OpinionStatus).includes(value)) {
     //   throw new DomainException(`Invalid opinion status: ${value}`);
     // }

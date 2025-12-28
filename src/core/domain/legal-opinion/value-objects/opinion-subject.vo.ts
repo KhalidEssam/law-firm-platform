@@ -16,8 +16,6 @@
  */
 export class OpinionSubject {
   private readonly value: string;
-  private static readonly MIN_LENGTH = 10;
-  private static readonly MAX_LENGTH = 200;
 
   private constructor(value: string) {
     this.validate(value);

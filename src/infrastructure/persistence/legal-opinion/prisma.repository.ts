@@ -231,7 +231,7 @@ export class PrismaLegalOpinionRequestRepository
     pagination?: PaginationParams,
   ): Promise<PaginatedResult<LegalOpinionRequest>> {
     // Map domain statuses to database statuses
-    const dbStatuses = statuses.map((s) => this.mapDomainStatusToDb(s));
+    statuses.map((s) => this.mapDomainStatusToDb(s));
 
     return this.findAll({ status: dbStatuses as any }, pagination);
   }
@@ -441,12 +441,12 @@ export class PrismaLegalOpinionRequestRepository
     }
 
     // Status - map domain statuses to database statuses
-    // if (filters.status) {
-    //   const dbStatuses = Array.isArray(filters.status)
-    //     ? filters.status.map((s) => this.mapDomainStatusToDb(s))
-    //     : this.mapDomainStatusToDb(filters.status);
-    //   //Fix this
-    // }
+    if (filters.status) {
+      const dbStatuses = Array.isArray(filters.status)
+        ? filters.status.map((s) => this.mapDomainStatusToDb(s))
+        : this.mapDomainStatusToDb(filters.status);
+      where.status = Array.isArray(dbStatuses) ? { in: dbStatuses } : dbStatuses;
+    }
 
     // Payment status
     if (filters.isPaid !== undefined) {

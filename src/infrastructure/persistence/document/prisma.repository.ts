@@ -320,8 +320,8 @@ export class PrismaDocumentRepository implements IDocumentRepository {
 
   async verifyMultiple(
     ids: string[],
-    verifiedBy: string,
-    notes?: string,
+    _verifiedBy: string,
+    _notes?: string,
   ): Promise<number> {
     const result = await this.prisma.document.updateMany({
       where: {

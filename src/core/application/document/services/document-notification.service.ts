@@ -80,7 +80,7 @@ export class DocumentNotificationService {
     }
 
     try {
-      const payload = this.createPayload(document);
+      this.createPayload(document);
 
       for (const recipient of recipients) {
         this.logger.log(
@@ -111,7 +111,7 @@ export class DocumentNotificationService {
     }
 
     try {
-      const payload = this.createPayload(document, { verifiedBy });
+      this.createPayload(document, { verifiedBy });
 
       for (const recipient of recipients) {
         this.logger.log(
@@ -143,7 +143,7 @@ export class DocumentNotificationService {
     }
 
     try {
-      const payload = this.createPayload(document, {
+      this.createPayload(document, {
         rejectedBy,
         rejectionReason: reason,
       });
@@ -176,7 +176,7 @@ export class DocumentNotificationService {
     }
 
     try {
-      const payload = this.createPayload(document);
+      this.createPayload(document);
 
       for (const verifier of verifiers) {
         this.logger.log(
@@ -197,7 +197,7 @@ export class DocumentNotificationService {
   async notifyDocumentRequired(
     requestType: DocumentRequestType,
     requestId: string,
-    documentDescription: string,
+    _documentDescription: string,
     recipients: NotificationRecipient[],
   ): Promise<void> {
     if (!this.notificationService) {
