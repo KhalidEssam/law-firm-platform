@@ -189,7 +189,7 @@ export class AssignTicketUseCase {
     private readonly ticketRepository: ISupportTicketRepository,
   ) {}
 
-  async execute(_id: string, dto: AssignTicketDto): Promise<SupportTicket> {
+  async execute(id: string, dto: AssignTicketDto): Promise<SupportTicket> {
     const ticket = await this.ticketRepository.findById(id);
     if (!ticket) {
       throw new NotFoundException(`Support ticket with ID ${id} not found`);

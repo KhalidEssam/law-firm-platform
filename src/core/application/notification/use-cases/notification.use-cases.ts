@@ -335,7 +335,7 @@ export class DeleteNotificationUseCase {
     private readonly notificationRepository: INotificationRepository,
   ) {}
 
-  async byId(_id: string, userId?: string): Promise<void> {
+  async byId(id: string, userId?: string): Promise<void> {
     const notification = await this.notificationRepository.findById(id);
     if (!notification) {
       throw new NotFoundException(`Notification with ID '${id}' not found`);

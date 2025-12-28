@@ -72,7 +72,7 @@ export class GetDocumentUseCase {
     });
   }
 
-  async getSignedUrl(_id: string, expiresIn?: number): Promise<string | null> {
+  async getSignedUrl(id: string, expiresIn?: number): Promise<string | null> {
     const document = await this.repository.findById(id);
 
     if (!document) {

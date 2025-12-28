@@ -154,7 +154,7 @@ export class UpdateTierServiceUseCase {
     private readonly tierServiceRepo: ITierServiceRepository,
   ) {}
 
-  async execute(_id: string, dto: UpdateTierServiceDto): Promise<TierService> {
+  async execute(id: string, dto: UpdateTierServiceDto): Promise<TierService> {
     const tierService = await this.tierServiceRepo.findById(id);
     if (!tierService) {
       throw new NotFoundException('Tier service not found');

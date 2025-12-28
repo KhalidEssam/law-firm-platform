@@ -242,7 +242,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async approve(_id: string, reviewData: RefundReviewData): Promise<Refund> {
+  async approve(id: string, reviewData: RefundReviewData): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -256,7 +256,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async reject(_id: string, reviewData: RefundReviewData): Promise<Refund> {
+  async reject(id: string, reviewData: RefundReviewData): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -270,7 +270,7 @@ class TransactionalRefundRepository implements IRefundRepository {
     return this.toDomain(updated);
   }
 
-  async process(_id: string, refundReference: string): Promise<Refund> {
+  async process(id: string, refundReference: string): Promise<Refund> {
     const updated = await this.prisma.refund.update({
       where: { id },
       data: {
@@ -599,7 +599,7 @@ class TransactionalDisputeRepository implements IDisputeRepository {
     return this.toDomain(updated);
   }
 
-  async updatePriority(_id: string, priority: PriorityEnum): Promise<Dispute> {
+  async updatePriority(id: string, priority: PriorityEnum): Promise<Dispute> {
     const updated = await this.prisma.dispute.update({
       where: { id },
       data: {

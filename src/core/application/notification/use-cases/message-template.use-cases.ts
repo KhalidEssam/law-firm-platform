@@ -198,7 +198,7 @@ export class UpdateMessageTemplateUseCase {
     private readonly templateRepository: IMessageTemplateRepository,
   ) {}
 
-  async execute(_id: string, dto: UpdateTemplateDto): Promise<MessageTemplate> {
+  async execute(id: string, dto: UpdateTemplateDto): Promise<MessageTemplate> {
     const template = await this.templateRepository.findById(id);
     if (!template) {
       throw new NotFoundException(`Template with ID '${id}' not found`);
