@@ -24,13 +24,9 @@ import { UserEmploymentSector } from '../../../core/domain/user/value-objects/em
 // Prisma 7 imports from generated path
 import {
   Prisma,
-  Gender as PrismaGenderImport,
-  ProfileStatus as PrismaProfileStatusImport,
+  Gender as PrismaGender,
+  ProfileStatus as PrismaProfileStatus,
 } from '@prisma/client';
-
-// Type aliases to avoid lint errors with Prisma enums
-type PrismaGender = PrismaGenderImport;
-type PrismaProfileStatus = PrismaProfileStatusImport;
 
 // ============================================
 // ENUM MAPPERS

@@ -36,16 +36,11 @@ import {
 // Prisma 7 imports from generated path
 import {
   LitigationCase as PrismaLitigationCase,
-  RequestStatus as PrismaRequestStatusImport,
-  PaymentStatus as PrismaPaymentStatusImport,
-  Currency as PrismaCurrencyImport,
+  RequestStatus as PrismaRequestStatus,
+  PaymentStatus as PrismaPaymentStatus,
+  Currency as PrismaCurrency,
   Prisma,
 } from '@prisma/client';
-
-// Type aliases to avoid lint errors with Prisma enums
-type PrismaRequestStatus = PrismaRequestStatusImport;
-type PrismaPaymentStatus = PrismaPaymentStatusImport;
-type PrismaCurrency = PrismaCurrencyImport;
 
 // ============================================
 // ENUM MAPPERS
