@@ -360,7 +360,7 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
         },
       });
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -371,7 +371,7 @@ export class PrismaPaymentMethodRepository implements IPaymentMethodRepository {
         where: { id: id.getValue() },
       });
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

@@ -210,7 +210,7 @@ export class UserController {
     }
 
     // Extract only the profile update fields (exclude auth fields)
-    const { sub, email, name, ...profileUpdateDto } = dto;
+    const { sub: _sub, email: _email, name: _name, ...profileUpdateDto } = dto;
 
     // Now safely update profile (only if there are fields to update)
     if (Object.keys(profileUpdateDto).length > 0) {

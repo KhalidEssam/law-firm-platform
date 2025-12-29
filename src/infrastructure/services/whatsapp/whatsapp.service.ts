@@ -195,7 +195,7 @@ export class WhatsAppService
       // which occur when receiving group messages without proper session keys
       this.socket.ev.on(
         'messaging-history.set',
-        ({ chats, contacts, messages, isLatest }: any) => {
+        ({ chats, messages, isLatest }: any) => {
           // Silently handle history sync - we don't need chat history for OTPs
           if (isLatest) {
             this.logger.debug?.(

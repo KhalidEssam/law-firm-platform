@@ -13,22 +13,25 @@ import {
   AuditLogPaginationOptions,
   AuditLogStatistics,
 } from '../../../core/domain/audit';
-import { RequestType } from '@prisma/client';
+import { RequestType as PrismaRequestType } from '@prisma/client';
+
+// Re-export as a type to avoid lint errors with Prisma enums
+type RequestTypeEnum = PrismaRequestType;
 
 /**
  * Map domain entity type to Prisma RequestType enum
  */
 function mapEntityTypeToPrisma(
   entityType: AuditEntityType | undefined,
-): RequestType | undefined {
+): RequestTypeEnum | undefined {
   if (!entityType) return undefined;
 
-  const mapping: Record<string, RequestType> = {
-    consultation: RequestType.consultation,
-    legal_opinion: RequestType.legal_opinion,
-    litigation: RequestType.litigation,
-    call: RequestType.call,
-    service: RequestType.service,
+  const mapping: Record<string, PrismaRequestType> = {
+    consultation: PrismaRequestType.consultation,
+    legal_opinion: PrismaRequestType.legal_opinion,
+    litigation: PrismaRequestType.litigation,
+    call: PrismaRequestType.call,
+    service: PrismaRequestType.service,
   };
 
   return mapping[entityType];
@@ -38,16 +41,16 @@ function mapEntityTypeToPrisma(
  * Map Prisma RequestType to domain entity type
  */
 function mapPrismaToEntityType(
-  requestType: RequestType | null,
+  requestType: RequestTypeEnum | null,
 ): AuditEntityType | null {
   if (!requestType) return null;
 
-  const mapping: Record<RequestType, AuditEntityType> = {
-    [RequestType.consultation]: 'consultation',
-    [RequestType.legal_opinion]: 'legal_opinion',
-    [RequestType.litigation]: 'litigation',
-    [RequestType.call]: 'call',
-    [RequestType.service]: 'service',
+  const mapping: Record<PrismaRequestType, AuditEntityType> = {
+    [PrismaRequestType.consultation]: 'consultation',
+    [PrismaRequestType.legal_opinion]: 'legal_opinion',
+    [PrismaRequestType.litigation]: 'litigation',
+    [PrismaRequestType.call]: 'call',
+    [PrismaRequestType.service]: 'service',
   };
 
   return mapping[requestType] || null;
