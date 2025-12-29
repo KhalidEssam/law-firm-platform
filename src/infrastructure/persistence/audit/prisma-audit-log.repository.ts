@@ -15,15 +15,13 @@ import {
 } from '../../../core/domain/audit';
 import { RequestType as PrismaRequestType } from '@prisma/client';
 
-// Re-export as a type to avoid lint errors with Prisma enums
-type RequestTypeEnum = PrismaRequestType;
-
 /**
  * Map domain entity type to Prisma RequestType enum
  */
 function mapEntityTypeToPrisma(
   entityType: AuditEntityType | undefined,
-): RequestTypeEnum | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+): PrismaRequestType | undefined {
   if (!entityType) return undefined;
 
   const mapping: Record<string, PrismaRequestType> = {
@@ -41,7 +39,8 @@ function mapEntityTypeToPrisma(
  * Map Prisma RequestType to domain entity type
  */
 function mapPrismaToEntityType(
-  requestType: RequestTypeEnum | null,
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  requestType: PrismaRequestType | null,
 ): AuditEntityType | null {
   if (!requestType) return null;
 
