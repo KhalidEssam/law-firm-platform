@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
-import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
+import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
+import { OpinionRequestId } from '../../../domain/legal-opinion/value-objects/opinion-requestid.vo';
 
 // ============================================
 // DELETE OPINION REQUEST USE CASE

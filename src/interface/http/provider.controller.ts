@@ -17,16 +17,16 @@ import {
 } from '@nestjs/common';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 
-import { UpdateProviderProfileUseCase } from 'src/core/application/provider/use-cases/provider-usecase';
-import { CreateProviderProfileUseCase } from 'src/core/application/provider/use-cases/provider-usecase';
-import { GetProviderProfileUseCase } from 'src/core/application/provider/use-cases/provider-usecase';
-import { DeleteProviderProfileUseCase } from 'src/core/application/provider/use-cases/provider-usecase';
-import { ApproveProviderProfileUseCase } from 'src/core/application/provider/use-cases/provider-usecase';
-import { RejectProviderProfileUseCase } from 'src/core/application/provider/use-cases/provider-usecase';
-import { ListProviderProfilesUseCase } from 'src/core/application/provider/use-cases/provider-usecase';
-import { VerificationStatus } from 'src/core/domain/provider/value-objects/verfication-status.vo';
+import { UpdateProviderProfileUseCase } from '../../core/application/provider/use-cases/provider-usecase';
+import { CreateProviderProfileUseCase } from '../../core/application/provider/use-cases/provider-usecase';
+import { GetProviderProfileUseCase } from '../../core/application/provider/use-cases/provider-usecase';
+import { DeleteProviderProfileUseCase } from '../../core/application/provider/use-cases/provider-usecase';
+import { ApproveProviderProfileUseCase } from '../../core/application/provider/use-cases/provider-usecase';
+import { RejectProviderProfileUseCase } from '../../core/application/provider/use-cases/provider-usecase';
+import { ListProviderProfilesUseCase } from '../../core/application/provider/use-cases/provider-usecase';
+import { VerificationStatus } from '../../core/domain/provider/value-objects/verfication-status.vo';
 import { CreateProviderProfileDtos } from '../../../application/dtos';
 
 @Controller('provider-profiles')
@@ -234,8 +234,8 @@ import {
   UpdateProviderUserUseCase,
   DeleteProviderUserUseCase,
   ListProviderUsersByProviderUseCase,
-} from 'src/core/application/provider/use-cases/provider-usecase';
-import { ProviderUserRole } from 'src/core/domain/provider/value-objects/provider-user-role.vo';
+} from '../../core/application/provider/use-cases/provider-usecase';
+import { ProviderUserRole } from '../../core/domain/provider/value-objects/provider-user-role.vo';
 
 @Controller('provider-users')
 export class ProviderUserController {
@@ -382,14 +382,14 @@ export class ProviderUserController {
 // presentation/http/controllers/ProviderServiceController.ts
 // ============================================
 
-import { ServiceType } from 'src/core/domain/provider/value-objects/service-type.vo';
+import { ServiceType } from '../../core/domain/provider/value-objects/service-type.vo';
 import {
   CreateProviderServiceUseCase,
   GetProviderServiceUseCase,
   UpdateProviderServiceUseCase,
   DeleteProviderServiceUseCase,
   ListProviderServicesByProviderUseCase,
-} from 'src/core/application/provider/use-cases/provider-usecase';
+} from '../../core/application/provider/use-cases/provider-usecase';
 
 @Controller('provider-services')
 export class ProviderServiceController {
@@ -550,7 +550,7 @@ import {
   UpdateProviderScheduleUseCase,
   DeleteProviderScheduleUseCase,
   ListProviderSchedulesByProviderUseCase,
-} from 'src/core/application/provider/use-cases/provider-usecase';
+} from '../../core/application/provider/use-cases/provider-usecase';
 
 @Controller('provider-schedules')
 export class ProviderScheduleController {

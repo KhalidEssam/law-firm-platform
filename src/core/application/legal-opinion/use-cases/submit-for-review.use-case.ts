@@ -9,9 +9,9 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
-import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
-import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
+import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
+import { LegalOpinionRequest } from '../../../domain/legal-opinion/entities/legal-opinion-request.entity';
+import { OpinionRequestId } from '../../../domain/legal-opinion/value-objects/opinion-requestid.vo';
 
 // ============================================
 // SUBMIT FOR REVIEW USE CASE

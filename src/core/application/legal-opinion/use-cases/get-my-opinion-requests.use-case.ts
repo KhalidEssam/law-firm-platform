@@ -4,10 +4,10 @@
 // ============================================
 
 import { Injectable, Inject } from '@nestjs/common';
-import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
-import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
-import { PaginationParams } from 'src/infrastructure/persistence/consultation/prisma.repository';
-import { UserId } from 'src/core/domain/consultation/value-objects/consultation-request-domain';
+import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
+import { LegalOpinionRequest } from '../../../domain/legal-opinion/entities/legal-opinion-request.entity';
+import { PaginationParams } from '../../../../infrastructure/persistence/consultation/prisma.repository';
+import { UserId } from '../../../domain/consultation/value-objects/consultation-request-domain';
 
 // ============================================
 // GET MY OPINION REQUESTS USE CASE

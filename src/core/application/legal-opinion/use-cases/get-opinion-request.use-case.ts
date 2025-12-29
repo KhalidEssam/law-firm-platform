@@ -10,8 +10,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
-import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
-import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
+import { LegalOpinionRequest } from '../../../domain/legal-opinion/entities/legal-opinion-request.entity';
+import { OpinionRequestId } from '../../../domain/legal-opinion/value-objects/opinion-requestid.vo';
 
 // ============================================
 // GET OPINION REQUEST USE CASE

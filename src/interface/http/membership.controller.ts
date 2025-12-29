@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 
 // Use Cases
 import {

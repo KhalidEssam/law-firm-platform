@@ -19,25 +19,25 @@ import {
   OpinionStatistics,
 } from '../../../core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { LegalOpinionRequest } from '../../../core/domain/legal-opinion/entities/legal-opinion-request.entity';
-import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
-import { OpinionNumber } from 'src/core/domain/legal-opinion/value-objects/opinion-number.vo';
-import { UserId } from 'src/core/domain/consultation/value-objects/consultation-request-domain';
-import { OpinionSubject } from 'src/core/domain/legal-opinion/value-objects/opinion-subject.vo';
-import { LegalQuestion } from 'src/core/domain/legal-opinion/value-objects/legal-question.vo';
-import { BackgroundContext } from 'src/core/domain/legal-opinion/value-objects/background-context.vo';
-import { RelevantFacts } from 'src/core/domain/legal-opinion/value-objects/relevant-facts.vo';
-import { SpecificIssues } from 'src/core/domain/legal-opinion/value-objects/specific-issues.vo';
-import { Jurisdiction } from 'src/core/domain/legal-opinion/value-objects/jurisdiction.vo';
-import { OpinionStatusVO } from 'src/core/domain/legal-opinion/value-objects/opinion-status.vo';
-import { OpinionStatus } from 'src/core/domain/legal-opinion/value-objects/opinion-status.vo';
-import { OpinionTypeVO } from 'src/core/domain/legal-opinion/value-objects/opinion-type.vo';
-import { OpinionPriorityVO } from 'src/core/domain/legal-opinion/value-objects/opinion-priority.vo';
-import { OpinionPriority } from 'src/core/domain/legal-opinion/value-objects/opinion-priority.vo';
-import { DeliveryFormatVO } from 'src/core/domain/legal-opinion/value-objects/delivery-format.vo';
-import { Money } from 'src/core/domain/legal-opinion/value-objects/money.vo';
-import { ConfidentialityLevel } from 'src/core/domain/legal-opinion/value-objects/confidentiality-level.vo';
-import { OpinionType } from 'src/core/domain/legal-opinion/value-objects/opinion-type.vo';
-import { DeliveryFormat } from 'src/core/domain/legal-opinion/value-objects/delivery-format.vo';
+import { OpinionRequestId } from '../../../core/domain/legal-opinion/value-objects/opinion-requestid.vo';
+import { OpinionNumber } from '../../../core/domain/legal-opinion/value-objects/opinion-number.vo';
+import { UserId } from '../../../core/domain/consultation/value-objects/consultation-request-domain';
+import { OpinionSubject } from '../../../core/domain/legal-opinion/value-objects/opinion-subject.vo';
+import { LegalQuestion } from '../../../core/domain/legal-opinion/value-objects/legal-question.vo';
+import { BackgroundContext } from '../../../core/domain/legal-opinion/value-objects/background-context.vo';
+import { RelevantFacts } from '../../../core/domain/legal-opinion/value-objects/relevant-facts.vo';
+import { SpecificIssues } from '../../../core/domain/legal-opinion/value-objects/specific-issues.vo';
+import { Jurisdiction } from '../../../core/domain/legal-opinion/value-objects/jurisdiction.vo';
+import { OpinionStatusVO } from '../../../core/domain/legal-opinion/value-objects/opinion-status.vo';
+import { OpinionStatus } from '../../../core/domain/legal-opinion/value-objects/opinion-status.vo';
+import { OpinionTypeVO } from '../../../core/domain/legal-opinion/value-objects/opinion-type.vo';
+import { OpinionPriorityVO } from '../../../core/domain/legal-opinion/value-objects/opinion-priority.vo';
+import { OpinionPriority } from '../../../core/domain/legal-opinion/value-objects/opinion-priority.vo';
+import { DeliveryFormatVO } from '../../../core/domain/legal-opinion/value-objects/delivery-format.vo';
+import { Money } from '../../../core/domain/legal-opinion/value-objects/money.vo';
+import { ConfidentialityLevel } from '../../../core/domain/legal-opinion/value-objects/confidentiality-level.vo';
+import { OpinionType } from '../../../core/domain/legal-opinion/value-objects/opinion-type.vo';
+import { DeliveryFormat } from '../../../core/domain/legal-opinion/value-objects/delivery-format.vo';
 /**
  * Prisma Repository Implementation (Adapted to Current Schema)
  *

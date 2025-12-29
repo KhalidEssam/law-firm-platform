@@ -4,10 +4,10 @@
 // ============================================
 
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { type ILegalOpinionRequestRepository } from 'src/core/domain/legal-opinion/port/legal-opinion-request.repository.interface';
-import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
-import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
-import { Money } from 'src/core/domain/legal-opinion/value-objects/money.vo';
+import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
+import { LegalOpinionRequest } from '../../../domain/legal-opinion/entities/legal-opinion-request.entity';
+import { OpinionRequestId } from '../../../domain/legal-opinion/value-objects/opinion-requestid.vo';
+import { Money } from '../../../domain/legal-opinion/value-objects/money.vo';
 // ============================================
 // SET ESTIMATED COST USE CASE
 // ============================================

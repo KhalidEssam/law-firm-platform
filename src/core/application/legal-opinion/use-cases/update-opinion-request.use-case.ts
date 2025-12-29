@@ -10,16 +10,16 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { LegalOpinionRequest } from 'src/core/domain/legal-opinion/entities/legal-opinion-request.entity';
+import { LegalOpinionRequest } from '../../../domain/legal-opinion/entities/legal-opinion-request.entity';
 import { BackgroundContext } from '../../../domain/legal-opinion/value-objects/background-context.vo';
-import { OpinionStatus } from 'src/core/domain/legal-opinion/value-objects/opinion-status.vo';
-import { OpinionPriorityVO } from 'src/core/domain/legal-opinion/value-objects/opinion-priority.vo';
-import { OpinionPriority } from 'src/core/domain/legal-opinion/value-objects/opinion-priority.vo';
-import { OpinionRequestId } from 'src/core/domain/legal-opinion/value-objects/opinion-requestid.vo';
-import { SpecificIssues } from 'src/core/domain/legal-opinion/value-objects/specific-issues.vo';
-import { RelevantFacts } from 'src/core/domain/legal-opinion/value-objects/relevant-facts.vo';
-import { OpinionSubject } from 'src/core/domain/legal-opinion/value-objects/opinion-subject.vo';
-import { LegalQuestion } from 'src/core/domain/legal-opinion/value-objects/legal-question.vo';
+import { OpinionStatus } from '../../../domain/legal-opinion/value-objects/opinion-status.vo';
+import { OpinionPriorityVO } from '../../../domain/legal-opinion/value-objects/opinion-priority.vo';
+import { OpinionPriority } from '../../../domain/legal-opinion/value-objects/opinion-priority.vo';
+import { OpinionRequestId } from '../../../domain/legal-opinion/value-objects/opinion-requestid.vo';
+import { SpecificIssues } from '../../../domain/legal-opinion/value-objects/specific-issues.vo';
+import { RelevantFacts } from '../../../domain/legal-opinion/value-objects/relevant-facts.vo';
+import { OpinionSubject } from '../../../domain/legal-opinion/value-objects/opinion-subject.vo';
+import { LegalQuestion } from '../../../domain/legal-opinion/value-objects/legal-question.vo';
 import { CreateOpinionRequestCommand } from './create-opinion-request.use-case';
 import { type ILegalOpinionRequestRepository } from '../../../domain/legal-opinion/port/legal-opinion-request.repository.interface';
 import { CreateOpinionRequestUseCase } from './create-opinion-request.use-case';

@@ -5,22 +5,22 @@
 import { PrismaClient } from '@prisma/client/extension';
 import { ProviderSchedule } from '../../../core/domain/provider/entities/provider-schedule.entity';
 
-import { ServiceType } from 'src/core/domain/provider/value-objects/service-type.vo';
-import { ProviderUserRole } from 'src/core/domain/provider/value-objects/provider-user-role.vo';
-import { VerificationStatus } from 'src/core/domain/provider/value-objects/verfication-status.vo';
-import { TimeSlot } from 'src/core/domain/provider/value-objects/time-slot.vo';
-import { Pricing } from 'src/core/domain/provider/value-objects/pricing.vo';
-import { ProviderProfile } from 'src/core/domain/provider/entities/providerprofile.entity';
-import { ProviderUser } from 'src/core/domain/provider/entities/provider-user.entity';
-import { ProviderService } from 'src/core/domain/provider/entities/provider-service.entity';
-import { OrganizationName } from 'src/core/domain/provider/value-objects/organization-name.vo';
-import { LicenseNumber } from 'src/core/domain/provider/value-objects/license-number.vo';
-import { ContactInfo } from 'src/core/domain/provider/value-objects/contact-info.vo';
-import { VerificationStatusVO } from 'src/core/domain/provider/value-objects/verfication-status.vo';
-import { WorkingDays } from 'src/core/domain/provider/value-objects/working-days.vo';
-import { WorkingHours } from 'src/core/domain/provider/value-objects/working-hours.vo';
-import { ProviderUserRoleVO } from 'src/core/domain/provider/value-objects/provider-user-role.vo';
-import { ServiceTypeVO } from 'src/core/domain/provider/value-objects/service-type.vo';
+import { ServiceType } from '../../../core/domain/provider/value-objects/service-type.vo';
+import { ProviderUserRole } from '../../../core/domain/provider/value-objects/provider-user-role.vo';
+import { VerificationStatus } from '../../../core/domain/provider/value-objects/verfication-status.vo';
+import { TimeSlot } from '../../../core/domain/provider/value-objects/time-slot.vo';
+import { Pricing } from '../../../core/domain/provider/value-objects/pricing.vo';
+import { ProviderProfile } from '../../../core/domain/provider/entities/providerprofile.entity';
+import { ProviderUser } from '../../../core/domain/provider/entities/provider-user.entity';
+import { ProviderService } from '../../../core/domain/provider/entities/provider-service.entity';
+import { OrganizationName } from '../../../core/domain/provider/value-objects/organization-name.vo';
+import { LicenseNumber } from '../../../core/domain/provider/value-objects/license-number.vo';
+import { ContactInfo } from '../../../core/domain/provider/value-objects/contact-info.vo';
+import { VerificationStatusVO } from '../../../core/domain/provider/value-objects/verfication-status.vo';
+import { WorkingDays } from '../../../core/domain/provider/value-objects/working-days.vo';
+import { WorkingHours } from '../../../core/domain/provider/value-objects/working-hours.vo';
+import { ProviderUserRoleVO } from '../../../core/domain/provider/value-objects/provider-user-role.vo';
+import { ServiceTypeVO } from '../../../core/domain/provider/value-objects/service-type.vo';
 import {
   IProviderProfileRepository,
   IProviderUserRepository,

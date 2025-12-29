@@ -13,23 +13,23 @@ import { ListUsersUseCase } from '../../core/application/use-cases/get-all-users
 import { DeleteUserUseCase } from '../../core/application/use-cases/delete-user.use-case';
 // import { HardDeleteUserUseCase } from '../../core/application/use-cases/hard-delete-user.use-case';
 
-import { GetUserByEmailUseCase } from 'src/core/application/use-cases/get-user-by-email.use-case';
-import { GetUserByUsernameUseCase } from 'src/core/application/use-cases/get-user-by-username.use-case';
-import { GetUserByAuth0IdUseCase } from 'src/core/application/use-cases/get-user-by-auth0.use-case';
-import { VerifyEmailUseCase } from 'src/core/application/use-cases/verify-email.use-case';
-import { VerifyMobileUseCase } from 'src/core/application/use-cases/verify-mobile.use-case';
-import { UpdateProfileStatusUseCase } from 'src/core/application/use-cases/update-profile-status.use-case';
-import { RestoreUserUseCase } from 'src/core/application/use-cases/restore-user.use-case';
-import { SearchUsersUseCase } from 'src/core/application/use-cases/search-user.use-case';
-import { CheckEmailAvailabilityUseCase } from 'src/core/application/use-cases/check-email-availability.use-case';
-import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases/check-username-availability.use-case';
-import { SendMobileOtpUseCase } from 'src/core/application/use-cases/send-mobile-otp.use-case';
-import { VerifyMobileOtpUseCase } from 'src/core/application/use-cases/verify-mobile-otp.use-case';
+import { GetUserByEmailUseCase } from '../../core/application/use-cases/get-user-by-email.use-case';
+import { GetUserByUsernameUseCase } from '../../core/application/use-cases/get-user-by-username.use-case';
+import { GetUserByAuth0IdUseCase } from '../../core/application/use-cases/get-user-by-auth0.use-case';
+import { VerifyEmailUseCase } from '../../core/application/use-cases/verify-email.use-case';
+import { VerifyMobileUseCase } from '../../core/application/use-cases/verify-mobile.use-case';
+import { UpdateProfileStatusUseCase } from '../../core/application/use-cases/update-profile-status.use-case';
+import { RestoreUserUseCase } from '../../core/application/use-cases/restore-user.use-case';
+import { SearchUsersUseCase } from '../../core/application/use-cases/search-user.use-case';
+import { CheckEmailAvailabilityUseCase } from '../../core/application/use-cases/check-email-availability.use-case';
+import { CheckUsernameAvailabilityUseCase } from '../../core/application/use-cases/check-username-availability.use-case';
+import { SendMobileOtpUseCase } from '../../core/application/use-cases/send-mobile-otp.use-case';
+import { VerifyMobileOtpUseCase } from '../../core/application/use-cases/verify-mobile-otp.use-case';
 import {
   GetUserIdentitiesUseCase,
   SetPrimaryIdentityUseCase,
   UnlinkIdentityUseCase,
-} from 'src/core/application/use-cases/user-identities.use-case';
+} from '../../core/application/use-cases/user-identities.use-case';
 @Module({
   controllers: [UserController],
   providers: [

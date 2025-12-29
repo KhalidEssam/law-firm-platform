@@ -4,12 +4,12 @@
 // ============================================
 
 import { Module, forwardRef } from '@nestjs/common';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipModule } from './membership.module';
 import { NotificationModule } from '../../interface/notification/notification.module';
 
 // Controller
-import { LegalOpinionRequestController } from 'src/interface/http/legal-opinion-request.controller';
+import { LegalOpinionRequestController } from '../../interface/http/legal-opinion-request.controller';
 
 // Repository
 import { PrismaLegalOpinionRequestRepository } from '../persistence/legal-opinion/prisma.repository';

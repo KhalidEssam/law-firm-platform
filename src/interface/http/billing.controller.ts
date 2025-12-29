@@ -144,7 +144,7 @@ import {
   DisputeListResponseDto,
   DisputeStatisticsResponseDto,
 } from '../../core/application/billing/dto/dispute.dto';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 
 @Controller('billing')
 export class BillingController {
