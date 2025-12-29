@@ -2,9 +2,9 @@ import { Injectable, Inject, ConflictException } from '@nestjs/common';
 import { User } from '../../domain/user/entities/user.entity';
 import { type IUserRepository } from '../../domain/user/ports/user.repository';
 // Auth0Service import removed - unused
-import { Email } from 'src/core/domain/user/value-objects/email.vo';
-import { City } from 'src/core/domain/user/value-objects/city.vo';
-import { Username } from 'src/core/domain/user/value-objects/username.vo';
+import { Email } from '../../domain/user/value-objects/email.vo';
+import { City } from '../../domain/user/value-objects/city.vo';
+import { Username } from '../../domain/user/value-objects/username.vo';
 
 export interface CreateUserCommand {
   email: string;
