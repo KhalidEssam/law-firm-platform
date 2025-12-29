@@ -45,28 +45,57 @@ export class WhatsAppService
   /**
    * Create a silent logger compatible with Baileys
    * Must include child() method that returns a full logger
+   * Filters out non-critical errors like group message decryption failures
    */
   private createSilentLogger() {
-    const silentLogger = {
+    // Errors to ignore (common non-critical issues for OTP-only usage)
+    const ignoredErrors = [
+      'No session found to decrypt message',
+      'failed to decrypt',
+      'Bad MAC',
+      'decryption failed',
+      'group message',
+      'skmsg', // Group message type
+    ];
+
+    const shouldIgnoreError = (msg: unknown): boolean => {
+      if (!msg) return false;
+      const msgStr =
+        typeof msg === 'string' ? msg : JSON.stringify(msg).toLowerCase();
+      return ignoredErrors.some((err) =>
+        msgStr.toLowerCase().includes(err.toLowerCase()),
+      );
+    };
+
+    const createLogger = (): any => ({
       level: 'silent',
       trace: () => {},
       debug: () => {},
       info: () => {},
-      warn: (msg: string) => this.logger.warn(msg),
-      error: (msg: string) => this.logger.error(msg),
-      fatal: (msg: string) => this.logger.error(msg),
-      child: () => ({
-        level: 'silent',
-        trace: () => {},
-        debug: () => {},
-        info: () => {},
-        warn: (msg: string) => this.logger.warn(msg),
-        error: (msg: string) => this.logger.error(msg),
-        fatal: (msg: string) => this.logger.error(msg),
-        child: () => silentLogger,
-      }),
-    };
-    return silentLogger;
+      warn: (msg: unknown) => {
+        if (!shouldIgnoreError(msg)) {
+          this.logger.warn(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        }
+      },
+      error: (msg: unknown) => {
+        // Filter out non-critical decryption errors
+        if (!shouldIgnoreError(msg)) {
+          this.logger.error(
+            typeof msg === 'string' ? msg : JSON.stringify(msg),
+          );
+        }
+      },
+      fatal: (msg: unknown) => {
+        if (!shouldIgnoreError(msg)) {
+          this.logger.error(
+            typeof msg === 'string' ? msg : JSON.stringify(msg),
+          );
+        }
+      },
+      child: () => createLogger(),
+    });
+
+    return createLogger();
   }
 
   private async connectToWhatsApp(): Promise<void> {
@@ -113,10 +142,78 @@ export class WhatsAppService
         markOnlineOnConnect: true,
         syncFullHistory: false,
         logger: this.createSilentLogger() as any,
+        // ============================================
+        // OTP-ONLY OPTIMIZATIONS
+        // ============================================
+        // Don't fetch message history - we only send OTPs
+        shouldSyncHistoryMessage: () => false,
+        // Provide empty message for retry requests (we don't store messages)
+        getMessage: async () => {
+          return { conversation: '' };
+        },
+        // Don't ignore broadcast messages but don't process them either
+        shouldIgnoreJid: (jid: string) => {
+          // Ignore group messages and broadcast lists (status updates)
+          // We only care about sending to individual users
+          return jid.endsWith('@g.us') || jid.endsWith('@broadcast');
+        },
       });
 
       // Save credentials on update
       this.socket.ev.on('creds.update', saveCreds);
+
+      // ============================================
+      // HANDLE MESSAGE EVENTS (Suppress errors for OTP-only usage)
+      // ============================================
+
+      // Ignore incoming messages - we only send OTPs, not receive
+      this.socket.ev.on('messages.upsert', () => {
+        // Silently ignore incoming messages
+        // We don't need to process them for OTP functionality
+      });
+
+      // Handle message decryption errors (common for group messages)
+      // This prevents "No session found to decrypt message" errors from spamming logs
+      this.socket.ev.on('messages.update', () => {
+        // Silently ignore message updates
+      });
+
+      // Handle group metadata updates silently
+      this.socket.ev.on('groups.update', () => {
+        // Silently ignore group updates
+      });
+
+      // Handle group participant updates silently
+      this.socket.ev.on('group-participants.update', () => {
+        // Silently ignore group participant changes
+      });
+
+      // ============================================
+      // CRITICAL: Handle message decryption/history errors
+      // ============================================
+      // This catches "No session found to decrypt message" errors
+      // which occur when receiving group messages without proper session keys
+      this.socket.ev.on(
+        'messaging-history.set',
+        ({ chats, contacts, messages, isLatest }: any) => {
+          // Silently handle history sync - we don't need chat history for OTPs
+          if (isLatest) {
+            this.logger.debug?.(
+              `History sync complete: ${chats?.length || 0} chats, ${messages?.length || 0} messages`,
+            );
+          }
+        },
+      );
+
+      // Handle call events silently (ignore incoming calls)
+      this.socket.ev.on('call', () => {
+        // Ignore calls - OTP service only
+      });
+
+      // Handle presence updates silently
+      this.socket.ev.on('presence.update', () => {
+        // Ignore presence updates
+      });
 
       // Handle connection updates
       this.socket.ev.on('connection.update', async (update: any) => {
