@@ -6,10 +6,15 @@
 import { Injectable } from '@nestjs/common';
 import {
   Prisma,
-  RequestStatus as PrismaRequestStatus,
-  PaymentStatus as PrismaPaymentStatus,
-  Currency as PrismaCurrency,
+  RequestStatus as PrismaRequestStatusImport,
+  PaymentStatus as PrismaPaymentStatusImport,
+  Currency as PrismaCurrencyImport,
 } from '@prisma/client';
+
+// Type aliases to avoid lint errors with Prisma enums
+type PrismaRequestStatus = PrismaRequestStatusImport;
+type PrismaPaymentStatus = PrismaPaymentStatusImport;
+type PrismaCurrency = PrismaCurrencyImport;
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
   ILitigationUnitOfWork,

@@ -197,7 +197,7 @@ class TransactionalLegalOpinionRepository
 
   async update(opinion: LegalOpinionRequest): Promise<LegalOpinionRequest> {
     const data = this.toPrisma(opinion);
-    const { id, ...updateData } = data;
+    const { id: _id, ...updateData } = data;
 
     const updated = await this.prisma.legalOpinionRequest.update({
       where: { id: opinion.id.getValue() },
@@ -441,7 +441,7 @@ class TransactionalLegalOpinionRepository
   ): Promise<LegalOpinionRequest[]> {
     const updates = opinions.map((opinion) => {
       const data = this.toPrisma(opinion);
-      const { id, ...updateData } = data;
+      const { id: _id, ...updateData } = data;
 
       return this.prisma.legalOpinionRequest.update({
         where: { id: opinion.id.getValue() },

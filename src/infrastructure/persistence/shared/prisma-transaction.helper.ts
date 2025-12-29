@@ -3,7 +3,7 @@
 // src/infrastructure/persistence/shared/prisma-transaction.helper.ts
 // ============================================
 
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import {
   TransactionOptions,
   TransactionIsolationLevel,
@@ -54,14 +54,23 @@ function mapIsolationLevel(
 /**
  * Type alias for Prisma interactive transaction client.
  * This is the `tx` parameter passed to $transaction callbacks.
+ *
+ * We derive this from PrismaClient by omitting non-transactional methods.
  */
-export type PrismaTransactionClient = Prisma.TransactionClient;
+export type PrismaTransactionClient = Omit<
+  PrismaClient,
+  | '$connect'
+  | '$disconnect'
+  | '$on'
+  | '$transaction'
+  | '$use'
+  | '$extends'
+  | 'onModuleInit'
+  | 'onModuleDestroy'
+>;
 
 /**
  * Helper type to extract the transaction client type from PrismaService.
  * Use this when creating transactional repository implementations.
  */
-export type TransactionalPrismaClient = Omit<
-  PrismaTransactionClient,
-  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
->;
+export type TransactionalPrismaClient = PrismaTransactionClient;
