@@ -58,7 +58,7 @@ import {
   VerifyMobileOtpDto,
   SendOtpResponseDto,
   VerifyOtpResponseDto,
-} from 'application/dtos';
+} from '../../../application/dtos';
 import { Public } from '../../auth/decorators/public.decorator';
 
 // ============================================
