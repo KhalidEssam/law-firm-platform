@@ -113,6 +113,7 @@ class PaymentStatusMapper {
     return this.toPrismaMap[status.getValue() as PaymentStatusEnum];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   static toDomain(prismaStatus: PrismaPaymentStatus | null): PaymentStatus {
     if (!prismaStatus) return PaymentStatus.create(PaymentStatusEnum.PENDING);
     return PaymentStatus.create(this.toDomainMap[prismaStatus]);

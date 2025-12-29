@@ -47,11 +47,13 @@ class GenderMapper {
     [PrismaGender.prefer_not_to_say]: 'prefer_not_to_say',
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   static toPrisma(gender: string | undefined): PrismaGender | undefined {
     if (!gender) return undefined;
     return this.toPrismaMap[gender.toLowerCase()];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   static toDomain(prismaGender: PrismaGender | null): string | undefined {
     if (!prismaGender) return undefined;
     return this.toDomainMap[prismaGender];
