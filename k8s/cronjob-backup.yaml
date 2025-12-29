@@ -1,0 +1,464 @@
+---
+# =============================================================================
+# PostgreSQL Backup CronJob for Exoln Lex
+# =============================================================================
+# Automated daily database backups with cloud storage upload.
+#
+# Schedule: Daily at 2:00 AM UTC
+# Retention: 30 days local, configurable cloud retention
+# =============================================================================
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: exoln-lex
+  labels:
+    app: exoln-lex
+    component: backup
+    tier: infrastructure
+spec:
+  # Daily at 2:00 AM UTC
+  schedule: "0 2 * * *"
+  # Keep last 3 successful and 1 failed job for debugging
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  # Don't run if previous job is still running
+  concurrencyPolicy: Forbid
+  # Start job within 5 minutes of scheduled time, otherwise skip
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    metadata:
+      labels:
+        app: exoln-lex
+        component: backup
+    spec:
+      # Retry up to 2 times on failure
+      backoffLimit: 2
+      # Timeout after 1 hour
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: exoln-lex
+            component: backup
+          annotations:
+            # Prevent Istio sidecar from keeping job alive
+            sidecar.istio.io/inject: "false"
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: backup-service-account
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+
+          # Init container to wait for database
+          initContainers:
+          - name: wait-for-db
+            image: postgres:15-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until pg_isready -h $PGHOST -p $PGPORT -U $PGUSER; do
+                echo "PostgreSQL is unavailable - sleeping"
+                sleep 5
+              done
+              echo "PostgreSQL is ready!"
+            env:
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: host
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: port
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+            resources:
+              limits:
+                cpu: 100m
+                memory: 64Mi
+              requests:
+                cpu: 50m
+                memory: 32Mi
+
+          containers:
+          - name: backup
+            image: postgres:15-alpine
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              echo "=== Exoln Lex PostgreSQL Backup ==="
+              echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              echo "Database: ${PGDATABASE}@${PGHOST}:${PGPORT}"
+
+              # Install AWS CLI if S3 backup is configured
+              if [ -n "${S3_BUCKET:-}" ]; then
+                echo "Installing AWS CLI..."
+                apk add --no-cache aws-cli
+              fi
+
+              # Create backup filename
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="/tmp/exoln_lex_${TIMESTAMP}.dump"
+
+              # Get database size
+              DB_SIZE=$(PGPASSWORD="${PGPASSWORD}" psql -h "${PGHOST}" -p "${PGPORT}" -U "${PGUSER}" -d "${PGDATABASE}" -tAc "SELECT pg_size_pretty(pg_database_size('${PGDATABASE}'))")
+              echo "Database size: ${DB_SIZE}"
+
+              # Create backup
+              echo "Creating backup..."
+              PGPASSWORD="${PGPASSWORD}" pg_dump \
+                -h "${PGHOST}" \
+                -p "${PGPORT}" \
+                -U "${PGUSER}" \
+                -d "${PGDATABASE}" \
+                -Fc \
+                -Z6 \
+                -f "${BACKUP_FILE}"
+
+              BACKUP_SIZE=$(du -h "${BACKUP_FILE}" | cut -f1)
+              echo "Backup created: ${BACKUP_SIZE}"
+
+              # Verify backup
+              echo "Verifying backup..."
+              if pg_restore --list "${BACKUP_FILE}" > /dev/null 2>&1; then
+                TABLE_COUNT=$(pg_restore --list "${BACKUP_FILE}" 2>/dev/null | grep -c "TABLE DATA" || echo "0")
+                echo "Backup verified: ${TABLE_COUNT} tables"
+              else
+                echo "ERROR: Backup verification failed!"
+                exit 1
+              fi
+
+              # Upload to S3 if configured
+              if [ -n "${S3_BUCKET:-}" ]; then
+                echo "Uploading to S3..."
+                YEAR=$(date +%Y)
+                MONTH=$(date +%m)
+                aws s3 cp "${BACKUP_FILE}" "s3://${S3_BUCKET}/backups/${YEAR}/${MONTH}/exoln_lex_${TIMESTAMP}.dump" \
+                  --storage-class STANDARD_IA
+                echo "S3 upload completed"
+
+                # Cleanup old backups (keep last 30 days)
+                echo "Cleaning up old S3 backups..."
+                aws s3 ls "s3://${S3_BUCKET}/backups/" --recursive | \
+                  awk '{print $4}' | \
+                  while read -r key; do
+                    file_date=$(echo "$key" | grep -oE '[0-9]{8}' | head -1)
+                    if [ -n "$file_date" ]; then
+                      file_epoch=$(date -d "${file_date:0:4}-${file_date:4:2}-${file_date:6:2}" +%s 2>/dev/null || echo 0)
+                      cutoff_epoch=$(date -d "-${RETENTION_DAYS:-30} days" +%s)
+                      if [ "$file_epoch" -lt "$cutoff_epoch" ] && [ "$file_epoch" -gt 0 ]; then
+                        echo "Deleting old backup: $key"
+                        aws s3 rm "s3://${S3_BUCKET}/$key"
+                      fi
+                    fi
+                  done || true
+              fi
+
+              # Cleanup local temp file
+              rm -f "${BACKUP_FILE}"
+
+              echo "=== Backup completed successfully ==="
+
+            env:
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: host
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: port
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: database
+            - name: S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: backup-config
+                  key: s3-bucket
+                  optional: true
+            - name: RETENTION_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: backup-config
+                  key: retention-days
+                  optional: true
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: access-key-id
+                  optional: true
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: secret-access-key
+                  optional: true
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: backup-config
+                  key: aws-region
+                  optional: true
+
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: false
+
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 256Mi
+
+            volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+          volumes:
+          - name: tmp
+            emptyDir:
+              sizeLimit: 5Gi
+
+          # Node affinity - prefer nodes with SSD storage
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                    - m5.large
+                    - m5.xlarge
+                    - r5.large
+
+---
+# =============================================================================
+# Backup ConfigMap
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-config
+  namespace: exoln-lex
+  labels:
+    app: exoln-lex
+    component: backup
+data:
+  # S3 bucket for backups (leave empty to disable S3 upload)
+  s3-bucket: ""
+  # AWS region for S3
+  aws-region: "me-south-1"
+  # Days to retain backups
+  retention-days: "30"
+  # GCS bucket (alternative to S3)
+  gcs-bucket: ""
+
+---
+# =============================================================================
+# Backup Service Account
+# =============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backup-service-account
+  namespace: exoln-lex
+  labels:
+    app: exoln-lex
+    component: backup
+  annotations:
+    # For AWS IRSA (IAM Roles for Service Accounts)
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/exoln-lex-backup-role
+
+---
+# =============================================================================
+# PostgreSQL Credentials Secret Template
+# =============================================================================
+# NOTE: This is a template. In production, use external secrets manager
+# or sealed-secrets. Never commit actual credentials!
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-credentials
+  namespace: exoln-lex
+  labels:
+    app: exoln-lex
+    component: database
+type: Opaque
+stringData:
+  host: "postgres-service"
+  port: "5432"
+  username: "exoln"
+  password: "CHANGE_ME_IN_PRODUCTION"
+  database: "exoln_lex"
+
+---
+# =============================================================================
+# AWS Credentials Secret Template (Optional)
+# =============================================================================
+# NOTE: Prefer using IRSA (IAM Roles for Service Accounts) instead of
+# static credentials in production.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-backup-credentials
+  namespace: exoln-lex
+  labels:
+    app: exoln-lex
+    component: backup
+type: Opaque
+stringData:
+  access-key-id: "CHANGE_ME"
+  secret-access-key: "CHANGE_ME"
+
+---
+# =============================================================================
+# Backup Verification CronJob (Hourly health check)
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-verify
+  namespace: exoln-lex
+  labels:
+    app: exoln-lex
+    component: backup-verify
+spec:
+  # Every 6 hours
+  schedule: "0 */6 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app: exoln-lex
+            component: backup-verify
+          annotations:
+            sidecar.istio.io/inject: "false"
+        spec:
+          restartPolicy: Never
+          serviceAccountName: backup-service-account
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+          containers:
+          - name: verify
+            image: amazon/aws-cli:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              echo "=== Backup Verification ==="
+              echo "Checking S3 for recent backups..."
+
+              if [ -z "${S3_BUCKET:-}" ]; then
+                echo "S3_BUCKET not configured, skipping verification"
+                exit 0
+              fi
+
+              # Find latest backup
+              LATEST=$(aws s3 ls "s3://${S3_BUCKET}/backups/" --recursive | sort | tail -1)
+
+              if [ -z "$LATEST" ]; then
+                echo "ERROR: No backups found in S3!"
+                exit 1
+              fi
+
+              echo "Latest backup: $LATEST"
+
+              # Check age (extract date from filename)
+              BACKUP_DATE=$(echo "$LATEST" | grep -oE '[0-9]{8}' | tail -1)
+              TODAY=$(date +%Y%m%d)
+
+              # Simple date comparison (works for same year)
+              if [ "$BACKUP_DATE" = "$TODAY" ] || [ "$BACKUP_DATE" = "$(date -d yesterday +%Y%m%d)" ]; then
+                echo "Backup is recent (${BACKUP_DATE})"
+                exit 0
+              else
+                echo "WARNING: Latest backup is from ${BACKUP_DATE}, expected ${TODAY}"
+                exit 1
+              fi
+
+            env:
+            - name: S3_BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: backup-config
+                  key: s3-bucket
+                  optional: true
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: access-key-id
+                  optional: true
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: secret-access-key
+                  optional: true
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: backup-config
+                  key: aws-region
+                  optional: true
+
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                cpu: 50m
+                memory: 64Mi
+
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true

@@ -17,6 +17,7 @@ resources:
   - hpa.yaml
   - pdb.yaml
   - servicemonitor.yaml
+  - cronjob-backup.yaml
 
 commonLabels:
   app.kubernetes.io/name: exoln-lex

@@ -659,6 +659,8 @@ model Refund {
 
   @@index([userId, status])
   @@index([status, createdAt])
+  @@index([transactionLogId])
+  @@index([reviewedBy, status])
 }
 
 model Dispute {
@@ -773,6 +775,8 @@ model AvailabilitySlot {
   @@unique([providerId, date, startTime])
   @@index([providerId, date, isBooked])
   @@index([date, isBooked, providerId])
+  @@index([providerId, isBooked, date])
+  @@index([date, startTime])
 }
 
 model ProviderUser {
@@ -821,6 +825,9 @@ model ProviderReview {
 
   @@index([providerId, isPublic])
   @@index([providerId, rating])
+  @@index([providerId, isVerified, createdAt])
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 model Specialization {
@@ -1053,6 +1060,8 @@ model ServiceUsage {
   @@index([membershipId, serviceId, periodStart])
   @@index([membershipId, usedAt])
   @@index([isBilled, usedAt])
+  @@index([serviceId, usedAt])
+  @@index([periodStart, periodEnd])
 }
 
 model ServiceRequest {
@@ -1114,6 +1123,8 @@ model ServiceQuote {
 
   @@index([serviceRequestId])
   @@index([status, validUntil])
+  @@index([providerId, status, createdAt])
+  @@index([createdAt])
 } 
 
 
@@ -1552,6 +1563,8 @@ model Notification {
   @@index([userId, createdAt])
   @@index([userId, type, isRead])
   @@index([createdAt])
+  @@index([relatedEntityType, relatedEntityId])
+  @@index([type, createdAt])
 }
 
 model MessageTemplate {
@@ -1685,6 +1698,8 @@ model AuditLog {
   @@index([action, createdAt])
   @@index([entityType, entityId])
   @@index([createdAt])
+  @@index([entityType, action, createdAt])
+  @@index([userId, action, createdAt])
 }
 
 model DataExportRequest {
@@ -1734,6 +1749,8 @@ model UserActivity {
 
   @@index([userId, createdAt])
   @@index([action, createdAt])
+  @@index([sessionId, createdAt])
+  @@index([page, createdAt])
 }
 
 // ============================================
@@ -1765,6 +1782,8 @@ model ErrorLog {
   @@index([level, createdAt])
   @@index([createdAt])
   @@index([userId, createdAt])
+  @@index([requestId, createdAt])
+  @@index([level, userId, createdAt])
 }
 
 model JobQueue {
@@ -1786,6 +1805,8 @@ model JobQueue {
   @@index([type, status])
   @@index([status, priority, scheduledAt])
   @@index([createdAt])
+  @@index([status, attempts, scheduledAt])
+  @@index([type, status, priority])
 }
 
 // ============================================
@@ -1811,6 +1832,8 @@ model WebhookLog {
   createdAt   DateTime  @default(now())
 
   @@index([provider, event, createdAt])
+  @@index([status, createdAt])
+  @@index([provider, status, createdAt])
 }
 
 // ============================================
