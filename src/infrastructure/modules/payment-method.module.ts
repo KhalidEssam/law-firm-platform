@@ -4,7 +4,7 @@
 // ============================================
 
 import { Module } from '@nestjs/common';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 
 // Controller
 import { PaymentMethodController } from '../../interface/http/payment-method.controller';

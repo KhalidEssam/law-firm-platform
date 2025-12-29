@@ -20,16 +20,16 @@ import { UpdateUserProfileUseCase } from '../../core/application/use-cases/updat
 import { GetUserByIdUseCase } from '../../core/application/use-cases/get-user-by-id.use-case';
 import { ListUsersUseCase } from '../../core/application/use-cases/get-all-users.use-case';
 import { DeleteUserUseCase } from '../../core/application/use-cases/delete-user.use-case';
-import { GetUserByEmailUseCase } from 'src/core/application/use-cases/get-user-by-email.use-case';
+import { GetUserByEmailUseCase } from '../../core/application/use-cases/get-user-by-email.use-case';
 import { GetUserByUsernameUseCase } from '../../core/application/use-cases/get-user-by-username.use-case';
 // import { GetUserByAuth0IdUseCase } from '../../core/application/use-cases/get-user-by-auth0.use-case';
 import { VerifyEmailUseCase } from '../../core/application/use-cases/verify-email.use-case';
 import { VerifyMobileUseCase } from '../../core/application/use-cases/verify-mobile.use-case';
 import { UpdateProfileStatusUseCase } from '../../core/application/use-cases/update-profile-status.use-case';
-import { RestoreUserUseCase } from 'src/core/application/use-cases/restore-user.use-case';
-import { SearchUsersUseCase } from 'src/core/application/use-cases/search-user.use-case';
-import { CheckEmailAvailabilityUseCase } from 'src/core/application/use-cases/check-email-availability.use-case';
-import { CheckUsernameAvailabilityUseCase } from 'src/core/application/use-cases/check-username-availability.use-case';
+import { RestoreUserUseCase } from '../../core/application/use-cases/restore-user.use-case';
+import { SearchUsersUseCase } from '../../core/application/use-cases/search-user.use-case';
+import { CheckEmailAvailabilityUseCase } from '../../core/application/use-cases/check-email-availability.use-case';
+import { CheckUsernameAvailabilityUseCase } from '../../core/application/use-cases/check-username-availability.use-case';
 import { SendMobileOtpUseCase } from '../../core/application/use-cases/send-mobile-otp.use-case';
 import { VerifyMobileOtpUseCase } from '../../core/application/use-cases/verify-mobile-otp.use-case';
 import {
@@ -37,7 +37,7 @@ import {
   SetPrimaryIdentityUseCase,
   UnlinkIdentityUseCase,
   getProviderDisplayName,
-} from 'src/core/application/use-cases/user-identities.use-case';
+} from '../../core/application/use-cases/user-identities.use-case';
 // import { AuthGuard } from '@nestjs/passport';
 // import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
@@ -59,7 +59,7 @@ import {
   SendOtpResponseDto,
   VerifyOtpResponseDto,
 } from 'application/dtos';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 
 // ============================================
 // USER CONTROLLER

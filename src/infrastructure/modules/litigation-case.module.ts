@@ -4,7 +4,7 @@
 // ============================================
 
 import { Module, forwardRef } from '@nestjs/common';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 import { MembershipModule } from './membership.module';
 import { NotificationModule } from '../../interface/notification/notification.module';
 

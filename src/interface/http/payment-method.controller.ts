@@ -22,8 +22,8 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Roles } from 'src/auth/roles.decorator';
-import { Permissions } from 'src/auth/permissions.decorator';
+import { Roles } from '../../auth/roles.decorator';
+import { Permissions } from '../../auth/permissions.decorator';
 // import {
 //   StrictRateLimit,
 //   StandardRateLimit,

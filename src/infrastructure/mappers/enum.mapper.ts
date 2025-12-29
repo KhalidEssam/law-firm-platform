@@ -10,7 +10,7 @@ import {
 import {
   CaseStatusEnum,
   PaymentStatusEnum,
-} from 'src/core/domain/litigation-case/value-objects/litigation-case.vo';
+} from '../../core/domain/litigation-case/value-objects/litigation-case.vo';
 
 // ============================================
 // CASE STATUS MAPPER
