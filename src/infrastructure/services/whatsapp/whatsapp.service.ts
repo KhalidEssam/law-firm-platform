@@ -141,7 +141,7 @@ export class WhatsAppService
         keepAliveIntervalMs: 30_000,
         markOnlineOnConnect: true,
         syncFullHistory: false,
-        logger: this.createSilentLogger() as any,
+        logger: this.createSilentLogger(),
         // ============================================
         // OTP-ONLY OPTIMIZATIONS
         // ============================================

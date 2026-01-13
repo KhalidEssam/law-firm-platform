@@ -27,20 +27,25 @@ export default tseslint.config(
     },
   },
 
-  // 🌍 GLOBAL TEMPORARY TOLERANCE
+  // 🌍 GLOBAL RULES - Progressively stricter type safety
   {
     rules: {
+      // Type safety - warn first, then error
       '@typescript-eslint/no-explicit-any': 'warn',
 
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
+      // Unsafe operations - enabled as warnings for gradual migration
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
 
+      // Method binding - keep off for NestJS patterns
       '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
+
+      // Async safety - critical for catching unhandled promises
+      '@typescript-eslint/require-await': 'warn',
+      '@typescript-eslint/no-floating-promises': 'error',
 
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -49,16 +54,18 @@ export default tseslint.config(
     },
   },
 
-  // 🎯 CONTROLLERS (HTTP LAYER)
+  // 🎯 CONTROLLERS (HTTP LAYER) - Stricter rules for API surface
   {
     files: ['src/interface/http/**/*.ts'],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
+      // Allow any only where absolutely necessary (DTOs from external sources)
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
       '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/await-thenable': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
+      // Keep async rules enabled for proper promise handling
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/require-await': 'warn',
+      '@typescript-eslint/no-floating-promises': 'error',
     },
   },
 

@@ -5,11 +5,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  v2 as cloudinary,
-  UploadApiResponse,
-  UploadApiErrorResponse,
-} from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import {
   StorageProvider,
   UploadResult,
@@ -108,28 +104,19 @@ export class CloudinaryStorageService implements IStorageProvider {
       // Convert buffer to base64 data URI
       const base64Data = `data:${input.mimeType};base64,${input.buffer.toString('base64')}`;
 
-      const result: UploadApiResponse = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload(
-          base64Data,
-          {
-            folder,
-            resource_type: resourceType,
-            public_id: this.generatePublicId(input.fileName),
-            tags: input.tags,
-            context: input.metadata,
-            use_filename: true,
-            unique_filename: true,
-            overwrite: false,
-          },
-          (
-            error: UploadApiErrorResponse | undefined,
-            result: UploadApiResponse | undefined,
-          ) => {
-            if (error) reject(error);
-            else resolve(result!);
-          },
-        );
-      });
+      const result: UploadApiResponse = await cloudinary.uploader.upload(
+        base64Data,
+        {
+          folder,
+          resource_type: resourceType,
+          public_id: this.generatePublicId(input.fileName),
+          tags: input.tags,
+          context: input.metadata,
+          use_filename: true,
+          unique_filename: true,
+          overwrite: false,
+        },
+      );
 
       this.logger.log(`File uploaded to Cloudinary: ${result.public_id}`);
 
