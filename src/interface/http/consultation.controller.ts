@@ -26,7 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-import { AuthenticatedUser } from '../../auth/types/authenticated-user.types';
+import { type AuthenticatedUser } from '../../auth/types/authenticated-user.types';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 
 // Use Cases
@@ -509,6 +509,9 @@ export class ConsultationRequestController {
     @Body() dto: UploadDocumentDTO,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<DocumentResponseDTO> {
+    if (!user.id) {
+      throw new BadRequestException('User ID is required');
+    }
     // Create new DTO with context (avoid mutation)
     const uploadDto: UploadDocumentDTO = {
       ...dto,
@@ -537,6 +540,9 @@ export class ConsultationRequestController {
     @Body() dto: SendMessageDTO,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<MessageResponseDTO> {
+    if (!user.id) {
+      throw new BadRequestException('User ID is required');
+    }
     // Create new DTO with context (avoid mutation)
     const messageDto: SendMessageDTO = {
       ...dto,
@@ -569,6 +575,9 @@ export class ConsultationRequestController {
     @Body() dto: AddRatingDTO,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<RatingResponseDTO> {
+    if (!user.id) {
+      throw new BadRequestException('User ID is required');
+    }
     // Create new DTO with context (avoid mutation)
     const ratingDto: AddRatingDTO = {
       ...dto,
