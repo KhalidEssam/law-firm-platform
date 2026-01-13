@@ -536,6 +536,32 @@ export class RatingResponseDTO {
 // USE CASE 12: GET STATISTICS
 // ============================================
 
+export class StatisticsQueryDTO {
+  @ApiPropertyOptional({
+    example: 'user-123',
+    description: 'Filter statistics by subscriber ID',
+  })
+  @IsOptional()
+  @IsString()
+  subscriberId?: string;
+
+  @ApiPropertyOptional({
+    example: 'provider-789',
+    description: 'Filter statistics by provider ID',
+  })
+  @IsOptional()
+  @IsString()
+  assignedProviderId?: string;
+
+  @ApiPropertyOptional({
+    enum: ConsultationStatusEnum,
+    description: 'Filter statistics by status',
+  })
+  @IsOptional()
+  @IsEnum(ConsultationStatusEnum)
+  status?: string;
+}
+
 export class ConsultationStatisticsDTO {
   @ApiProperty({ example: 150 })
   total: number;

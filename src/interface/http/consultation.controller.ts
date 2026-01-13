@@ -13,9 +13,8 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  // UseGuards,
-  Request,
   ParseUUIDPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -25,11 +24,10 @@ import {
   ApiBearerAuth,
   ApiQuery,
 } from '@nestjs/swagger';
-// import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-// import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
 import { Permissions } from '../../auth/permissions.decorator';
-// import { Public } from 'src/auth/decorators/public.decorator';
+import { AuthenticatedUser } from '../../auth/types/authenticated-user.types';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 
 // Use Cases
 import {
@@ -67,6 +65,7 @@ import {
   ConsultationStatisticsDTO,
   UpdateSLAStatusesResponseDTO,
   ErrorResponseDTO,
+  StatisticsQueryDTO,
 } from '../../core/application/consultation/consultation request.dtos';
 
 // Notification Integration
@@ -95,7 +94,8 @@ export class ConsultationRequestController {
   ) {}
 
   // ============================================
-  // USE CASE 1: CREATE CONSULTATION REQUEST
+  // COLLECTION ENDPOINTS (no path params)
+  // These must be defined BEFORE parameterized routes
   // ============================================
 
   @Post()
@@ -126,25 +126,192 @@ export class ConsultationRequestController {
   })
   async create(
     @Body() dto: CreateConsultationRequestDTO,
-    @Request() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<ConsultationRequestResponseDTO> {
-    // Get user ID from authenticated user or body
-    if (req.user?.sub) {
+    // Resolve subscriber ID from authenticated user
+    let subscriberId = dto.subscriberId;
+
+    if (user.sub) {
       // Auth0 user - look up database UUID from Auth0 ID
-      const user = await this.getUserByAuth0Id.execute(req.user.sub.toString());
-      dto.subscriberId = user.id;
-    } else if (req.user?.id) {
+      const dbUser = await this.getUserByAuth0Id.execute(user.sub);
+      subscriberId = dbUser.id;
+    } else if (user.id) {
       // Local auth with direct ID
-      dto.subscriberId = req.user.id;
-    } else if (!dto.subscriberId) {
-      throw new Error('subscriberId is required');
+      subscriberId = user.id;
     }
 
-    return await this.createUseCase.execute(dto);
+    if (!subscriberId) {
+      throw new BadRequestException('subscriberId is required');
+    }
+
+    // Create new DTO with resolved subscriber ID (avoid mutation)
+    const createDto: CreateConsultationRequestDTO = {
+      ...dto,
+      subscriberId,
+    };
+
+    return this.createUseCase.execute(createDto);
+  }
+
+  @Get()
+  @Roles('subscriber', 'provider', 'admin')
+  @Permissions('consultation:read')
+  @ApiOperation({
+    summary: 'List consultation requests with filters and pagination',
+    description:
+      'Get paginated list of consultation requests with optional filters',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of consultation requests',
+    type: PaginatedConsultationResponseDTO,
+  })
+  async list(
+    @Query() query: ListConsultationRequestsQueryDTO,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PaginatedConsultationResponseDTO> {
+    // Build filters based on user role (avoid DTO mutation)
+    const roleBasedFilters: Record<string, string | undefined> = {};
+
+    if (user.role === 'subscriber' && user.id) {
+      roleBasedFilters.subscriberId = user.id;
+    } else if (user.role === 'provider' && user.id) {
+      roleBasedFilters.assignedProviderId = user.id;
+    }
+
+    const filters = {
+      subscriberId: roleBasedFilters.subscriberId ?? query.subscriberId,
+      assignedProviderId:
+        roleBasedFilters.assignedProviderId ?? query.assignedProviderId,
+      status: query.status,
+      consultationType: query.consultationType,
+      urgency: query.urgency,
+      slaStatus: query.slaStatus,
+      searchTerm: query.searchTerm,
+    };
+
+    const pagination = {
+      page: query.page ?? 1,
+      limit: query.limit ?? 10,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+    };
+
+    return this.listUseCase.execute(filters, pagination);
   }
 
   // ============================================
-  // USE CASE 2: GET CONSULTATION REQUEST BY ID
+  // SPECIFIC PATH ENDPOINTS
+  // Must come BEFORE /:id to avoid route conflicts
+  // ============================================
+
+  @Get('my/consultations')
+  @Roles('subscriber')
+  @Permissions('consultation:read')
+  @ApiOperation({
+    summary: 'Get my consultation requests',
+    description:
+      'Get all consultation requests for the authenticated subscriber',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({
+    status: 200,
+    description: "List of user's consultation requests",
+    type: PaginatedConsultationResponseDTO,
+  })
+  async getMyConsultations(
+    @Query() query: ListConsultationRequestsQueryDTO,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PaginatedConsultationResponseDTO> {
+    const filters = {
+      subscriberId: user.id,
+    };
+
+    const pagination = {
+      page: query.page ?? 1,
+      limit: query.limit ?? 10,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+    };
+
+    return this.listUseCase.execute(filters, pagination);
+  }
+
+  @Get('assigned/me')
+  @Roles('provider')
+  @Permissions('consultation:read')
+  @ApiOperation({
+    summary: 'Get consultations assigned to me',
+    description:
+      'Get all consultation requests assigned to the authenticated provider',
+  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({
+    status: 200,
+    description: 'List of assigned consultation requests',
+    type: PaginatedConsultationResponseDTO,
+  })
+  async getAssignedToMe(
+    @Query() query: ListConsultationRequestsQueryDTO,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PaginatedConsultationResponseDTO> {
+    const filters = {
+      assignedProviderId: user.id,
+    };
+
+    const pagination = {
+      page: query.page ?? 1,
+      limit: query.limit ?? 10,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+    };
+
+    return this.listUseCase.execute(filters, pagination);
+  }
+
+  @Get('statistics/overview')
+  @Roles('admin', 'provider_manager', 'analytics')
+  @Permissions('consultation:view-statistics')
+  @ApiOperation({
+    summary: 'Get consultation statistics',
+    description: 'Get comprehensive statistics about consultations',
+  })
+  @ApiQuery({ name: 'subscriberId', required: false, type: String })
+  @ApiQuery({ name: 'assignedProviderId', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Consultation statistics',
+    type: ConsultationStatisticsDTO,
+  })
+  async getStatistics(
+    @Query() query: StatisticsQueryDTO,
+  ): Promise<ConsultationStatisticsDTO> {
+    return this.statisticsUseCase.execute(query);
+  }
+
+  @Post('sla/update')
+  @Roles('admin', 'system')
+  @Permissions('consultation:update-sla')
+  @ApiOperation({
+    summary: 'Update SLA statuses (Background job)',
+    description:
+      'Batch update SLA statuses for all consultations. Typically called by cron job.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'SLA statuses updated successfully',
+    type: UpdateSLAStatusesResponseDTO,
+  })
+  async updateSLAStatuses(): Promise<UpdateSLAStatusesResponseDTO> {
+    return this.updateSLAUseCase.execute();
+  }
+
+  // ============================================
+  // PARAMETERIZED ENDPOINTS (/:id)
+  // Must come AFTER specific path endpoints
   // ============================================
 
   @Get(':id')
@@ -172,134 +339,8 @@ export class ConsultationRequestController {
   async getById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<ConsultationRequestResponseDTO> {
-    return await this.getUseCase.execute(id);
+    return this.getUseCase.execute(id);
   }
-
-  // ============================================
-  // USE CASE 3: LIST CONSULTATION REQUESTS
-  // ============================================
-
-  @Get()
-  @Roles('subscriber', 'provider', 'admin')
-  @Permissions('consultation:read')
-  @ApiOperation({
-    summary: 'List consultation requests with filters and pagination',
-    description:
-      'Get paginated list of consultation requests with optional filters',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'List of consultation requests',
-    type: PaginatedConsultationResponseDTO,
-  })
-  async list(
-    @Query() query: ListConsultationRequestsQueryDTO,
-    @Request() req: any,
-  ): Promise<PaginatedConsultationResponseDTO> {
-    // If user is subscriber, only show their consultations
-    if (req.user.role === 'subscriber') {
-      query.subscriberId = req.user.id;
-    }
-
-    // If user is provider, only show their assigned consultations
-    if (req.user.role === 'provider') {
-      query.assignedProviderId = req.user.id;
-    }
-
-    // Map DTO to filters (string types are compatible with the repository)
-    const filters = {
-      subscriberId: query.subscriberId ? query.subscriberId : undefined,
-      assignedProviderId: query.assignedProviderId,
-      status: query.status,
-      consultationType: query.consultationType,
-      urgency: query.urgency,
-      slaStatus: query.slaStatus,
-      searchTerm: query.searchTerm,
-    };
-
-    const pagination = {
-      page: query.page ? query.page : 1,
-      limit: query.limit ? query.limit : 10,
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-    };
-
-    return await this.listUseCase.execute(filters, pagination);
-  }
-
-  // ============================================
-  // CONVENIENCE ENDPOINTS
-  // ============================================
-
-  @Get('my/consultations')
-  @Roles('subscriber')
-  @Permissions('consultation:read')
-  @ApiOperation({
-    summary: 'Get my consultation requests',
-    description:
-      'Get all consultation requests for the authenticated subscriber',
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({
-    status: 200,
-    description: "List of user's consultation requests",
-    type: PaginatedConsultationResponseDTO,
-  })
-  async getMyConsultations(
-    @Query() query: ListConsultationRequestsQueryDTO,
-    @Request() req: any,
-  ): Promise<PaginatedConsultationResponseDTO> {
-    const filters = {
-      subscriberId: req.user.id,
-    };
-
-    const pagination = {
-      page: query.page ? query.page : 1,
-      limit: query.limit ? query.limit : 10,
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-    };
-
-    return await this.listUseCase.execute(filters, pagination);
-  }
-
-  @Get('assigned/me')
-  @Roles('provider')
-  @Permissions('consultation:read')
-  @ApiOperation({
-    summary: 'Get consultations assigned to me',
-    description:
-      'Get all consultation requests assigned to the authenticated provider',
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({
-    status: 200,
-    description: 'List of assigned consultation requests',
-    type: PaginatedConsultationResponseDTO,
-  })
-  async getAssignedToMe(
-    @Query() query: ListConsultationRequestsQueryDTO,
-    @Request() req: any,
-  ): Promise<PaginatedConsultationResponseDTO> {
-    const filters = {
-      assignedProviderId: req.user.id,
-    };
-
-    const pagination = {
-      page: query.page ? query.page : 1,
-      limit: query.limit ? query.limit : 10,
-      sortBy: query.sortBy,
-      sortOrder: query.sortOrder,
-    };
-
-    return await this.listUseCase.execute(filters, pagination);
-  }
-
-  // ============================================
-  // USE CASE 4: ASSIGN TO PROVIDER
-  // ============================================
 
   @Put(':id/assign')
   @Roles('admin', 'provider_manager')
@@ -349,10 +390,6 @@ export class ConsultationRequestController {
     return result;
   }
 
-  // ============================================
-  // USE CASE 5: MARK AS IN PROGRESS
-  // ============================================
-
   @Put(':id/in-progress')
   @Roles('provider', 'admin')
   @Permissions('consultation:update')
@@ -369,12 +406,8 @@ export class ConsultationRequestController {
   async markInProgress(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<ConsultationRequestResponseDTO> {
-    return await this.markInProgressUseCase.execute(id);
+    return this.markInProgressUseCase.execute(id);
   }
-
-  // ============================================
-  // USE CASE 6: COMPLETE CONSULTATION
-  // ============================================
 
   @Put(':id/complete')
   @Roles('provider', 'admin')
@@ -409,10 +442,6 @@ export class ConsultationRequestController {
     return result;
   }
 
-  // ============================================
-  // USE CASE 7: CANCEL CONSULTATION
-  // ============================================
-
   @Put(':id/cancel')
   @Roles('subscriber', 'admin')
   @Permissions('consultation:cancel')
@@ -434,12 +463,8 @@ export class ConsultationRequestController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CancelConsultationDTO,
   ): Promise<ConsultationRequestResponseDTO> {
-    return await this.cancelUseCase.execute(id, dto.reason);
+    return this.cancelUseCase.execute(id, dto.reason);
   }
-
-  // ============================================
-  // USE CASE 8: DISPUTE CONSULTATION
-  // ============================================
 
   @Post(':id/dispute')
   @Roles('subscriber', 'admin')
@@ -463,12 +488,8 @@ export class ConsultationRequestController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: DisputeConsultationDTO,
   ): Promise<ConsultationRequestResponseDTO> {
-    return await this.disputeUseCase.execute(id, dto.reason);
+    return this.disputeUseCase.execute(id, dto.reason);
   }
-
-  // ============================================
-  // USE CASE 9: UPLOAD DOCUMENT
-  // ============================================
 
   @Post(':id/documents')
   @Roles('subscriber', 'provider', 'admin')
@@ -486,17 +507,17 @@ export class ConsultationRequestController {
   async uploadDocument(
     @Param('id', ParseUUIDPipe) consultationId: string,
     @Body() dto: UploadDocumentDTO,
-    @Request() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<DocumentResponseDTO> {
-    dto.consultationId = consultationId;
-    dto.uploadedBy = req.user.id;
+    // Create new DTO with context (avoid mutation)
+    const uploadDto: UploadDocumentDTO = {
+      ...dto,
+      consultationId,
+      uploadedBy: user.id,
+    };
 
-    return await this.uploadDocumentUseCase.execute(dto);
+    return this.uploadDocumentUseCase.execute(uploadDto);
   }
-
-  // ============================================
-  // USE CASE 10: SEND MESSAGE
-  // ============================================
 
   @Post(':id/messages')
   @Roles('subscriber', 'provider', 'admin')
@@ -514,17 +535,17 @@ export class ConsultationRequestController {
   async sendMessage(
     @Param('id', ParseUUIDPipe) consultationId: string,
     @Body() dto: SendMessageDTO,
-    @Request() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<MessageResponseDTO> {
-    dto.consultationId = consultationId;
-    dto.senderId = req.user.id;
+    // Create new DTO with context (avoid mutation)
+    const messageDto: SendMessageDTO = {
+      ...dto,
+      consultationId,
+      senderId: user.id,
+    };
 
-    return await this.sendMessageUseCase.execute(dto);
+    return this.sendMessageUseCase.execute(messageDto);
   }
-
-  // ============================================
-  // USE CASE 11: ADD RATING
-  // ============================================
 
   @Post(':id/rating')
   @Roles('subscriber', 'admin')
@@ -546,56 +567,15 @@ export class ConsultationRequestController {
   async addRating(
     @Param('id', ParseUUIDPipe) consultationId: string,
     @Body() dto: AddRatingDTO,
-    @Request() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<RatingResponseDTO> {
-    dto.consultationId = consultationId;
-    dto.subscriberId = req.user.id;
+    // Create new DTO with context (avoid mutation)
+    const ratingDto: AddRatingDTO = {
+      ...dto,
+      consultationId,
+      subscriberId: user.id,
+    };
 
-    return await this.addRatingUseCase.execute(dto);
-  }
-
-  // ============================================
-  // USE CASE 12: GET STATISTICS
-  // ============================================
-
-  @Get('statistics/overview')
-  @Roles('admin', 'provider_manager', 'analytics')
-  @Permissions('consultation:view-statistics')
-  @ApiOperation({
-    summary: 'Get consultation statistics',
-    description: 'Get comprehensive statistics about consultations',
-  })
-  @ApiQuery({ name: 'subscriberId', required: false, type: String })
-  @ApiQuery({ name: 'assignedProviderId', required: false, type: String })
-  @ApiQuery({ name: 'status', required: false, type: String })
-  @ApiResponse({
-    status: 200,
-    description: 'Consultation statistics',
-    type: ConsultationStatisticsDTO,
-  })
-  async getStatistics(@Query() query: any): Promise<ConsultationStatisticsDTO> {
-    return await this.statisticsUseCase.execute(query);
-  }
-
-  // ============================================
-  // USE CASE 13: UPDATE SLA STATUSES
-  // (Background Job - Admin Only)
-  // ============================================
-
-  @Post('sla/update')
-  @Roles('admin', 'system')
-  @Permissions('consultation:update-sla')
-  @ApiOperation({
-    summary: 'Update SLA statuses (Background job)',
-    description:
-      'Batch update SLA statuses for all consultations. Typically called by cron job.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'SLA statuses updated successfully',
-    type: UpdateSLAStatusesResponseDTO,
-  })
-  async updateSLAStatuses(): Promise<UpdateSLAStatusesResponseDTO> {
-    return await this.updateSLAUseCase.execute();
+    return this.addRatingUseCase.execute(ratingDto);
   }
 }
